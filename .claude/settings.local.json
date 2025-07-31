@@ -4,7 +4,8 @@
       "Bash(npm install:*)",
       "Bash(pnpm:*)",
       "Bash(npm config get:*)",
-      "Bash(where pnpm)"
+      "Bash(where pnpm)",
+      "WebFetch(domain:umijs.org)"
     ],
     "deny": []
   }
