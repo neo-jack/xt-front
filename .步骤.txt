@@ -429,274 +429,75 @@ export { store };
 - 提供全局的Redux store访问
 - 这样做是为了让所有组件都能访问Redux状态管理
 
-## 第七步：创建Redux状态管理
+## 第七步：创建Redux基础配置
 **文件路径：** `src/app/store.ts`
-**目的：** 配置Redux Toolkit状态管理，提供全局状态管理能力
+**目的：** 配置Redux Toolkit基础store，具体的业务模块根据需要动态添加slice
 
 **具体代码：**
 ```typescript
 // src/app/store.ts
+// 从 "@reduxjs/toolkit" 这个包里导入 `configureStore` 函数。
+// Redux Toolkit 是官方推荐的、用来简化 Redux 开发的工具集。
+// `configureStore` 是一个高级函数，它简化了创建和配置 Redux "store" 的过程。
 import { configureStore } from "@reduxjs/toolkit";
-import appSlice from "./appSlice";
-import authSlice from "./authSlice";
 
-// 创建Redux store
+// `store` 是 Redux 应用的核心，可以把它想象成一个"全局的、集中的数据仓库"。
+// 整个应用所有需要共享的数据（状态）都存放在这个 `store` 对象中。
+// `export` 关键字让这个 `store` 对象可以在项目的其他地方被导入和使用。
+
+// 初始创建一个空的 store，具体的业务模块（如用户登录、权限管理等）
+// 可以在需要时动态添加自己的 slice
 export const store = configureStore({
+  // `configureStore` 函数接收一个配置对象，其中 `reducer` 属性是必需的。
+  // `reducer` 属性的值是一个对象，这个对象的作用是把我们所有不同模块的 reducer 函数组合起来。
+  // Reducer 是一个纯函数，它接收当前的状态和一个 action（指令），然后返回一个新的状态。
   reducer: {
-    // 应用通用状态（语言设置等）
-    app: appSlice,
-    // 认证状态（用户信息、token等）
-    auth: authSlice,
+    // 初始时为空对象，具体的业务模块需要时再添加
+    // 例如：login 页面可以添加 user slice
+    // 例如：其他页面可以添加各自的 slice
   },
 });
 
-// 导出类型，用于TypeScript类型推断
+/*
+  业务模块使用示例：
+  
+  如果 login 页面需要用户状态管理，可以：
+  1. 在 pages/login/slice.ts 中创建 userSlice
+  2. 在 store 中注册：
+     import userSlice from "@/pages/login/slice";
+     
+     然后在 reducer 中添加：
+     user: userSlice
+     
+  最终的状态结构可能是：
+    {
+      user: {
+        name: string;
+        avatar: string;
+        token: string;
+        routes: string[]; // 用户拥有的路由权限
+        buttons: string[]; // 用户拥有的按钮权限
+      },
+      // 其他模块的状态...
+    }
+*/
+
+// --- 下面的代码主要是为了配合 TypeScript 使用，提供更好的类型推断和代码安全 ---
+
+// `dispatch` 是用来"派发 action"的方法。可以把它想象成是向仓库管理员下达一个"更新数据"的指令。
+// 例如 `dispatch(loginSuccess(userInfo))` 就是告诉 Redux 去执行 `loginSuccess` 这个操作。
+// `typeof store.dispatch` 在 TypeScript 中，不是获取值，而是获取 `store.dispatch` 这个函数的"类型"。
+// `export type AppDispatch = ...` 这行代码创建并导出了一个名为 `AppDispatch` 的新类型。
+// 这样做的好处是，以后在组件中使用 `dispatch` 函数时，TypeScript 就能准确地知道这个函数接受哪些类型的 action，从而提供更好的代码提示和错误检查。
 export type AppDispatch = typeof store.dispatch;
+
+// `getState` 是一个用来"读取当前所有数据"的方法，调用 `store.getState()` 就会返回整个仓库的当前状态对象。
+// `typeof store.getState` 同样是获取 `store.getState` 这个函数本身的类型。
+// `ReturnType<...>` 是 TypeScript 提供的一个工具类型，它可以获取一个函数的返回值的类型。
+// 所以 `ReturnType<typeof store.getState>` 的意思就是："请告诉我 `store.getState()` 这个函数执行后，返回的数据是什么类型的？"
+// `export type RootState = ...` 这行代码创建并导出了一个名为 `RootState` 的新类型，这个类型就精确地代表了我们整个 Redux 仓库中所有数据的完整结构。
+// 这个 `RootState` 类型非常有用，特别是在使用 `useSelector` 这个 Hook 从 store 中读取数据时，它能让 TypeScript 知道你取出的数据是什么类型，从而避免很多潜在的 bug。
 export type RootState = ReturnType<typeof store.getState>;
-```
-
-**文件路径：** `src/app/appSlice.ts`
-**目的：** 管理应用通用状态（如语言设置）
-
-**具体代码：**
-```typescript
-// src/app/appSlice.ts
-import { createSlice } from "@reduxjs/toolkit";
-import { RootState } from "./store";
-
-// 定义应用状态接口
-interface AppState {
-  lang: string;
-  theme: 'light' | 'dark';
-  collapsed: boolean; // 侧边栏是否折叠
-}
-
-// 获取初始状态
-function getInitialState(): AppState {
-  const lang = localStorage.getItem("lang") || "zh_CN";
-  const theme = localStorage.getItem("theme") as 'light' | 'dark' || "light";
-  const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
-
-  return {
-    lang,
-    theme,
-    collapsed,
-  };
-}
-
-const initialState: AppState = getInitialState();
-
-// 创建应用状态切片
-export const appSlice = createSlice({
-  name: "app",
-  initialState,
-  reducers: {
-    // 设置语言
-    setLang(state, action) {
-      const lang = action.payload;
-      localStorage.setItem("lang", lang);
-      state.lang = lang;
-    },
-    // 设置主题
-    setTheme(state, action) {
-      const theme = action.payload;
-      localStorage.setItem("theme", theme);
-      state.theme = theme;
-    },
-    // 切换侧边栏折叠状态
-    toggleSidebar(state) {
-      state.collapsed = !state.collapsed;
-      localStorage.setItem("sidebarCollapsed", state.collapsed.toString());
-    },
-    // 设置侧边栏折叠状态
-    setSidebarCollapsed(state, action) {
-      state.collapsed = action.payload;
-      localStorage.setItem("sidebarCollapsed", action.payload.toString());
-    },
-  },
-});
-
-// 选择器函数
-export const selectLang = (state: RootState) => state.app.lang;
-export const selectTheme = (state: RootState) => state.app.theme;
-export const selectSidebarCollapsed = (state: RootState) => state.app.collapsed;
-
-// 导出actions
-export const { setLang, setTheme, toggleSidebar, setSidebarCollapsed } = appSlice.actions;
-
-// 默认导出reducer
-export default appSlice.reducer;
-```
-
-**文件路径：** `src/app/authSlice.ts`
-**目的：** 管理认证相关状态（用户信息、登录状态等）
-
-**具体代码：**
-```typescript
-// src/app/authSlice.ts
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { RootState } from "./store";
-import { authApi } from "@/api";
-import { setToken, removeToken, isTokenValid } from "@/utils/token";
-import type { UserInfo, LoginFormData } from "@/types/auth";
-import { message } from "antd";
-
-// 定义认证状态接口
-interface AuthState {
-  user: UserInfo | null;
-  token: string | null;
-  isLoggedIn: boolean;
-  loading: boolean;
-  error: string | null;
-}
-
-// 初始状态
-const initialState: AuthState = {
-  user: null,
-  token: null,
-  isLoggedIn: false,
-  loading: false,
-  error: null,
-};
-
-// 异步登录thunk
-export const loginAsync = createAsyncThunk(
-  'auth/login',
-  async (credentials: LoginFormData, { rejectWithValue }) => {
-    try {
-      const response = await authApi.login(credentials);
-      const { user, token, expires } = response.data;
-      
-      // 保存token
-      setToken(token, expires);
-      
-      return { user, token };
-    } catch (error: any) {
-      return rejectWithValue(error.message || '登录失败');
-    }
-  }
-);
-
-// 异步获取用户信息thunk
-export const getCurrentUserAsync = createAsyncThunk(
-  'auth/getCurrentUser',
-  async (_, { rejectWithValue }) => {
-    try {
-      if (!isTokenValid()) {
-        throw new Error('Token无效');
-      }
-      
-      const response = await authApi.getCurrentUser();
-      return response.data;
-    } catch (error: any) {
-      // token无效时清除本地存储
-      removeToken();
-      return rejectWithValue(error.message || '获取用户信息失败');
-    }
-  }
-);
-
-// 异步登出thunk
-export const logoutAsync = createAsyncThunk(
-  'auth/logout',
-  async (_, { rejectWithValue }) => {
-    try {
-      await authApi.logout();
-    } catch (error) {
-      console.error('登出请求失败:', error);
-    } finally {
-      // 无论请求是否成功，都清除本地状态
-      removeToken();
-    }
-    return null;
-  }
-);
-
-// 创建认证状态切片
-export const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-    // 清除错误信息
-    clearError(state) {
-      state.error = null;
-    },
-    // 重置认证状态
-    resetAuth(state) {
-      state.user = null;
-      state.token = null;
-      state.isLoggedIn = false;
-      state.loading = false;
-      state.error = null;
-    },
-  },
-  extraReducers: (builder) => {
-    // 登录相关
-    builder
-      .addCase(loginAsync.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginAsync.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isLoggedIn = true;
-        state.error = null;
-      })
-      .addCase(loginAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.isLoggedIn = false;
-      });
-
-    // 获取用户信息相关
-    builder
-      .addCase(getCurrentUserAsync.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getCurrentUserAsync.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-        state.isLoggedIn = true;
-        state.error = null;
-      })
-      .addCase(getCurrentUserAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.user = null;
-        state.token = null;
-        state.isLoggedIn = false;
-        state.error = action.payload as string;
-      });
-
-    // 登出相关
-    builder
-      .addCase(logoutAsync.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(logoutAsync.fulfilled, (state) => {
-        state.loading = false;
-        state.user = null;
-        state.token = null;
-        state.isLoggedIn = false;
-        state.error = null;
-      });
-  },
-});
-
-// 选择器函数
-export const selectUser = (state: RootState) => state.auth.user;
-export const selectToken = (state: RootState) => state.auth.token;
-export const selectIsLoggedIn = (state: RootState) => state.auth.isLoggedIn;
-export const selectAuthLoading = (state: RootState) => state.auth.loading;
-export const selectAuthError = (state: RootState) => state.auth.error;
-
-// 导出actions
-export const { clearError, resetAuth } = authSlice.actions;
-
-// 默认导出reducer
-export default authSlice.reducer;
 ```
 
 **文件路径：** `src/app/hooks.ts`
@@ -705,60 +506,205 @@ export default authSlice.reducer;
 **具体代码：**
 ```typescript
 // src/app/hooks.ts
-import { useDispatch, useSelector } from 'react-redux';
-import type { TypedUseSelectorHook } from 'react-redux';
-import type { RootState, AppDispatch } from './store';
+import { useDispatch, useSelector } from 'react-redux'
+import type { TypedUseSelectorHook } from 'react-redux'
+import type { RootState, AppDispatch } from './store'
 
-// 类型安全的useDispatch hook
-export const useAppDispatch: () => AppDispatch = useDispatch;
+// 当前应用的自定义useDispatch函数
+// 用于派发actions，修改store中的状态
+export const useAppDispatch: () => AppDispatch = useDispatch
 
-// 类型安全的useSelector hook
+// 当前应用的自定义useSelector函数
+// 用于从store中获取状态数据
+// 它是基于Redux Toolkit的useSelector进行TypeScript类型增强的版本，提供更好的类型提示。
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 ```
 
 **文件路径：** `src/app/index.ts`
-**目的：** 统一导出Redux相关内容
+**目的：** 统一导出Redux基础配置
 
 **具体代码：**
 ```typescript
 // src/app/index.ts
+// 统一导出Redux相关的基础内容
+// 具体的业务模块（如用户登录、权限管理等）需要时可以在各自的页面中创建slice
+
 export { store } from './store';
 export type { RootState, AppDispatch } from './store';
 export { useAppDispatch, useAppSelector } from './hooks';
 
-// 导出所有actions
-export { setLang, setTheme, toggleSidebar, setSidebarCollapsed } from './appSlice';
-export { 
-  loginAsync, 
-  getCurrentUserAsync, 
-  logoutAsync, 
-  clearError, 
-  resetAuth 
-} from './authSlice';
+// 注意：具体的业务actions和selectors应该在各自的页面模块中定义和导出
+// 例如：在 pages/login/slice.ts 中定义用户相关的slice
+// 例如：在 pages/user/slice.ts 中定义用户管理相关的slice
+```
 
-// 导出所有selectors
-export { 
-  selectLang, 
-  selectTheme, 
-  selectSidebarCollapsed 
-} from './appSlice';
-export { 
-  selectUser, 
-  selectToken, 
-  selectIsLoggedIn, 
-  selectAuthLoading, 
-  selectAuthError 
-} from './authSlice';
+## 第八步：业务模块slice使用示例
+**目的：** 演示如何在具体页面中创建和使用slice
+
+**示例：创建登录页面的用户状态管理**
+
+**文件路径：** `src/pages/login/slice.ts`
+**具体代码：**
+```typescript
+// src/pages/login/slice.ts
+// 这个文件是用户登录模块的Redux状态管理文件
+// Redux可以理解为一个全局的数据仓库，这个文件专门管理用户相关的数据
+
+// 导入Redux Toolkit的核心函数
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+
+// 导入整个应用的数据类型定义
+import { RootState } from "@/app/store";
+
+// 导入API请求函数
+// import { reqLogin, reqGetUserInfo, reqLogout } from "@api/user";
+
+// 定义登录时需要的参数类型
+export interface LoginParams {
+  username: string;
+  password: string;
+}
+
+// 定义用户状态接口
+interface UserState {
+  name: string;
+  avatar: string;
+  token: string;
+  routes: string[]; // 用户拥有的路由权限
+  buttons: string[]; // 用户拥有的按钮权限
+}
+
+// 初始状态
+const initialState: UserState = {
+  // token先从localStorage里取，如果没有就用空字符串
+  token: localStorage.getItem("token") || "",
+  name: "",
+  avatar: "",
+  routes: [],
+  buttons: [],
+};
+
+// 异步登录操作
+export const loginAsync = createAsyncThunk(
+  "user/loginAsync",
+  ({ username, password }: LoginParams) => {
+    // 这里调用实际的API
+    // return reqLogin(username, password);
+    
+    // 示例：模拟登录请求
+    return Promise.resolve("mock-token-12345");
+  }
+);
+
+// 异步获取用户信息
+export const getUserInfoAsync = createAsyncThunk(
+  "user/getUserInfoAsync",
+  () => {
+    // return reqGetUserInfo();
+    
+    // 示例：模拟获取用户信息
+    return Promise.resolve({
+      name: "张三",
+      avatar: "https://example.com/avatar.jpg",
+      routes: ["/dashboard", "/user"],
+      buttons: ["add", "edit", "delete"]
+    });
+  }
+);
+
+// 创建用户状态切片
+const userSlice = createSlice({
+  name: "user",
+  initialState,
+  reducers: {
+    // 可以在这里添加同步的reducer
+    clearUserInfo(state) {
+      state.token = "";
+      state.name = "";
+      state.avatar = "";
+      state.routes = [];
+      state.buttons = [];
+      localStorage.removeItem("token");
+    }
+  },
+  extraReducers: (builder) =>
+    builder
+      // 处理登录成功
+      .addCase(loginAsync.fulfilled, (state, action) => {
+        const token = action.payload;
+        state.token = token;
+        localStorage.setItem("token", token);
+      })
+      // 处理获取用户信息成功
+      .addCase(getUserInfoAsync.fulfilled, (state, action) => {
+        const { name, avatar, routes, buttons } = action.payload;
+        state.name = name;
+        state.avatar = avatar;
+        state.routes = routes;
+        state.buttons = buttons;
+      }),
+});
+
+// 导出选择器函数
+export const selectUser = (state: RootState) => state.user;
+export const selectUserToken = (state: RootState) => state.user?.token;
+export const selectUserName = (state: RootState) => state.user?.name;
+
+// 导出actions
+export const { clearUserInfo } = userSlice.actions;
+
+// 导出reducer
+export default userSlice.reducer;
+```
+
+**然后在 store.ts 中注册这个slice：**
+```typescript
+// src/app/store.ts
+import { configureStore } from "@reduxjs/toolkit";
+import userSlice from "@/pages/login/slice"; // 导入用户slice
+
+export const store = configureStore({
+  reducer: {
+    user: userSlice, // 注册用户slice
+    // 其他模块的slice...
+  },
+});
+
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
+```
+
+**在组件中使用：**
+```typescript
+// src/pages/login/index.tsx
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { loginAsync, selectUser } from './slice';
+
+function Login() {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+
+  const handleLogin = async (values: LoginParams) => {
+    const result = await dispatch(loginAsync(values));
+    if (result.type === "user/loginAsync/fulfilled") {
+      // 登录成功，跳转页面
+      navigate("/dashboard");
+    }
+  };
+
+  return (
+    // 登录表单JSX...
+  );
+}
 ```
 
 **内容说明：**
-- 使用Redux Toolkit创建现代化的状态管理
-- 分离应用状态(appSlice)和认证状态(authSlice)
-- 使用createAsyncThunk处理异步操作
-- 提供类型安全的hooks和selectors
-- 支持持久化存储(localStorage)
-- 统一的错误处理和加载状态管理
-- 这样做是为了提供更强大和灵活的全局状态管理能力
+- 采用模块化的slice管理方式，每个页面或功能模块都可以有自己的slice
+- 全局store只提供基础配置，具体业务逻辑在各自模块中管理
+- 参考syt-admin-final项目的模式，业务slice放在对应的页面目录下
+- 需要时在store中动态注册slice，保持代码的模块化和可维护性
+- 提供类型安全的hooks和selectors，确保开发体验
+- 这样做能够更好地组织代码，避免单一文件过于庞大，便于团队协作
 
 ## 第八步：修改 app.ts 配置
 **文件路径：** `src/app.ts`
