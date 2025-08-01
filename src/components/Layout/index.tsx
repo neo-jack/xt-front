@@ -1,51 +1,54 @@
 // 主布局组件 - 包含头部、侧边栏、面包屑和内容区域
-import { FC } from 'react';
-import { Layout as AntdLayout } from 'antd';
-import { Outlet } from 'react-router-dom';
-import Avatar from '@/components/Avatar';
-import Breadcrumb from '@/components/Breadcrumb';
+
+import Header from '@/components/Header';
 import SideBar from '@/components/SideBar';
 import withAuthorization from '@/utils/auth';
+import { Layout as AntdLayout } from 'antd';
+import { FC, useState } from 'react';
+import { Outlet } from 'react-router-dom';
 
-const { Header, Sider, Content } = AntdLayout;
+const { Header: AntdHeader, Sider, Content } = AntdLayout;
 
 const BaseLayout: FC = () => {
+  const [collapsed, setCollapsed] = useState(false); // 添加这一行
+
+  const toggleCollapsed = () => {
+    // 添加这个函数
+    setCollapsed(!collapsed);
+  };
   return (
     <AntdLayout style={{ minHeight: '100vh' }}>
       {/* 侧边栏 */}
-      <Sider width={200} style={{ background: '#fff' }}>
-        <div style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.1)' }}>
+      <Sider
+        width={200}
+        collapsible
+        collapsed={collapsed}
+        trigger={null}
+        style={{ background: '#fff' }}
+      >
+        <div
+          style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.1)' }}
+        >
           {/* Logo 区域 */}
         </div>
         <SideBar />
       </Sider>
-      
+
       {/* 主内容区域 */}
       <AntdLayout>
         {/* 头部 */}
-        <Header style={{ 
-          background: '#fff', 
-          padding: '0 16px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          boxShadow: '0 1px 4px rgba(0,21,41,.08)'
-        }}>
-          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            管理系统
-          </div>
-          <Avatar />
-        </Header>
-        
+        <Header collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
+
         {/* 内容区域 */}
-        <Content style={{ margin: '0 16px' }}>
-          <Breadcrumb />
-          <div style={{ 
-            padding: 24, 
-            background: '#fff', 
-            minHeight: 360,
-            borderRadius: '6px'
-          }}>
+        <Content style={{ margin: '16px 16px 0 16px' }}>
+          <div
+            style={{
+              padding: 24,
+              background: '#fff',
+              minHeight: 360,
+              borderRadius: '6px',
+            }}
+          >
             <Outlet />
           </div>
         </Content>
