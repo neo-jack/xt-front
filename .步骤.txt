@@ -706,18 +706,373 @@ function Login() {
 - 提供类型安全的hooks和selectors，确保开发体验
 - 这样做能够更好地组织代码，避免单一文件过于庞大，便于团队协作
 
-## 第八步：修改 app.ts 配置
+## 第八步：实现权限控制架构
+**目的：** 基于高阶组件的权限控制系统，实现统一的路由守卫
+
+### 8.1 创建权限检查高阶组件
+**文件路径：** `src/components/withAuthorization/index.tsx`
+**目的：** 创建权限检查守门员，控制页面访问权限
+
+**具体代码：**
+```typescript
+// src/components/withAuthorization/index.tsx
+// 权限检查高阶组件 - UMI版本
+// 这个组件负责检查用户权限并决定显示哪个页面
+
+import { FC } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { Spin } from 'antd';
+
+// 权限检查的高阶组件
+function withAuthorization(WrappedComponent: FC) {
+  return () => {
+    // 获取当前路由位置
+    const { pathname } = useLocation();
+    
+    // 使用localStorage检查token和用户信息
+    // 后续可以轻松替换为Redux状态管理
+    const token = localStorage.getItem('token');
+    const userInfo = localStorage.getItem('userInfo');
+    
+    /*
+      权限检查逻辑：
+      
+      1. 如果用户已登录（有token）：
+         - 访问 /login → 重定向到 /home
+         - 访问其他页面 → 正常显示
+         
+      2. 如果用户未登录（无token）：
+         - 访问 /login → 正常显示登录页
+         - 访问其他页面 → 重定向到 /login
+    */
+    
+    if (token) {
+      // 用户已登录
+      if (pathname === '/login') {
+        // 已登录用户访问登录页，重定向到首页
+        return <Navigate to="/home" replace />;
+      }
+      
+      // 检查是否有用户详细信息
+      if (userInfo) {
+        // 有完整信息，正常渲染组件
+        return <WrappedComponent />;
+      } else {
+        // 有token但没有用户详细信息，可能需要重新获取
+        console.log('需要获取用户详细信息');
+        return <WrappedComponent />;
+      }
+    } else {
+      // 用户未登录
+      if (pathname === '/login') {
+        // 未登录用户访问登录页，正常显示
+        return <WrappedComponent />;
+      } else {
+        // 未登录用户访问其他页面，重定向到登录页
+        return <Navigate to="/login" replace />;
+      }
+    }
+  };
+}
+
+export default withAuthorization;
+```
+
+### 8.2 创建权限布局组件
+**文件路径：** `src/layouts/AuthLayout.tsx`
+**目的：** 创建空的布局容器，作为所有路由的统一入口
+
+**具体代码：**
+```typescript
+// src/layouts/AuthLayout.tsx
+// 权限布局组件 - 所有路由的统一入口
+// 这是一个空的容器组件，被 withAuthorization 包裹后负责权限控制
+
+import { FC } from 'react';
+import { Outlet } from 'react-router-dom';
+import withAuthorization from '@/components/withAuthorization';
+
+// 基础的空布局组件
+const BaseAuthLayout: FC = () => {
+  return (
+    <div>
+      {/* Outlet 会渲染匹配的子路由组件 */}
+      <Outlet />
+    </div>
+  );
+};
+
+// 使用 withAuthorization 包裹，添加权限检查功能
+const AuthLayout = withAuthorization(BaseAuthLayout);
+
+export default AuthLayout;
+```
+
+### 8.3 创建登录页面
+**文件路径：** `src/pages/Login/index.tsx`
+**目的：** 实现用户登录功能
+
+**具体代码：**
+```typescript
+// src/pages/Login/index.tsx
+// 登录页面
+import { FC } from 'react';
+import { Form, Input, Button, Card, message } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import styles from './index.less';
+
+interface LoginForm {
+  username: string;
+  password: string;
+}
+
+const Login: FC = () => {
+  const navigate = useNavigate();
+
+  const onFinish = (values: LoginForm) => {
+    console.log('登录信息:', values);
+    
+    // 模拟登录逻辑
+    if (values.username === 'admin' && values.password === '123456') {
+      // 登录成功，保存token和用户信息
+      localStorage.setItem('token', 'mock-token-12345');
+      localStorage.setItem('userInfo', JSON.stringify({
+        name: '管理员',
+        avatar: 'https://example.com/avatar.jpg',
+        routes: ['/home', '/access', '/table'],
+        buttons: ['add', 'edit', 'delete']
+      }));
+      
+      message.success('登录成功！');
+      navigate('/home');
+    } else {
+      message.error('用户名或密码错误！');
+    }
+  };
+
+  return (
+    <div className={styles.loginContainer}>
+      <Card title="用户登录" className={styles.loginCard}>
+        <Form
+          name="login"
+          onFinish={onFinish}
+          autoComplete="off"
+          size="large"
+        >
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: '请输入用户名!' }]}
+          >
+            <Input 
+              prefix={<UserOutlined />} 
+              placeholder="用户名 (admin)" 
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: '请输入密码!' }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="密码 (123456)"
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              登录
+            </Button>
+          </Form.Item>
+        </Form>
+        
+        <div className={styles.tips}>
+          <p>测试账号：admin</p>
+          <p>测试密码：123456</p>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default Login;
+```
+
+**文件路径：** `src/pages/Login/index.less`
+**目的：** 登录页面样式
+
+**具体代码：**
+```less
+// src/pages/Login/index.less
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loginCard {
+  width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: none; /* 去除边框 */
+  
+  :global(.ant-card-head-title) {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  /* 确保卡片内容也没有边框 */
+  :global(.ant-card-body) {
+    border: none;
+  }
+}
+
+.tips {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f6f8fa;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  
+  p {
+    margin: 4px 0;
+  }
+}
+```
+
+### 8.4 修改路由配置
+**文件路径：** `.umirc.ts`
+**目的：** 配置权限控制路由架构
+
+**具体代码：**
+```typescript
+// .umirc.ts
+import { defineConfig } from '@umijs/max';
+
+export default defineConfig({
+  antd: {},
+  access: {},
+  model: {},
+  initialState: {},
+  request: {},
+  layout: {
+    title: '管理系统',
+  },
+  routes: [
+    {
+      path: '/',
+      component: '@/layouts/AuthLayout', // 使用权限布局作为根路由
+      routes: [
+        {
+          path: '/',
+          redirect: '/home',
+        },
+        {
+          name: '登录',
+          path: '/login',
+          component: './Login',
+          layout: false, // 登录页不使用默认布局
+        },
+        {
+          name: '首页',
+          path: '/home',
+          component: './Home',
+        },
+        {
+          name: '权限演示',
+          path: '/access',
+          component: './Access',
+        },
+        {
+          name: 'CRUD 示例',
+          path: '/table',
+          component: './Table',
+        },
+      ],
+    },
+  ],
+  npmClient: 'npm',
+});
+```
+
+### 8.5 增强首页功能
+**文件路径：** `src/pages/Home/index.tsx`
+**目的：** 添加用户信息显示和退出登录功能
+
+**具体代码：**
+```typescript
+// src/pages/Home/index.tsx - 修改部分
+import Guide from '@/components/Guide';
+import { trim } from '@/utils/format';
+import { PageContainer } from '@ant-design/pro-components';
+import { useModel } from '@umijs/max';
+import { Button, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import styles from './index.less';
+
+const HomePage: React.FC = () => {
+  const { name } = useModel('global');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // 清除登录信息
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    message.success('退出登录成功！');
+    navigate('/login');
+  };
+
+  // 获取用户信息
+  const userInfo = localStorage.getItem('userInfo');
+  const user = userInfo ? JSON.parse(userInfo) : null;
+
+  return (
+    <PageContainer 
+      ghost
+      extra={[
+        <Button key="logout" onClick={handleLogout}>
+          退出登录
+        </Button>
+      ]}
+    >
+      <div className={styles.container}>
+        {user && (
+          <div style={{ marginBottom: 20, padding: 16, background: '#f6f8fa', borderRadius: 8 }}>
+            <h3>欢迎回来，{user.name}！</h3>
+            <p>当前用户权限路由：{user.routes?.join(', ')}</p>
+            <p>按钮权限：{user.buttons?.join(', ')}</p>
+          </div>
+        )}
+        <Guide name={trim(name)} />
+      </div>
+    </PageContainer>
+  );
+};
+
+export default HomePage;
+```
+
+**内容说明：**
+- **权限控制架构**：基于高阶组件的统一权限管理
+- **路由守卫**：所有路由都通过AuthLayout进行权限检查
+- **登录功能**：完整的登录表单和状态管理
+- **用户体验**：优雅的登录页面设计，无边框卡片
+- **权限逻辑**：已登录访问/login自动跳转首页，未登录访问其他页面跳转登录页
+- **扩展性**：架构支持后续集成Redux、真实API等功能
+
+## 第九步：修改 app.ts 配置
 **文件路径：** `src/app.ts`
-**目的：** 配置全局初始化状态和权限检查
+**目的：** 配置UMI运行时基础配置
 
 **具体代码：**
 ```typescript
 // src/app.ts
-import { RunTimeLayoutConfig } from '@umijs/max';
-import type { UserInfo } from '@/types/auth';
-import { store } from '@/app/store';
-import { getCurrentUserAsync } from '@/app/authSlice';
-import { isTokenValid } from '@/utils/token';
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
 export async function getInitialState(): Promise<{

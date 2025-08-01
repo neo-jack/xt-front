@@ -7,27 +7,39 @@ export default defineConfig({
   initialState: {},
   request: {},
   layout: {
-    title: '@umijs/max',
+    title: '管理系统',
   },
   routes: [
     {
       path: '/',
-      redirect: '/home',
-    },
-    {
-      name: '首页',
-      path: '/home',
-      component: './Home',
-    },
-    {
-      name: '权限演示',
-      path: '/access',
-      component: './Access',
-    },
-    {
-      name: ' CRUD 示例',
-      path: '/table',
-      component: './Table',
+      component: '@/layouts/AuthLayout', // 使用权限布局作为根路由
+      routes: [
+        {
+          path: '/',
+          redirect: '/home',
+        },
+        {
+          name: '登录',
+          path: '/login',
+          component: './Login',
+          layout: false, // 登录页不使用默认布局
+        },
+        {
+          name: '首页',
+          path: '/home',
+          component: './Home',
+        },
+        {
+          name: '权限演示',
+          path: '/access',
+          component: './Access',
+        },
+        {
+          name: 'CRUD 示例',
+          path: '/table',
+          component: './Table',
+        },
+      ],
     },
   ],
   npmClient: 'npm',
