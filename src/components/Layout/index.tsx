@@ -3,6 +3,7 @@
 import Header from '@/components/Header';
 import SideBar from '@/components/SideBar';
 import withAuthorization from '@/utils/auth';
+import { AppstoreOutlined } from '@ant-design/icons';
 import { Layout as AntdLayout } from 'antd';
 import { FC, useState } from 'react';
 import { Outlet } from 'react-router-dom';
@@ -27,9 +28,20 @@ const BaseLayout: FC = () => {
         style={{ background: '#fff' }}
       >
         <div
-          style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.1)' }}
+          style={{
+            height: 32,
+            margin: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            color: '#1890ff',
+            fontWeight: 'bold',
+            fontSize: collapsed ? '12px' : '14px',
+          }}
         >
-          {/* Logo 区域 */}
+          <AppstoreOutlined style={{ fontSize: '18px' }} />
+          {!collapsed && <span>XT</span>}
         </div>
         <SideBar />
       </Sider>
