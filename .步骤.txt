@@ -1,0 +1,1460 @@
+# 登录页面与权限控制实现步骤
+
+## 第一步：创建类型定义文件
+**文件路径：** `src/types/auth.ts`
+**目的：** 定义用户信息、认证状态等相关类型，确保类型安全
+
+**具体代码：**
+```typescript
+// src/types/auth.ts
+// 用户信息
+export interface UserInfo {
+    //用户id
+    id: string;
+    //用户名
+    username: string;
+    //邮箱
+    email: string;
+    //头像
+    avatar: string;
+    // 角色
+    roles: string[];
+}
+
+// 登录状态
+export interface AuthState {
+    //当前用户信息
+    user: UserInfo | null;
+    //认证令牌
+    token: string | null;
+    //是否已登录
+    isLoggedIn: boolean;
+    //加载状态
+    loading: boolean;
+}
+
+// 登录表单数据
+export interface LoginFormData {
+    //用户名
+    username: string;
+    //密码
+    password: string;
+}
+
+// 登录响应
+export interface LoginResponse {
+    //请求是否成功
+    success: boolean;
+    //响应数据
+    data: {
+        //用户信息
+        user: UserInfo;
+        //认证令牌
+        token: string;
+        //令牌过期时间（毫秒）
+        expires: number;
+    };
+    //响应消息
+    message?: string;
+}
+
+// 通用API响应格式
+export interface ApiResponse<T = any> {
+    //请求是否成功
+    success: boolean;
+    //响应数据
+    data: T;
+    //响应消息
+    message?: string;
+    //状态码
+    code?: number;
+}
+```
+
+**内容说明：**
+- 定义 UserInfo 接口，包含用户基本信息
+- 定义 AuthState 接口，包含用户信息、token、登录状态等
+- 定义 LoginFormData 接口，只包含用户名和密码（简化登录表单）
+- 定义 LoginResponse 接口，包含完整的登录响应数据
+- 这样做是为了在整个应用中保持类型一致性，符合 TypeScript 最佳实践
+
+## 第二步：创建认证工具函数
+**文件路径：** `src/utils/auth.ts`
+**目的：** 封装 token 的存储、获取、删除等操作
+
+**具体代码：**
+```typescript
+// src/utils/auth.ts
+const TOKEN_KEY = 'auth_token';
+const TOKEN_EXPIRES_KEY = 'auth_token_expires';
+
+export const getToken = (): string | null => {
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const expires = localStorage.getItem(TOKEN_EXPIRES_KEY);
+    
+    if (!token || !expires) {
+      return null;
+    }
+    
+    // 检查 token 是否过期
+    if (Date.now() > parseInt(expires)) {
+      removeToken();
+      return null;
+    }
+    
+    return token;
+  } catch (error) {
+    console.error('获取 token 失败:', error);
+    return null;
+  }
+};
+
+export const setToken = (token: string, expiresIn: number = 24 * 60 * 60 * 1000): void => {
+  try {
+    const expires = Date.now() + expiresIn;
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(TOKEN_EXPIRES_KEY, expires.toString());
+  } catch (error) {
+    console.error('存储 token 失败:', error);
+  }
+};
+
+export const removeToken = (): void => {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRES_KEY);
+  } catch (error) {
+    console.error('删除 token 失败:', error);
+  }
+};
+
+export const isTokenValid = (): boolean => {
+  const token = getToken();
+  return !!token;
+};
+
+export const getAuthHeaders = () => {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+```
+
+**内容说明：**
+- 实现 getToken()、setToken()、removeToken() 函数
+- 实现 isTokenValid() 函数检查 token 有效性
+- 使用 localStorage 存储 token
+- 添加 token 过期时间检查逻辑
+- 这样做是为了统一管理认证相关的工具函数，避免重复代码
+
+## 第三步：创建认证 API 服务
+**文件路径：** `src/services/auth.ts`
+**目的：** 封装登录、登出、获取用户信息等 API 调用
+
+**具体代码：**
+```typescript
+// src/services/auth.ts
+import { request } from '@umijs/max';
+import type { LoginFormData, LoginResponse, UserInfo, ApiResponse } from '@/types/auth';
+import { getAuthHeaders } from '@/utils/auth';
+
+export const authService = {
+  // 用户登录
+  async login(credentials: LoginFormData): Promise<LoginResponse> {
+    return request<LoginResponse>('/api/auth/login', {
+      method: 'POST',
+      data: credentials,
+    });
+  },
+
+  // 获取当前用户信息
+  async getCurrentUser(): Promise<ApiResponse<UserInfo>> {
+    return request<ApiResponse<UserInfo>>('/api/auth/currentUser', {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+  },
+
+  // 用户登出
+  async logout(): Promise<ApiResponse> {
+    return request<ApiResponse>('/api/auth/logout', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+  },
+
+  // 刷新 token
+  async refreshToken(): Promise<LoginResponse> {
+    return request<LoginResponse>('/api/auth/refresh', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+  },
+
+  // 验证 token 有效性
+  async validateToken(): Promise<ApiResponse<{ valid: boolean }>> {
+    return request<ApiResponse<{ valid: boolean }>>('/api/auth/validate', {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+  },
+};
+
+export default authService;
+```
+
+**内容说明：**
+- 实现 login(credentials) 函数调用登录接口
+- 实现 logout() 函数调用登出接口
+- 实现 getCurrentUser() 函数获取当前用户信息
+- 实现 refreshToken() 函数刷新 token
+- 使用 Umi 的 request 发送 HTTP 请求
+- 这样做是为了将 API 调用逻辑集中管理，便于维护和测试
+
+## 第四步：更新全局状态管理
+**文件路径：** `src/models/auth.ts`
+**目的：** 使用 Umi 的 model 管理全局认证状态
+
+**具体代码：**
+```typescript
+// src/models/auth.ts
+import { useState, useCallback } from 'react';
+import { history } from '@umijs/max';
+import type { UserInfo, LoginFormData } from '@/types/auth';
+import { authService } from '@/services/auth';
+import { setToken, removeToken, isTokenValid } from '@/utils/auth';
+import { message } from 'antd';
+
+export default function useAuthModel() {
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // 登录
+  const login = useCallback(async (credentials: LoginFormData) => {
+    setLoading(true);
+    try {
+      const response = await authService.login(credentials);
+      if (response.success) {
+        const { user, token, expires } = response.data;
+        setToken(token, expires);
+        setUser(user);
+        setIsLoggedIn(true);
+        message.success('登录成功');
+        // 跳转到 dashboard
+        history.push('/xt/dashboard');
+        return { success: true };
+      } else {
+        message.error(response.message || '登录失败');
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      console.error('登录失败:', error);
+      message.error('登录失败，请稍后重试');
+      return { success: false, message: '网络错误' };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 登出
+  const logout = useCallback(async () => {
+    setLoading(true);
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('登出请求失败:', error);
+    } finally {
+      removeToken();
+      setUser(null);
+      setIsLoggedIn(false);
+      setLoading(false);
+      message.success('已退出登录');
+      history.push('/login');
+    }
+  }, []);
+
+  // 获取当前用户信息
+  const getCurrentUser = useCallback(async () => {
+    if (!isTokenValid()) {
+      return { success: false };
+    }
+    
+    setLoading(true);
+    try {
+      const response = await authService.getCurrentUser();
+      if (response.success) {
+        setUser(response.data);
+        setIsLoggedIn(true);
+        return { success: true, user: response.data };
+      } else {
+        removeToken();
+        setUser(null);
+        setIsLoggedIn(false);
+        return { success: false };
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      removeToken();
+      setUser(null);
+      setIsLoggedIn(false);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 初始化认证状态
+  const initAuth = useCallback(async () => {
+    if (isTokenValid()) {
+      await getCurrentUser();
+    }
+  }, [getCurrentUser]);
+
+  return {
+    user,
+    loading,
+    isLoggedIn,
+    login,
+    logout,
+    getCurrentUser,
+    initAuth,
+  };
+}
+```
+
+**内容说明：**
+- 创建 auth model，包含 state、effects、reducers
+- state 包含：user、isLoggedIn、loading 等状态
+- effects 包含：login、logout、getCurrentUser 等异步操作
+- reducers 包含：setUser、setLoading、clearAuth 等同步操作
+- 这样做是为了在全局范围内管理用户认证状态，符合 Umi 的状态管理模式
+
+## 第五步：修改 app.ts 配置
+**文件路径：** `src/app.ts`
+**目的：** 配置全局初始化状态和权限检查
+
+**具体代码：**
+```typescript
+// src/app.ts
+import { RunTimeLayoutConfig } from '@umijs/max';
+import type { UserInfo } from '@/types/auth';
+import { authService } from '@/services/auth';
+import { isTokenValid, getToken } from '@/utils/auth';
+
+// 全局初始化数据配置，用于 Layout 用户信息和权限初始化
+export async function getInitialState(): Promise<{
+  name?: string;
+  user?: UserInfo;
+  isLoggedIn?: boolean;
+}> {
+  // 检查是否有有效 token
+  if (isTokenValid()) {
+    try {
+      const response = await authService.getCurrentUser();
+      if (response.success) {
+        return {
+          name: response.data.username,
+          user: response.data,
+          isLoggedIn: true,
+        };
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+    }
+  }
+  
+  return {
+    name: 'Guest',
+    isLoggedIn: false,
+  };
+}
+
+// 运行时布局配置
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
+  return {
+    logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
+    menu: {
+      locale: false,
+    },
+    rightContentRender: () => {
+      if (initialState?.isLoggedIn) {
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>欢迎，{initialState.user?.username}</span>
+          </div>
+        );
+      }
+      return null;
+    },
+  };
+};
+
+// 请求拦截器配置
+export const request = {
+  timeout: 10000,
+  requestInterceptors: [
+    (config: any) => {
+      const token = getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+  ],
+  responseInterceptors: [
+    (response: any) => {
+      const { data } = response;
+      if (data?.code === 401) {
+        // token 过期，跳转到登录页
+        window.location.href = '/login';
+      }
+      return response;
+    },
+  ],
+};
+```
+
+**内容说明：**
+- 修改 getInitialState 函数，从 localStorage 读取 token
+- 如果有有效 token，调用 getCurrentUser 获取用户信息
+- 返回包含用户信息和登录状态的初始化数据
+- 配置 request 拦截器，自动添加 Authorization header
+- 这样做是为了在应用启动时自动检查用户登录状态，实现自动登录功能
+
+## 第六步：修改权限配置
+**文件路径：** `src/access.ts`
+**目的：** 基于用户登录状态配置页面访问权限
+
+**具体代码：**
+```typescript
+// src/access.ts
+export default (initialState: { isLoggedIn?: boolean; user?: any }) => {
+  // 在这里按照初始化数据定义项目中的权限，统一管理
+  const { isLoggedIn, user } = initialState || {};
+  
+  return {
+    // 是否可以访问仪表板（需要登录）
+    canAccessDashboard: !!isLoggedIn,
+    
+    // 是否是访客（未登录用户）
+    isGuest: !isLoggedIn,
+    
+    // 是否可以看到管理员功能
+    canSeeAdmin: !!(isLoggedIn && user && user.roles?.includes('admin')),
+    
+    // 是否已登录
+    isAuthenticated: !!isLoggedIn,
+  };
+};
+```
+
+**内容说明：**
+- 修改权限判断逻辑，基于 initialState 中的登录状态
+- 定义 canAccessDashboard 权限，需要用户已登录
+- 定义 isGuest 权限，用于未登录用户访问登录页
+- 这样做是为了实现基于登录状态的页面访问控制
+
+## 第七步：创建登录页面
+**文件路径：** `src/pages/Login/index.tsx`
+**目的：** 创建登录表单页面
+
+**具体代码：**
+```typescript
+// src/pages/Login/index.tsx
+import React, { useEffect } from 'react';
+import { Form, Input, Button, Card, message } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useModel, history, useAccess } from '@umijs/max';
+import type { LoginFormData } from '@/types/auth';
+import './index.less';
+
+const LoginPage: React.FC = () => {
+  const { login, loading } = useModel('auth');
+  const access = useAccess();
+  const [form] = Form.useForm();
+
+  // 如果已经登录，直接跳转到 dashboard
+  useEffect(() => {
+    if (access.isAuthenticated) {
+      history.push('/xt/dashboard');
+    }
+  }, [access.isAuthenticated]);
+
+  const handleSubmit = async (values: LoginFormData) => {
+    try {
+      const result = await login(values);
+      if (result.success) {
+        message.success('登录成功');
+        // 登录成功后会在 model 中自动跳转
+      } else {
+        message.error(result.message || '登录失败');
+      }
+    } catch (error) {
+      message.error('登录失败，请稍后重试');
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <Card className="login-card" title="用户登录" bordered={false}>
+        <Form
+          form={form}
+          name="login"
+          onFinish={handleSubmit}
+          autoComplete="off"
+          size="large"
+        >
+          <Form.Item
+            name="username"
+            rules={[
+              { required: true, message: '请输入用户名' },
+              { min: 3, message: '用户名至少3个字符' },
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="请输入用户名"
+              autoComplete="username"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 6, message: '密码至少6个字符' },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="请输入密码"
+              autoComplete="current-password"
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              block
+            >
+              登录
+            </Button>
+          </Form.Item>
+        </Form>
+        
+        <div className="login-tips">
+          <p>测试账号：admin / 123456</p>
+          <p>测试账号：user / 123456</p>
+          <p>登录后自动保存状态，下次访问无需重新登录</p>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default LoginPage;
+```
+
+**样式文件：** `src/pages/Login/index.less`
+```less
+// src/pages/Login/index.less
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+
+    .ant-card-head {
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+      
+      .ant-card-head-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1890ff;
+      }
+    }
+
+    .ant-card-body {
+      padding: 32px;
+    }
+  }
+
+  .login-tips {
+    margin-top: 16px;
+    padding: 12px;
+    background: #f6f8fa;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #666;
+    
+    p {
+      margin: 4px 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 10px;
+    
+    .login-card {
+      max-width: 100%;
+      
+      .ant-card-body {
+        padding: 20px;
+      }
+    }
+  }
+}
+```
+
+**内容说明：**
+- 使用 Ant Design 的 Form 组件创建简化的登录表单
+- 只包含用户名、密码输入框和登录按钮（移除记住密码选项）
+- 实现表单验证逻辑
+- 调用 auth model 的 login effect 处理登录
+- 登录成功后自动保存token，跳转到 dashboard 页面
+- 添加提示信息说明自动保存登录状态
+- 这样做是为了简化登录流程，提供更好的用户体验
+
+## 第八步：创建 Dashboard 页面
+**文件路径：** `src/pages/Dashboard/index.tsx`
+**目的：** 创建需要登录才能访问的仪表板页面
+
+**具体代码：**
+```typescript
+// src/pages/Dashboard/index.tsx
+import React from 'react';
+import { Card, Button, Space, Avatar, Descriptions, message } from 'antd';
+import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useModel, useAccess } from '@umijs/max';
+
+const DashboardPage: React.FC = () => {
+  const { user, logout, loading } = useModel('auth');
+  const access = useAccess();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      message.success('退出登录成功');
+    } catch (error) {
+      message.error('退出登录失败');
+    }
+  };
+
+  if (!access.canAccessDashboard) {
+    return (
+      <Card>
+        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+          <h3>无权限访问</h3>
+          <p>您没有权限访问此页面</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div style={{ padding: '24px' }}>
+      <Card
+        title="仪表板"
+        extra={
+          <Space>
+            <Button
+              type="primary"
+              danger
+              icon={<LogoutOutlined />}
+              loading={loading}
+              onClick={handleLogout}
+            >
+              退出登录
+            </Button>
+          </Space>
+        }
+      >
+        <div style={{ marginBottom: '24px' }}>
+          <Space size="large">
+            <Avatar size={64} icon={<UserOutlined />} src={user?.avatar} />
+            <div>
+              <h2>欢迎回来，{user?.username}！</h2>
+              <p style={{ color: '#666', margin: 0 }}>
+                您已成功登录到系统
+              </p>
+            </div>
+          </Space>
+        </div>
+
+        <Descriptions title="用户信息" bordered column={2}>
+          <Descriptions.Item label="用户名">
+            {user?.username}
+          </Descriptions.Item>
+          <Descriptions.Item label="用户ID">
+            {user?.id}
+          </Descriptions.Item>
+          <Descriptions.Item label="邮箱">
+            {user?.email || '未设置'}
+          </Descriptions.Item>
+          <Descriptions.Item label="角色">
+            {user?.roles?.join(', ') || '普通用户'}
+          </Descriptions.Item>
+        </Descriptions>
+
+        <Card
+          title="功能区域"
+          style={{ marginTop: '24px' }}
+          bodyStyle={{ padding: '24px' }}
+        >
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <h3>这是受保护的内容区域</h3>
+            <p>只有登录用户才能看到这些内容</p>
+            <Space>
+              <Button type="primary">功能按钮 1</Button>
+              <Button>功能按钮 2</Button>
+              <Button>功能按钮 3</Button>
+            </Space>
+          </div>
+        </Card>
+      </Card>
+    </div>
+  );
+};
+
+export default DashboardPage;
+```
+
+**内容说明：**
+- 显示当前登录用户信息
+- 提供登出功能按钮
+- 展示一些受保护的内容
+- 这样做是为了验证权限控制是否正常工作
+
+## 第九步：创建 404 页面
+**文件路径：** `src/pages/404/index.tsx`
+**目的：** 创建 404 错误页面
+
+**具体代码：**
+```typescript
+// src/pages/404/index.tsx
+import React from 'react';
+import { Result, Button } from 'antd';
+import { history } from '@umijs/max';
+
+const NotFoundPage: React.FC = () => {
+  const handleBackHome = () => {
+    history.push('/login');
+  };
+
+  const handleBackDashboard = () => {
+    history.push('/xt/dashboard');
+  };
+
+  return (
+    <Result
+      status="404"
+      title="404"
+      subTitle="抱歉，您访问的页面不存在。"
+      extra={
+        <div>
+          <Button type="primary" onClick={handleBackHome} style={{ marginRight: 8 }}>
+            返回登录页
+          </Button>
+          <Button onClick={handleBackDashboard}>
+            返回仪表板
+          </Button>
+        </div>
+      }
+    />
+  );
+};
+
+export default NotFoundPage;
+```
+
+**内容说明：**
+- 显示页面未找到的提示信息
+- 提供返回首页的链接
+- 使用 Ant Design 的 Result 组件
+- 这样做是为了处理用户访问不存在页面的情况
+
+## 第十步：创建 withAuthorization 高阶组件
+**文件路径：** `src/components/withAuthorization.tsx`
+**目的：** 创建权限控制的高阶组件包装器
+
+**具体代码：**
+```typescript
+// src/components/withAuthorization.tsx
+import React, { useEffect, ComponentType } from 'react';
+import { Spin, Result, Button } from 'antd';
+import { useAccess, useModel, history } from '@umijs/max';
+
+export interface AuthorizationConfig {
+  // 需要的权限列表
+  permissions?: string[];
+  // 是否需要登录
+  requireAuth?: boolean;
+  // 权限不足时的重定向路径
+  redirectTo?: string;
+  // 权限不足时的提示信息
+  noPermissionMessage?: string;
+}
+
+const withAuthorization = <P extends object>(
+  WrappedComponent: ComponentType<P>,
+  config: AuthorizationConfig = {}
+) => {
+  const AuthorizedComponent: React.FC<P> = (props) => {
+    const access = useAccess();
+    const { user, loading, initAuth } = useModel('auth');
+    const {
+      permissions = [],
+      requireAuth = true,
+      redirectTo = '/login',
+      noPermissionMessage = '您没有权限访问此页面'
+    } = config;
+
+    useEffect(() => {
+      // 初始化认证状态
+      initAuth();
+    }, [initAuth]);
+
+    // 显示加载状态
+    if (loading) {
+      return (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '200px' 
+        }}>
+          <Spin size="large" tip="加载中..." />
+        </div>
+      );
+    }
+
+    // 检查是否需要登录
+    if (requireAuth && !access.isAuthenticated) {
+      // 自动重定向到登录页
+      history.push(redirectTo);
+      return null;
+    }
+
+    // 检查特定权限
+    if (permissions.length > 0) {
+      const hasPermission = permissions.every(permission => {
+        // 根据权限名称检查对应的 access 属性
+        return access[permission as keyof typeof access];
+      });
+
+      if (!hasPermission) {
+        return (
+          <Result
+            status="403"
+            title="403"
+            subTitle={noPermissionMessage}
+            extra={
+              <Button type="primary" onClick={() => history.push('/login')}>
+                返回登录页
+              </Button>
+            }
+          />
+        );
+      }
+    }
+
+    // 权限检查通过，渲染组件
+    return <WrappedComponent {...props} />;
+  };
+
+  // 设置显示名称便于调试
+  AuthorizedComponent.displayName = `withAuthorization(${WrappedComponent.displayName || WrappedComponent.name})`;
+
+  return AuthorizedComponent;
+};
+
+export default withAuthorization;
+
+// 便捷的预设配置
+export const withLoginRequired = <P extends object>(Component: ComponentType<P>) =>
+  withAuthorization(Component, { requireAuth: true });
+
+export const withDashboardAccess = <P extends object>(Component: ComponentType<P>) =>
+  withAuthorization(Component, { 
+    requireAuth: true, 
+    permissions: ['canAccessDashboard'] 
+  });
+
+export const withAdminAccess = <P extends object>(Component: ComponentType<P>) =>
+  withAuthorization(Component, { 
+    requireAuth: true, 
+    permissions: ['canSeeAdmin'],
+    noPermissionMessage: '需要管理员权限才能访问此页面'
+  });
+```
+
+**内容说明：**
+- 接收一个组件和权限要求作为参数
+- 检查用户是否有访问权限
+- 如果没有权限，重定向到登录页或 404 页
+- 如果有权限，渲染被包装的组件
+- 处理加载状态显示
+- 这样做是为了实现可复用的权限控制逻辑
+
+## 第十一步：创建受保护的 Layout 组件
+**文件路径：** `src/layouts/ProtectedLayout.tsx`
+**目的：** 创建需要登录才能访问的布局组件
+
+**具体代码：**
+```typescript
+// src/layouts/ProtectedLayout.tsx
+import React from 'react';
+import { Layout, Menu, Avatar, Dropdown, Space, Button } from 'antd';
+import { UserOutlined, LogoutOutlined, DashboardOutlined } from '@ant-design/icons';
+import { useModel, Outlet } from '@umijs/max';
+import withAuthorization from '@/components/withAuthorization';
+
+const { Header, Content, Sider } = Layout;
+
+const ProtectedLayout: React.FC = () => {
+  const { user, logout } = useModel('auth');
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const userMenuItems = [
+    {
+      key: 'profile',
+      label: '个人资料',
+      icon: <UserOutlined />,
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'logout',
+      label: '退出登录',
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+    },
+  ];
+
+  const sideMenuItems = [
+    {
+      key: 'dashboard',
+      icon: <DashboardOutlined />,
+      label: '仪表板',
+    },
+  ];
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider
+        collapsible
+        theme="light"
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
+      >
+        <div style={{
+          height: 32,
+          margin: 16,
+          background: 'rgba(255, 255, 255, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          color: '#1890ff'
+        }}>
+          系统后台
+        </div>
+        <Menu
+          theme="light"
+          mode="inline"
+          defaultSelectedKeys={['dashboard']}
+          items={sideMenuItems}
+        />
+      </Sider>
+      
+      <Layout style={{ marginLeft: 200 }}>
+        <Header style={{
+          padding: '0 24px',
+          background: '#fff',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 1px 4px rgba(0,21,41,.08)'
+        }}>
+          <div>
+            <h2 style={{ margin: 0, color: '#1890ff' }}>管理系统</h2>
+          </div>
+          
+          <Space size="middle">
+            <span>欢迎，{user?.username}</span>
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <Button type="text" style={{ padding: '4px 8px' }}>
+                <Space>
+                  <Avatar 
+                    size="small" 
+                    icon={<UserOutlined />} 
+                    src={user?.avatar}
+                  />
+                  {user?.username}
+                </Space>
+              </Button>
+            </Dropdown>
+          </Space>
+        </Header>
+        
+        <Content style={{
+          margin: '24px 16px',
+          padding: 24,
+          minHeight: 280,
+          background: '#fff',
+          borderRadius: 6,
+        }}>
+          <Outlet />
+        </Content>
+      </Layout>
+    </Layout>
+  );
+};
+
+// 使用 withAuthorization 包装，确保只有登录用户能访问
+export default withAuthorization(ProtectedLayout, {
+  requireAuth: true,
+  permissions: ['canAccessDashboard'],
+  redirectTo: '/login'
+});
+```
+
+**内容说明：**
+- 使用 Ant Design 的 Layout 组件
+- 包含头部导航、侧边栏、内容区域
+- 在头部显示用户信息和登出按钮
+- 使用 withAuthorization 包装，确保只有登录用户能访问
+- 这样做是为了为受保护的页面提供统一的布局结构
+
+## 第十二步：修改路由配置
+**文件路径：** `.umirc.ts`
+**目的：** 配置应用的路由规则
+
+**具体代码：**
+```typescript
+// .umirc.ts
+import { defineConfig } from '@umijs/max';
+
+export default defineConfig({
+  antd: {},
+  access: {},
+  model: {},
+  initialState: {},
+  request: {},
+  layout: {
+    title: '管理系统',
+  },
+  routes: [
+    // 根路径重定向到登录页
+    {
+      path: '/',
+      redirect: '/login',
+    },
+    // 登录页路由
+    {
+      name: '登录',
+      path: '/login',
+      component: './Login',
+      layout: false, // 不使用默认布局
+    },
+    // 受保护的路由组
+    {
+      path: '/xt',
+      component: '@/layouts/ProtectedLayout',
+      access: 'canAccessDashboard', // 需要 dashboard 访问权限
+      routes: [
+        {
+          name: '仪表板',
+          path: '/xt/dashboard',
+          component: './Dashboard',
+        },
+        // 可以在这里添加更多受保护的路由
+      ],
+    },
+    // 404 页面 - 必须放在最后
+    {
+      path: '*',
+      component: './404',
+      layout: false,
+    },
+  ],
+  npmClient: 'npm',
+  // 代理配置（开发环境）
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+      pathRewrite: { '^/api': '/api' },
+    },
+  },
+});
+```
+
+**内容说明：**
+- 配置根路径 "/" 重定向到 "/login"
+- 配置 "/login" 路由指向登录页面，设置 layout: false
+- 配置 "/xt/dashboard" 路由指向 Dashboard 页面，使用 ProtectedLayout
+- 配置通配符路由 "*" 指向 404 页面
+- 设置路由访问权限，dashboard 需要 canAccessDashboard 权限
+- 这样做是为了实现题目要求的路由访问控制逻辑
+
+## 第十三步：创建 Mock 数据（开发测试用）
+**文件路径：** `mock/auth.ts`
+**目的：** 创建模拟登录接口，用于开发测试
+
+**具体代码：**
+```typescript
+// mock/auth.ts
+import { Request, Response } from 'express';
+
+// 模拟用户数据
+const users = [
+  {
+    id: '1',
+    username: 'admin',
+    password: '123456',
+    email: 'admin@example.com',
+    avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
+    roles: ['admin', 'user'],
+  },
+  {
+    id: '2',
+    username: 'user',
+    password: '123456',
+    email: 'user@example.com',
+    avatar: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
+    roles: ['user'],
+  },
+];
+
+// 模拟 token 存储
+let tokenStore: Record<string, any> = {};
+
+function generateToken(user: any): string {
+  const token = `token_${user.id}_${Date.now()}`;
+  tokenStore[token] = {
+    user,
+    expires: Date.now() + 24 * 60 * 60 * 1000, // 24小时过期
+  };
+  return token;
+}
+
+function validateToken(token: string): any {
+  const tokenData = tokenStore[token];
+  if (!tokenData) return null;
+  
+  if (Date.now() > tokenData.expires) {
+    delete tokenStore[token];
+    return null;
+  }
+  
+  return tokenData.user;
+}
+
+export default {
+  // 登录接口
+  'POST /api/auth/login': (req: Request, res: Response) => {
+    const { username, password } = req.body;
+    
+    // 模拟网络延迟
+    setTimeout(() => {
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        const token = generateToken(user);
+        const { password: _, ...userInfo } = user; // 移除密码字段
+        
+        res.json({
+          success: true,
+          data: {
+            user: userInfo,
+            token,
+            expires: 24 * 60 * 60 * 1000, // 24小时
+          },
+          message: '登录成功',
+        });
+      } else {
+        res.status(401).json({
+          success: false,
+          message: '用户名或密码错误',
+          code: 401,
+        });
+      }
+    }, 1000);
+  },
+
+  // 获取当前用户信息
+  'GET /api/auth/currentUser': (req: Request, res: Response) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    setTimeout(() => {
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          message: '未提供认证令牌',
+          code: 401,
+        });
+      }
+
+      const user = validateToken(token);
+      if (user) {
+        res.json({
+          success: true,
+          data: user,
+          message: '获取用户信息成功',
+        });
+      } else {
+        res.status(401).json({
+          success: false,
+          message: '认证令牌无效或已过期',
+          code: 401,
+        });
+      }
+    }, 500);
+  },
+
+  // 登出接口
+  'POST /api/auth/logout': (req: Request, res: Response) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    setTimeout(() => {
+      if (token) {
+        delete tokenStore[token];
+      }
+      
+      res.json({
+        success: true,
+        message: '退出登录成功',
+      });
+    }, 300);
+  },
+
+  // 验证 token
+  'GET /api/auth/validate': (req: Request, res: Response) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    setTimeout(() => {
+      const user = token ? validateToken(token) : null;
+      
+      res.json({
+        success: true,
+        data: {
+          valid: !!user,
+        },
+      });
+    }, 200);
+  },
+};
+```
+
+**内容说明：**
+- 模拟 POST /api/auth/login 接口
+- 模拟 GET /api/auth/currentUser 接口
+- 模拟 POST /api/auth/logout 接口
+- 返回符合类型定义的模拟数据
+- 这样做是为了在没有后端接口的情况下进行前端开发和测试
+
+## 第十四步：添加全局样式
+**文件路径：** `src/global.less`
+**目的：** 添加登录页面和整体应用的样式
+
+**具体代码：**
+```less
+// src/global.less
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.85);
+  background-color: #f0f2f5;
+}
+
+// 全局loading样式
+.global-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+// 修复antd某些组件的样式问题
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-layout-content {
+  background: #fff;
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ant-layout-sider {
+    position: fixed !important;
+    height: 100vh;
+    left: 0;
+    z-index: 999;
+  }
+  
+  .ant-layout {
+    margin-left: 0 !important;
+  }
+}
+
+// 自定义滚动条样式
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+// 打印样式
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+```
+
+**内容说明：**
+- 设置登录页面的居中布局样式
+- 设置表单的样式美化
+- 添加响应式设计支持
+- 这样做是为了提供更好的用户界面体验
+
+## 第十五步：测试和验证
+**目的：** 验证所有功能是否按预期工作
+
+**测试步骤：**
+1. **启动开发服务器**
+   ```bash
+   cd react-project/xt-umi
+   npm run dev
+   ```
+
+2. **测试路由跳转逻辑**
+   - 访问根路径 "http://localhost:8000/"，应该自动重定向到 "http://localhost:8000/login"
+   - 访问 "http://localhost:8000/login"，应该显示登录页面
+
+3. **测试登录功能**
+   - 在登录页面输入测试账号：
+     - 用户名：admin，密码：123456
+     - 或者用户名：user，密码：123456
+   - 点击登录按钮，应该显示"登录成功"提示，并自动跳转到 "/xt/dashboard"
+
+4. **测试权限控制**
+   - 直接访问 "http://localhost:8000/xt/dashboard"
+   - 如果已登录：应该正常显示仪表板页面
+   - 如果未登录：应该自动跳转到登录页
+
+5. **测试404页面**
+   - 访问不存在的路径，如 "http://localhost:8000/nonexistent"
+   - 应该显示404错误页面，并提供返回按钮
+
+6. **测试登出功能**
+   - 在仪表板页面点击右上角的用户头像下拉菜单
+   - 点击"退出登录"按钮
+   - 应该显示"退出登录成功"提示，并跳转到登录页
+   - 此时访问 "/xt/dashboard" 应该被重定向到登录页
+
+7. **测试自动登录**
+   - 登录成功后，刷新页面
+   - 应该保持登录状态，不会跳转到登录页
+   - 关闭浏览器重新打开，如果token未过期，应该自动登录
+
+8. **测试响应式设计**
+   - 调整浏览器窗口大小到移动端尺寸
+   - 登录页面和仪表板页面都应该正常显示和操作
+
+**预期结果：**
+- ✅ 根路径自动重定向到登录页
+- ✅ 登录页面正常显示和操作
+- ✅ 登录成功后跳转到仪表板
+- ✅ 未登录用户访问受保护页面被重定向
+- ✅ 404页面正常显示
+- ✅ 登出功能正常工作
+- ✅ 自动登录功能正常工作
+- ✅ 页面响应式设计正常
+
+## 实现原理说明：
+
+1. **自动登录机制**：
+   - 用户登录成功后，token自动保存到localStorage
+   - 应用启动时通过 app.ts 的 getInitialState 检查 localStorage 中的 token
+   - 如果存在有效 token 则自动获取用户信息，实现无感知自动登录
+   - 无需用户手动选择"记住密码"或"自动登录"
+
+2. **简化的登录流程**：
+   - 登录表单只包含用户名和密码两个必填字段
+   - 登录成功后自动保存认证状态，无需额外操作
+   - 下次访问时如果token未过期，直接进入系统
+
+3. **权限控制机制**：使用 Umi 的 access 功能结合 withAuthorization 高阶组件，在路由层面和组件层面双重控制访问权限。
+
+4. **路由跳转逻辑**：
+   - "/" 和 "/login" -> "/login" 页面
+   - "/xt/dashboard" -> 检查 token，有则显示 dashboard，无则跳转 login
+   - 其他路径 -> 404 页面
+
+5. **状态管理**：使用 Umi 的 model 管理全局认证状态，确保登录状态在整个应用中保持一致。
+
+6. **类型安全**：通过 TypeScript 类型定义确保整个认证流程的类型安全。
+
+按照以上步骤逐一实现，可以完整地实现您要求的登录页面和权限控制功能。每个步骤都有明确的目的和实现方式，确保最终效果符合您的需求。
+
+## 注意事项：
+
+1. **文件创建顺序**：建议按照步骤顺序创建文件，因为后面的文件可能依赖前面的文件。
+2. **类型导入**：注意检查所有的类型导入路径是否正确。
+3. **Mock 数据**：开发阶段使用 Mock 数据，生产环境需要替换为真实的后端接口。
+4. **Token 安全**：生产环境中应该使用更安全的 token 存储方式，如 httpOnly cookie。
+5. **错误处理**：可以根据实际需求增加更详细的错误处理逻辑。
