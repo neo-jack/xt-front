@@ -78,13 +78,108 @@ export interface ApiResponse<T = any> {
 - 定义 LoginResponse 接口，包含完整的登录响应数据
 - 这样做是为了在整个应用中保持类型一致性，符合 TypeScript 最佳实践
 
-## 第二步：创建认证工具函数
-**文件路径：** `src/utils/auth.ts`
+## 第二步：创建通用HTTP请求工具
+**文件路径：** `src/utils/http/request.ts`
+**目的：** 基于axios封装通用的HTTP请求工具，为所有API模块提供统一的请求拦截、响应拦截、错误处理
+
+**具体代码：**
+```typescript
+// src/utils/http/request.ts
+import axios from 'axios';
+import { message } from 'antd';
+import { getToken, removeToken } from '@/utils/token';
+
+// 创建axios实例
+const request = axios.create({
+  baseURL: process.env.UMI_APP_API_URL || '/api',
+  timeout: 10000,
+});
+
+// 请求拦截器
+request.interceptors.request.use(
+  (config) => {
+    // 确保headers对象存在
+    config.headers = config.headers || {};
+    
+    // 自动添加token到请求头（如果存在）
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // 可以在这里添加其他通用请求头
+    // config.headers['Content-Type'] = 'application/json';
+    // config.headers['X-Requested-With'] = 'XMLHttpRequest';
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器
+request.interceptors.response.use(
+  (response) => {
+    const { data } = response;
+    
+    // 根据业务状态码处理响应
+    if (data.success) {
+      return data;
+    } else {
+      // 业务错误处理
+      message.error(data.message || '请求失败');
+      return Promise.reject(new Error(data.message || '请求失败'));
+    }
+  },
+  (error) => {
+    // HTTP状态码错误处理
+    if (error.response?.status === 401) {
+      // token过期或无效
+      message.error('登录已过期，请重新登录');
+      removeToken();
+      window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      message.error('没有权限访问');
+    } else if (error.response?.status === 500) {
+      message.error('服务器内部错误');
+    } else {
+      message.error(error.message || '网络错误');
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default request;
+```
+
+**文件路径：** `src/utils/http/index.ts`
+**目的：** 统一导出HTTP工具
+
+**具体代码：**
+```typescript
+// src/utils/http/index.ts
+import request from './request';
+
+export { request };
+export default request;
+```
+
+**内容说明：**
+- 基于axios创建统一的请求实例，供所有API模块使用
+- 请求拦截器：自动添加通用请求头（如token、Content-Type等）
+- 响应拦截器：统一处理业务错误和HTTP状态码错误
+- 自动处理认证失败（401）和权限不足（403）等常见错误
+- 提供统一的错误提示和异常处理机制
+- 这样做是为了让所有API请求都享受统一的行为和错误处理
+
+## 第三步：创建Token管理工具
+**文件路径：** `src/utils/token/index.ts`
 **目的：** 封装 token 的存储、获取、删除等操作
 
 **具体代码：**
 ```typescript
-// src/utils/auth.ts
+// src/utils/token/index.ts
 const TOKEN_KEY = 'auth_token';
 const TOKEN_EXPIRES_KEY = 'auth_token_expires';
 
@@ -133,11 +228,6 @@ export const isTokenValid = (): boolean => {
   const token = getToken();
   return !!token;
 };
-
-export const getAuthHeaders = () => {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
 ```
 
 **内容说明：**
@@ -147,71 +237,96 @@ export const getAuthHeaders = () => {
 - 添加 token 过期时间检查逻辑
 - 这样做是为了统一管理认证相关的工具函数，避免重复代码
 
-## 第三步：创建认证 API 服务
-**文件路径：** `src/services/auth.ts`
+## 第四步：创建API类型定义
+**文件路径：** `src/api/auth/types.ts`
+**目的：** 定义认证相关API的请求和响应类型
+
+**具体代码：**
+```typescript
+// src/api/auth/types.ts
+import type { UserInfo, LoginFormData, ApiResponse } from '@/types/auth';
+
+// 登录API响应类型
+export interface LoginApiResponse extends ApiResponse<{
+  user: UserInfo;
+  token: string;
+  expires: number;
+}> {}
+
+// 获取用户信息API响应类型
+export interface GetUserInfoApiResponse extends ApiResponse<UserInfo> {}
+
+// 登出API响应类型
+export interface LogoutApiResponse extends ApiResponse<null> {}
+```
+
+**内容说明：**
+- 定义各个API接口的响应类型
+- 继承通用的ApiResponse类型
+- 确保API调用的类型安全
+- 这样做是为了在API层面保持类型一致性
+
+## 第五步：创建认证 API 服务
+**文件路径：** `src/api/auth/index.ts`
 **目的：** 封装登录、登出、获取用户信息等 API 调用
 
 **具体代码：**
 ```typescript
-// src/services/auth.ts
-import { request } from '@umijs/max';
-import type { LoginFormData, LoginResponse, UserInfo, ApiResponse } from '@/types/auth';
-import { getAuthHeaders } from '@/utils/auth';
+// src/api/auth/index.ts
+import { request } from '@/utils/http';
+import type { LoginFormData } from '@/types/auth';
+import type { 
+  LoginApiResponse, 
+  GetUserInfoApiResponse, 
+  LogoutApiResponse 
+} from './types';
 
-export const authService = {
+// 认证相关API服务
+export const authApi = {
   // 用户登录
-  async login(credentials: LoginFormData): Promise<LoginResponse> {
-    return request<LoginResponse>('/api/auth/login', {
-      method: 'POST',
-      data: credentials,
-    });
+  login: (data: LoginFormData): Promise<LoginApiResponse> => {
+    return request.post('/auth/login', data);
   },
 
   // 获取当前用户信息
-  async getCurrentUser(): Promise<ApiResponse<UserInfo>> {
-    return request<ApiResponse<UserInfo>>('/api/auth/currentUser', {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+  getCurrentUser: (): Promise<GetUserInfoApiResponse> => {
+    return request.get('/auth/currentUser');
   },
 
   // 用户登出
-  async logout(): Promise<ApiResponse> {
-    return request<ApiResponse>('/api/auth/logout', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-    });
+  logout: (): Promise<LogoutApiResponse> => {
+    return request.post('/auth/logout');
   },
 
-  // 刷新 token
-  async refreshToken(): Promise<LoginResponse> {
-    return request<LoginResponse>('/api/auth/refresh', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-    });
-  },
-
-  // 验证 token 有效性
-  async validateToken(): Promise<ApiResponse<{ valid: boolean }>> {
-    return request<ApiResponse<{ valid: boolean }>>('/api/auth/validate', {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+  // 验证token有效性
+  validateToken: (): Promise<GetUserInfoApiResponse> => {
+    return request.get('/auth/validate');
   },
 };
 
-export default authService;
+// 默认导出
+export default authApi;
+```
+
+**文件路径：** `src/api/index.ts`
+**目的：** 统一导出所有API服务
+
+**具体代码：**
+```typescript
+// src/api/index.ts
+export { authApi } from './auth';
+export type * from './auth/types';
 ```
 
 **内容说明：**
-- 实现 login(credentials) 函数调用登录接口
-- 实现 logout() 函数调用登出接口
-- 实现 getCurrentUser() 函数获取当前用户信息
-- 实现 refreshToken() 函数刷新 token
-- 使用 Umi 的 request 发送 HTTP 请求
+- 使用封装好的request工具发送HTTP请求
+- 自动享受请求拦截器的token添加功能
+- 自动享受响应拦截器的错误处理功能
+- 按模块组织API接口，便于维护
+- 统一导出所有API服务和类型
 - 这样做是为了将 API 调用逻辑集中管理，便于维护和测试
 
-## 第四步：更新全局状态管理
+## 第六步：更新全局状态管理
 **文件路径：** `src/models/auth.ts`
 **目的：** 使用 Umi 的 model 管理全局认证状态
 
@@ -220,10 +335,10 @@ export default authService;
 // src/models/auth.ts
 import { useState, useCallback } from 'react';
 import { history } from '@umijs/max';
-import type { UserInfo, LoginFormData } from '@/types/auth';
-import { authService } from '@/services/auth';
-import { setToken, removeToken, isTokenValid } from '@/utils/auth';
 import { message } from 'antd';
+import type { UserInfo, LoginFormData } from '@/types/auth';
+import { authApi } from '@/api';
+import { setToken, removeToken, isTokenValid } from '@/utils/token';
 
 export default function useAuthModel() {
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -234,24 +349,21 @@ export default function useAuthModel() {
   const login = useCallback(async (credentials: LoginFormData) => {
     setLoading(true);
     try {
-      const response = await authService.login(credentials);
-      if (response.success) {
-        const { user, token, expires } = response.data;
-        setToken(token, expires);
-        setUser(user);
-        setIsLoggedIn(true);
-        message.success('登录成功');
-        // 跳转到 dashboard
-        history.push('/xt/dashboard');
-        return { success: true };
-      } else {
-        message.error(response.message || '登录失败');
-        return { success: false, message: response.message };
-      }
-    } catch (error) {
-      console.error('登录失败:', error);
-      message.error('登录失败，请稍后重试');
-      return { success: false, message: '网络错误' };
+      const response = await authApi.login(credentials);
+      const { user, token, expires } = response.data;
+      
+      // 保存token和用户信息
+      setToken(token, expires);
+      setUser(user);
+      setIsLoggedIn(true);
+      
+      message.success('登录成功');
+      // 跳转到 dashboard
+      history.push('/xt/dashboard');
+      return { success: true };
+    } catch (error: any) {
+      // 错误处理已在request拦截器中处理，这里只需要返回失败状态
+      return { success: false, message: error.message };
     } finally {
       setLoading(false);
     }
@@ -261,10 +373,11 @@ export default function useAuthModel() {
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      await authService.logout();
+      await authApi.logout();
     } catch (error) {
       console.error('登出请求失败:', error);
     } finally {
+      // 无论请求是否成功，都清除本地状态
       removeToken();
       setUser(null);
       setIsLoggedIn(false);
@@ -282,19 +395,12 @@ export default function useAuthModel() {
     
     setLoading(true);
     try {
-      const response = await authService.getCurrentUser();
-      if (response.success) {
-        setUser(response.data);
-        setIsLoggedIn(true);
-        return { success: true, user: response.data };
-      } else {
-        removeToken();
-        setUser(null);
-        setIsLoggedIn(false);
-        return { success: false };
-      }
+      const response = await authApi.getCurrentUser();
+      setUser(response.data);
+      setIsLoggedIn(true);
+      return { success: true, user: response.data };
     } catch (error) {
-      console.error('获取用户信息失败:', error);
+      // token无效或过期，清除本地状态
       removeToken();
       setUser(null);
       setIsLoggedIn(false);
@@ -324,13 +430,13 @@ export default function useAuthModel() {
 ```
 
 **内容说明：**
-- 创建 auth model，包含 state、effects、reducers
-- state 包含：user、isLoggedIn、loading 等状态
-- effects 包含：login、logout、getCurrentUser 等异步操作
-- reducers 包含：setUser、setLoading、clearAuth 等同步操作
+- 使用新的API层（authApi）进行数据请求
+- 简化了错误处理逻辑，因为HTTP拦截器已经处理了大部分错误
+- 保持原有的状态管理逻辑不变
+- 自动享受统一的错误提示和token管理
 - 这样做是为了在全局范围内管理用户认证状态，符合 Umi 的状态管理模式
 
-## 第五步：修改 app.ts 配置
+## 第七步：修改 app.ts 配置
 **文件路径：** `src/app.ts`
 **目的：** 配置全局初始化状态和权限检查
 
@@ -339,8 +445,8 @@ export default function useAuthModel() {
 // src/app.ts
 import { RunTimeLayoutConfig } from '@umijs/max';
 import type { UserInfo } from '@/types/auth';
-import { authService } from '@/services/auth';
-import { isTokenValid, getToken } from '@/utils/auth';
+import { authApi } from '@/api';
+import { isTokenValid } from '@/utils/token';
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
 export async function getInitialState(): Promise<{
@@ -351,14 +457,12 @@ export async function getInitialState(): Promise<{
   // 检查是否有有效 token
   if (isTokenValid()) {
     try {
-      const response = await authService.getCurrentUser();
-      if (response.success) {
-        return {
-          name: response.data.username,
-          user: response.data,
-          isLoggedIn: true,
-        };
-      }
+      const response = await authApi.getCurrentUser();
+      return {
+        name: response.data.username,
+        user: response.data,
+        isLoggedIn: true,
+      };
     } catch (error) {
       console.error('获取用户信息失败:', error);
     }
@@ -389,40 +493,16 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     },
   };
 };
-
-// 请求拦截器配置
-export const request = {
-  timeout: 10000,
-  requestInterceptors: [
-    (config: any) => {
-      const token = getToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-  ],
-  responseInterceptors: [
-    (response: any) => {
-      const { data } = response;
-      if (data?.code === 401) {
-        // token 过期，跳转到登录页
-        window.location.href = '/login';
-      }
-      return response;
-    },
-  ],
-};
 ```
 
 **内容说明：**
-- 修改 getInitialState 函数，从 localStorage 读取 token
-- 如果有有效 token，调用 getCurrentUser 获取用户信息
-- 返回包含用户信息和登录状态的初始化数据
-- 配置 request 拦截器，自动添加 Authorization header
+- 使用新的API层（authApi）获取用户信息
+- 移除了request拦截器配置，因为已在HTTP工具层统一处理
+- 简化了初始化逻辑，错误处理交给API层
+- 保持原有的布局配置不变
 - 这样做是为了在应用启动时自动检查用户登录状态，实现自动登录功能
 
-## 第六步：修改权限配置
+## 第八步：修改权限配置
 **文件路径：** `src/access.ts`
 **目的：** 基于用户登录状态配置页面访问权限
 
@@ -455,7 +535,7 @@ export default (initialState: { isLoggedIn?: boolean; user?: any }) => {
 - 定义 isGuest 权限，用于未登录用户访问登录页
 - 这样做是为了实现基于登录状态的页面访问控制
 
-## 第七步：创建登录页面
+## 第九步：创建登录页面
 **文件路径：** `src/pages/Login/index.tsx`
 **目的：** 创建登录表单页面
 
@@ -629,7 +709,7 @@ export default LoginPage;
 - 添加提示信息说明自动保存登录状态
 - 这样做是为了简化登录流程，提供更好的用户体验
 
-## 第八步：创建 Dashboard 页面
+## 第十步：创建 Dashboard 页面
 **文件路径：** `src/pages/Dashboard/index.tsx`
 **目的：** 创建需要登录才能访问的仪表板页面
 
@@ -739,7 +819,7 @@ export default DashboardPage;
 - 展示一些受保护的内容
 - 这样做是为了验证权限控制是否正常工作
 
-## 第九步：创建 404 页面
+## 第十一步：创建 404 页面
 **文件路径：** `src/pages/404/index.tsx`
 **目的：** 创建 404 错误页面
 
@@ -787,7 +867,7 @@ export default NotFoundPage;
 - 使用 Ant Design 的 Result 组件
 - 这样做是为了处理用户访问不存在页面的情况
 
-## 第十步：创建 withAuthorization 高阶组件
+## 第十二步：创建 withAuthorization 高阶组件
 **文件路径：** `src/components/withAuthorization.tsx`
 **目的：** 创建权限控制的高阶组件包装器
 
@@ -910,7 +990,7 @@ export const withAdminAccess = <P extends object>(Component: ComponentType<P>) =
 - 处理加载状态显示
 - 这样做是为了实现可复用的权限控制逻辑
 
-## 第十一步：创建受保护的 Layout 组件
+## 第十三步：创建受保护的 Layout 组件
 **文件路径：** `src/layouts/ProtectedLayout.tsx`
 **目的：** 创建需要登录才能访问的布局组件
 
@@ -1054,7 +1134,7 @@ export default withAuthorization(ProtectedLayout, {
 - 使用 withAuthorization 包装，确保只有登录用户能访问
 - 这样做是为了为受保护的页面提供统一的布局结构
 
-## 第十二步：修改路由配置
+## 第十四步：修改路由配置
 **文件路径：** `.umirc.ts`
 **目的：** 配置应用的路由规则
 
@@ -1126,7 +1206,7 @@ export default defineConfig({
 - 设置路由访问权限，dashboard 需要 canAccessDashboard 权限
 - 这样做是为了实现题目要求的路由访问控制逻辑
 
-## 第十三步：创建 Mock 数据（开发测试用）
+## 第十五步：创建 Mock 数据（开发测试用）
 **文件路径：** `mock/auth.ts`
 **目的：** 创建模拟登录接口，用于开发测试
 
@@ -1282,7 +1362,7 @@ export default {
 - 返回符合类型定义的模拟数据
 - 这样做是为了在没有后端接口的情况下进行前端开发和测试
 
-## 第十四步：添加全局样式
+## 第十六步：添加全局样式
 **文件路径：** `src/global.less`
 **目的：** 添加登录页面和整体应用的样式
 
@@ -1371,7 +1451,7 @@ html, body {
 - 添加响应式设计支持
 - 这样做是为了提供更好的用户界面体验
 
-## 第十五步：测试和验证
+## 第十七步：测试和验证
 **目的：** 验证所有功能是否按预期工作
 
 **测试步骤：**
