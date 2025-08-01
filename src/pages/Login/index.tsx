@@ -1,5 +1,5 @@
 // 登录页面
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,14 @@ interface LoginForm {
 
 const Login: FC = () => {
   const navigate = useNavigate();
+
+  // 检查是否已登录，如果已登录则重定向到首页
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/home', { replace: true });
+    }
+  }, [navigate]);
 
   const onFinish = (values: LoginForm) => {
     console.log('登录信息:', values);

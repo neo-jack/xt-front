@@ -966,18 +966,18 @@ export default defineConfig({
   },
   routes: [
     {
+      name: '登录',
+      path: '/login',
+      component: './Login',
+      layout: false, // 登录页完全不使用任何布局
+    },
+    {
       path: '/',
       component: '@/layouts/AuthLayout', // 使用权限布局作为根路由
       routes: [
         {
           path: '/',
           redirect: '/home',
-        },
-        {
-          name: '登录',
-          path: '/login',
-          component: './Login',
-          layout: false, // 登录页不使用默认布局
         },
         {
           name: '首页',

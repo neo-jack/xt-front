@@ -21,41 +21,22 @@ function withAuthorization(WrappedComponent: FC) {
     /*
       权限检查逻辑：
       
+      现在登录页面(/login)已经独立于AuthLayout，不会经过这个HOC
+      这个HOC只处理需要权限保护的页面（除了/login之外的所有页面）
+      
       1. 如果用户已登录（有token）：
-         - 访问 /login → 重定向到 /home
-         - 访问其他页面 → 正常显示
-         
+         - 正常渲染 WrappedComponent
+      
       2. 如果用户未登录（无token）：
-         - 访问 /login → 正常显示登录页
-         - 访问其他页面 → 重定向到 /login
+         - 重定向到 /login
     */
     
     if (token) {
-      // 用户已登录
-      if (pathname === '/login') {
-        // 已登录用户访问登录页，重定向到首页
-        return <Navigate to="/home" replace />;
-      }
-      
-      // 检查是否有用户详细信息
-      if (userInfo) {
-        // 有完整信息，正常渲染组件
-        return <WrappedComponent />;
-      } else {
-        // 有token但没有用户详细信息，可能需要重新获取
-        // 这里可以调用获取用户信息的API
-        console.log('需要获取用户详细信息');
-        return <WrappedComponent />;
-      }
+      // 用户已登录，正常渲染受保护的页面
+      return <WrappedComponent />;
     } else {
-      // 用户未登录
-      if (pathname === '/login') {
-        // 未登录用户访问登录页，正常显示
-        return <WrappedComponent />;
-      } else {
-        // 未登录用户访问其他页面，重定向到登录页
-        return <Navigate to="/login" replace />;
-      }
+      // 用户未登录，重定向到登录页
+      return <Navigate to="/login" replace />;
     }
   };
 }
