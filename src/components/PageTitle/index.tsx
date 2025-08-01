@@ -9,9 +9,14 @@ const PageTitle: FC = () => {
   // 路径映射表
   const pathNameMap: Record<string, string> = {
     xt: '系统',
-    home: '首页',
-    access: '权限演示',
-    table: 'CRUD 示例',
+    workboard: '工作看板',
+    workcenter: '工作中台',
+    quickwork: '快速工作入口',
+    chat: '聊天',
+    report: '需求直报',
+    notice: '科室通知',
+    workflow: '事务流程',
+    ai: '杏和智答',
   };
 
   // 获取最后一级路径对应的标题

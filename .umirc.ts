@@ -29,39 +29,58 @@ export default defineConfig({
       routes: [
         {
           path: '/xt',
-          redirect: '/xt/home',
+          redirect: '/xt/workboard',
         },
         {
           name: '工作看板',
-          path: '/xt/home',
-          component: './Home',
+          path: '/xt/workboard',
+          component: './WorkBoard',
         },
         {
           name: '工作中台',
-          path: '/xt/access',
-          component: './Access',
+          path: '/xt/workcenter',
+          component: './WorkCenter',
         },
         {
           name: '快速工作入口',
-          path: '/xt/table',
-          component: './Table',
+          path: '/xt/quickwork',
+          component: './QuickWork',
+        },
+        {
+          name: '快速工作子功能1',
+          path: '/xt/quickwork/sub1',
+          component: './QuickWork/Sub1',
+        },
+        {
+          name: '快速工作子功能2',
+          path: '/xt/quickwork/sub2',
+          component: './QuickWork/Sub2',
         },
         {
           name: '聊天',
+          path: '/xt/chat',
+          component: './Chat',
         },
         {
           name: '需求直报',
+          path: '/xt/report',
+          component: './Report',
         },
         {
           name: '科室通知',
+          path: '/xt/notice',
+          component: './Notice',
         },
         {
           name: '事务流程',
+          path: '/xt/workflow',
+          component: './Workflow',
         },
         {
           name: '杏和智答',
-        }
-
+          path: '/xt/ai',
+          component: './AI',
+        },
       ],
     },
     // 帮我增加404 页面

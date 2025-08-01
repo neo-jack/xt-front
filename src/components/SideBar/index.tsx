@@ -1,12 +1,17 @@
 // 侧边栏导航组件
-import { FC } from 'react';
-import { Menu, MenuProps } from 'antd';
-import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  HomeOutlined,
-  SafetyOutlined,
-  TableOutlined,
+  ApartmentOutlined,
+  AppstoreOutlined,
+  DashboardOutlined,
+  FileTextOutlined,
+  MessageOutlined,
+  NotificationOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
+import { Menu, MenuProps } from 'antd';
+import { FC } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -17,43 +22,53 @@ const SideBar: FC = () => {
   // 菜单项配置
   const menuItems: MenuItem[] = [
     {
-      key: '/xt/home',
-      icon: <HomeOutlined />,
+      key: '/xt/workboard',
+      icon: <DashboardOutlined />,
       label: '工作看板',
     },
     {
-      key: '/xt/access',
-      icon: <SafetyOutlined />,
+      key: '/xt/workcenter',
+      icon: <AppstoreOutlined />,
       label: '工作中台',
     },
     {
-      key: '/xt/table',
-      icon: <TableOutlined />,
-      label: 'CRUD 示例',
+      key: '/xt/quickwork',
+      icon: <ThunderboltOutlined />,
+      label: '快速工作入口',
+      children: [
+        {
+          key: '/xt/quickwork/sub1',
+          label: '子功能1',
+        },
+        {
+          key: '/xt/quickwork/sub2',
+          label: '子功能2',
+        },
+      ],
     },
     {
       key: '/xt/chat',
-      icon: <TableOutlined />,
+      icon: <MessageOutlined />,
       label: '聊天',
     },
     {
-      key: '/xt/table',
-      icon: <TableOutlined />,
+      key: '/xt/report',
+      icon: <FileTextOutlined />,
       label: '需求直报',
     },
     {
-      key: '/xt/table',
-      icon: <TableOutlined />,
+      key: '/xt/notice',
+      icon: <NotificationOutlined />,
       label: '科室通知',
     },
     {
-      key: '/xt/table',
-      icon: <TableOutlined />,
+      key: '/xt/workflow',
+      icon: <ApartmentOutlined />,
       label: '事务流程',
     },
     {
-      key: '/xt/table',
-      icon: <TableOutlined />,
+      key: '/xt/ai',
+      icon: <RobotOutlined />,
       label: '杏和智答',
     },
   ];

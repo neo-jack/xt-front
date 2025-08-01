@@ -1,12 +1,12 @@
-import React from 'react';
-import { Button, Result } from 'antd';
 import { useNavigate } from '@umijs/max';
+import { Button, Result } from 'antd';
+import React from 'react';
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
 
   const handleBackHome = () => {
-    navigate('/xt/home');
+    navigate('/xt/workboard');
   };
 
   const handleBackLogin = () => {
@@ -14,13 +14,15 @@ const NotFound: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: '#f0f2f5'
-    }}>
+    <div
+      style={{
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f0f2f5',
+      }}
+    >
       <Result
         status="404"
         title="404"
