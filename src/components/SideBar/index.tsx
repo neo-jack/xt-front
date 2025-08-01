@@ -19,17 +19,42 @@ const SideBar: FC = () => {
     {
       key: '/xt/home',
       icon: <HomeOutlined />,
-      label: '首页',
+      label: '工作看板',
     },
     {
       key: '/xt/access',
       icon: <SafetyOutlined />,
-      label: '权限演示',
+      label: '工作中台',
     },
     {
       key: '/xt/table',
       icon: <TableOutlined />,
       label: 'CRUD 示例',
+    },
+    {
+      key: '/xt/chat',
+      icon: <TableOutlined />,
+      label: '聊天',
+    },
+    {
+      key: '/xt/table',
+      icon: <TableOutlined />,
+      label: '需求直报',
+    },
+    {
+      key: '/xt/table',
+      icon: <TableOutlined />,
+      label: '科室通知',
+    },
+    {
+      key: '/xt/table',
+      icon: <TableOutlined />,
+      label: '事务流程',
+    },
+    {
+      key: '/xt/table',
+      icon: <TableOutlined />,
+      label: '杏和智答',
     },
   ];
 

@@ -32,20 +32,36 @@ export default defineConfig({
           redirect: '/xt/home',
         },
         {
-          name: '首页',
+          name: '工作看板',
           path: '/xt/home',
           component: './Home',
         },
         {
-          name: '权限演示',
+          name: '工作中台',
           path: '/xt/access',
           component: './Access',
         },
         {
-          name: 'CRUD 示例',
+          name: '快速工作入口',
           path: '/xt/table',
           component: './Table',
         },
+        {
+          name: '聊天',
+        },
+        {
+          name: '需求直报',
+        },
+        {
+          name: '科室通知',
+        },
+        {
+          name: '事务流程',
+        },
+        {
+          name: '杏和智答',
+        }
+
       ],
     },
     // 帮我增加404 页面
