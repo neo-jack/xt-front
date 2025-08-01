@@ -31,6 +31,9 @@ function withAuthorization(WrappedComponent: FC) {
          - 重定向到 /login
     */
     
+    //暂时未写token检测
+
+    
     if (token) {
       // 用户已登录，正常渲染受保护的页面
       return <WrappedComponent />;

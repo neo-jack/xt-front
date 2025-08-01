@@ -965,33 +965,44 @@ export default defineConfig({
     title: '管理系统',
   },
   routes: [
-    {
-      name: '登录',
-      path: '/login',
-      component: './Login',
-      layout: false, // 登录页完全不使用任何布局
-    },
+    // 第一组路由：登录相关页面，使用空布局
     {
       path: '/',
-      component: '@/layouts/AuthLayout', // 使用权限布局作为根路由
+      component: '@/layouts/EmptyLayout', // 空布局，用于登录页
       routes: [
         {
           path: '/',
-          redirect: '/home',
+          redirect: '/login',
+        },
+        {
+          name: '登录',
+          path: '/login',
+          component: './Login',
+        },
+      ],
+    },
+    // 第二组路由：业务页面，使用权限布局
+    {
+      path: '/xt',
+      component: '@/layouts/AuthLayout', // 权限布局，用于业务页面
+      routes: [
+        {
+          path: '/xt',
+          redirect: '/xt/home',
         },
         {
           name: '首页',
-          path: '/home',
+          path: '/xt/home',
           component: './Home',
         },
         {
           name: '权限演示',
-          path: '/access',
+          path: '/xt/access',
           component: './Access',
         },
         {
           name: 'CRUD 示例',
-          path: '/table',
+          path: '/xt/table',
           component: './Table',
         },
       ],
@@ -2163,8 +2174,9 @@ html, body {
 3. **权限控制机制**：使用 Umi 的 access 功能结合 withAuthorization 高阶组件，在路由层面和组件层面双重控制访问权限。
 
 4. **路由跳转逻辑**：
-   - "/" 和 "/login" -> "/login" 页面
-   - "/xt/dashboard" -> 检查 token，有则显示 dashboard，无则跳转 login
+   - "/" -> 自动重定向到 "/login"
+   - "/login" -> 登录页面（EmptyLayout）
+   - "/xt/*" -> 业务页面（AuthLayout + 权限检查）
    - 其他路径 -> 404 页面
 
 5. **状态管理**：使用 Umi 的 model 管理全局认证状态，确保登录状态在整个应用中保持一致。
@@ -2180,3 +2192,412 @@ html, body {
 3. **Mock 数据**：开发阶段使用 Mock 数据，生产环境需要替换为真实的后端接口。
 4. **Token 安全**：生产环境中应该使用更安全的 token 存储方式，如 httpOnly cookie。
 5. **错误处理**：可以根据实际需求增加更详细的错误处理逻辑。
+
+---
+
+# 布局结构优化重构（2024年新增）
+
+## 目标
+将原来的布局结构进行模块化重构，实现登录页面使用空布局，业务页面使用完整布局的效果。
+
+## 重构步骤
+
+### 1. 创建模块化布局组件
+
+#### 1.1 创建空布局组件
+**文件：** `src/components/EmptyLayout/index.tsx`
+```tsx
+// 空布局组件 - 用于登录页等不需要任何布局的页面
+import { FC } from 'react';
+import { Outlet } from 'react-router-dom';
+
+const EmptyLayout: FC = () => {
+  return (
+    <div style={{ width: '100%', height: '100vh' }}>
+      {/* 完全空的布局，只渲染子路由 */}
+      <Outlet />
+    </div>
+  );
+};
+
+export default EmptyLayout;
+```
+
+#### 1.2 创建用户头像组件
+**文件：** `src/components/Avatar/index.tsx`
+```tsx
+// 用户头像组件
+import { FC } from 'react';
+import { Avatar as AntdAvatar, Dropdown, MenuProps } from 'antd';
+import { UserOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+
+const Avatar: FC = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    navigate('/login');
+  };
+
+  const items: MenuProps['items'] = [
+    {
+      key: 'profile',
+      label: '个人设置',
+      icon: <SettingOutlined />,
+      onClick: () => {
+        console.log('跳转到个人设置');
+      },
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      label: '退出登录',
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+    },
+  ];
+
+  return (
+    <Dropdown menu={{ items }} placement="bottomRight" arrow>
+      <AntdAvatar
+        style={{ cursor: 'pointer' }}
+        icon={<UserOutlined />}
+        size="small"
+      />
+    </Dropdown>
+  );
+};
+
+export default Avatar;
+```
+
+#### 1.3 创建面包屑导航组件
+**文件：** `src/components/Breadcrumb/index.tsx`
+```tsx
+// 面包屑导航组件
+import { FC } from 'react';
+import { Breadcrumb as AntdBreadcrumb } from 'antd';
+import { useLocation } from 'react-router-dom';
+import { HomeOutlined } from '@ant-design/icons';
+
+const Breadcrumb: FC = () => {
+  const location = useLocation();
+  const pathSnippets = location.pathname.split('/').filter(i => i);
+
+  // 路径映射表
+  const pathNameMap: Record<string, string> = {
+    'xt': '系统',
+    'home': '首页',
+    'access': '权限演示',
+    'table': 'CRUD 示例',
+  };
+
+  const breadcrumbItems = [
+    {
+      title: (
+        <>
+          <HomeOutlined />
+          <span>首页</span>
+        </>
+      ),
+    },
+  ];
+
+  // 生成面包屑项目
+  pathSnippets.forEach((snippet, index) => {
+    if (snippet !== 'xt') { // 跳过 'xt' 前缀
+      const title = pathNameMap[snippet] || snippet;
+      breadcrumbItems.push({
+        title,
+      });
+    }
+  });
+
+  return (
+    <AntdBreadcrumb
+      style={{ margin: '16px 0' }}
+      items={breadcrumbItems}
+    />
+  );
+};
+
+export default Breadcrumb;
+```
+
+#### 1.4 创建侧边栏组件
+**文件：** `src/components/SideBar/index.tsx`
+```tsx
+// 侧边栏导航组件
+import { FC } from 'react';
+import { Menu, MenuProps } from 'antd';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  HomeOutlined,
+  SafetyOutlined,
+  TableOutlined,
+} from '@ant-design/icons';
+
+type MenuItem = Required<MenuProps>['items'][number];
+
+const SideBar: FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 菜单项配置
+  const menuItems: MenuItem[] = [
+    {
+      key: '/xt/home',
+      icon: <HomeOutlined />,
+      label: '首页',
+    },
+    {
+      key: '/xt/access',
+      icon: <SafetyOutlined />,
+      label: '权限演示',
+    },
+    {
+      key: '/xt/table',
+      icon: <TableOutlined />,
+      label: 'CRUD 示例',
+    },
+  ];
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    navigate(key);
+  };
+
+  return (
+    <Menu
+      mode="inline"
+      selectedKeys={[location.pathname]}
+      items={menuItems}
+      onClick={handleMenuClick}
+      style={{ height: '100%', borderRight: 0 }}
+    />
+  );
+};
+
+export default SideBar;
+```
+
+#### 1.5 创建主布局组件
+**文件：** `src/components/Layout/index.tsx`
+```tsx
+// 主布局组件 - 包含头部、侧边栏、面包屑和内容区域
+import { FC } from 'react';
+import { Layout as AntdLayout } from 'antd';
+import { Outlet } from 'react-router-dom';
+import Avatar from '@/components/Avatar';
+import Breadcrumb from '@/components/Breadcrumb';
+import SideBar from '@/components/SideBar';
+import withAuthorization from '@/utils/auth';
+
+const { Header, Sider, Content } = AntdLayout;
+
+const BaseLayout: FC = () => {
+  return (
+    <AntdLayout style={{ minHeight: '100vh' }}>
+      {/* 侧边栏 */}
+      <Sider width={200} style={{ background: '#fff' }}>
+        <div style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.1)' }}>
+          {/* Logo 区域 */}
+        </div>
+        <SideBar />
+      </Sider>
+      
+      {/* 主内容区域 */}
+      <AntdLayout>
+        {/* 头部 */}
+        <Header style={{ 
+          background: '#fff', 
+          padding: '0 16px', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          boxShadow: '0 1px 4px rgba(0,21,41,.08)'
+        }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+            管理系统
+          </div>
+          <Avatar />
+        </Header>
+        
+        {/* 内容区域 */}
+        <Content style={{ margin: '0 16px' }}>
+          <Breadcrumb />
+          <div style={{ 
+            padding: 24, 
+            background: '#fff', 
+            minHeight: 360,
+            borderRadius: '6px'
+          }}>
+            <Outlet />
+          </div>
+        </Content>
+      </AntdLayout>
+    </AntdLayout>
+  );
+};
+
+// 使用 withAuthorization 包裹，添加权限检查功能
+const Layout = withAuthorization(BaseLayout);
+
+export default Layout;
+```
+
+### 2. 移动权限检查组件
+
+#### 2.1 将权限检查组件移动到 utils 目录
+**文件：** `src/utils/auth/index.tsx`
+```tsx
+// 权限检查高阶组件 - UMI版本
+// 这个组件负责检查用户权限并决定显示哪个页面
+
+import { FC } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { Spin } from 'antd';
+
+// 权限检查的高阶组件
+function withAuthorization(WrappedComponent: FC) {
+  return () => {
+    // 获取当前路由位置
+    const { pathname } = useLocation();
+    
+    // 使用localStorage检查token和用户信息
+    const token = localStorage.getItem('token');
+    const userInfo = localStorage.getItem('userInfo');
+    
+    if (token) {
+      // 用户已登录，正常渲染受保护的页面
+      return <WrappedComponent />;
+    } else {
+      // 用户未登录，重定向到登录页
+      return <Navigate to="/login" replace />;
+    }
+  };
+}
+
+export default withAuthorization;
+```
+
+### 3. 更新配置文件
+
+#### 3.1 更新路由配置
+**文件：** `.umirc.ts`
+```typescript
+import { defineConfig } from '@umijs/max';
+
+export default defineConfig({
+  antd: {},
+  access: {},
+  model: {},
+  initialState: {},
+  request: {},
+  layout: false, // 完全禁用 UMI 的布局插件
+  routes: [
+    {
+      path: '/',
+      component: '@/components/EmptyLayout', // 空布局，用于登录页
+      routes: [
+        {
+          path: '/',
+          redirect: '/login',
+        },
+        {
+          name: '登录',
+          path: '/login',
+          component: './Login',
+        },
+      ],
+    },
+    {
+      path: '/xt',
+      component: '@/components/Layout', // 主布局，用于业务页面
+      routes: [
+        {
+          path: '/xt',
+          redirect: '/xt/home',
+        },
+        {
+          name: '首页',
+          path: '/xt/home',
+          component: './Home',
+        },
+        {
+          name: '权限演示',
+          path: '/xt/access',
+          component: './Access',
+        },
+        {
+          name: 'CRUD 示例',
+          path: '/xt/table',
+          component: './Table',
+        },
+      ],
+    },
+  ],
+  npmClient: 'npm',
+});
+```
+
+#### 3.2 更新运行时配置
+**文件：** `src/app.ts`
+```typescript
+// 运行时配置
+
+// 全局初始化数据配置，用于 Layout 用户信息和权限初始化
+// 更多信息见文档：https://umijs.org/docs/api/runtime-config#getinitialstate
+export async function getInitialState(): Promise<{ name: string }> {
+  return { name: '@umijs/max' };
+}
+
+// 注释掉 layout 配置，因为我们使用自定义布局
+// export const layout = () => {
+//   return {
+//     logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
+//     menu: {
+//       locale: false,
+//     },
+//   };
+// };
+```
+
+### 4. 清理旧文件
+
+删除以下文件：
+- `src/layouts/EmptyLayout.tsx`
+- `src/layouts/AuthLayout.tsx`
+
+### 5. 重构完成效果
+
+**登录页面** (`/login`)：
+- 使用 `EmptyLayout` 组件
+- 完全空白的布局，只显示登录表单
+- 无任何导航栏、侧边栏等装饰元素
+
+**业务页面** (`/xt/*`)：
+- 使用自定义的 `Layout` 组件
+- 包含完整的管理系统布局：
+  - 顶部导航栏（标题 + 用户头像）
+  - 左侧导航菜单
+  - 面包屑导航
+  - 主内容区域
+- 所有页面都经过权限验证
+
+### 6. 关键技术点
+
+1. **UMI 布局插件禁用**：通过 `layout: false` 完全禁用 UMI 内置布局
+2. **组件模块化**：将布局拆分为独立的可复用组件
+3. **权限控制统一**：使用高阶组件统一处理权限验证
+4. **路由结构优化**：登录页和业务页使用不同的布局组件
+
+### 7. 注意事项
+
+1. **重启服务器**：修改 UMI 配置后必须重启开发服务器
+2. **导入路径**：注意检查所有组件的导入路径是否正确
+3. **类型安全**：确保所有 TypeScript 类型定义正确
+4. **样式一致性**：保持 Ant Design 组件样式的一致性

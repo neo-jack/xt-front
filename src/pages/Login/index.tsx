@@ -17,7 +17,7 @@ const Login: FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/home', { replace: true });
+      navigate('/xt/home', { replace: true });
     }
   }, [navigate]);
 
@@ -31,12 +31,12 @@ const Login: FC = () => {
       localStorage.setItem('userInfo', JSON.stringify({
         name: '管理员',
         avatar: 'https://example.com/avatar.jpg',
-        routes: ['/home', '/access', '/table'],
+        routes: ['/xt/home', '/xt/access', '/xt/table'],
         buttons: ['add', 'edit', 'delete']
       }));
       
       message.success('登录成功！');
-      navigate('/home');
+      navigate('/xt/home');
     } else {
       message.error('用户名或密码错误！');
     }
