@@ -237,34 +237,106 @@ export const isTokenValid = (): boolean => {
 - 添加 token 过期时间检查逻辑
 - 这样做是为了统一管理认证相关的工具函数，避免重复代码
 
-## 第四步：创建API类型定义
-**文件路径：** `src/api/auth/types.ts`
-**目的：** 定义认证相关API的请求和响应类型
+## 第四步：创建认证模块类型定义
+**文件路径：** `src/api/auth/model/authTypes.ts`
+**目的：** 按模块组织，将所有认证相关的类型定义集中管理
 
 **具体代码：**
 ```typescript
-// src/api/auth/types.ts
-import type { UserInfo, LoginFormData, ApiResponse } from '@/types/auth';
+// src/api/auth/model/authTypes.ts
+// 认证模块相关类型定义
+// 按照syt-admin-final的模式，将所有auth相关的类型统一管理在这里
+
+// ==================== 基础类型 ====================
+
+// 用户信息
+export interface UserInfo {
+    //用户id
+    id: string;
+    //用户名
+    username: string;
+    //邮箱
+    email: string;
+    //头像
+    avatar: string;
+    // 角色
+    roles: string[];
+}
+
+// 登录表单数据
+export interface LoginFormData {
+    //用户名
+    username: string;
+    //密码
+    password: string;
+}
+
+// ==================== 状态管理类型 ====================
+
+// 登录状态（用于Redux store）
+export interface AuthState {
+    //当前用户信息
+    user: UserInfo | null;
+    //认证令牌
+    token: string | null;
+    //是否已登录
+    isLoggedIn: boolean;
+    //加载状态
+    loading: boolean;
+}
+
+// ==================== API响应类型 ====================
+
+// 通用API响应格式
+export interface ApiResponse<T = any> {
+    //请求是否成功
+    success: boolean;
+    //响应数据
+    data: T;
+    //响应消息
+    message?: string;
+    //状态码
+    code?: number;
+}
+
+// 登录响应数据结构
+export interface LoginResponseData {
+    //用户信息
+    user: UserInfo;
+    //认证令牌
+    token: string;
+    //令牌过期时间（毫秒）
+    expires: number;
+}
 
 // 登录API响应类型
-export interface LoginApiResponse extends ApiResponse<{
-  user: UserInfo;
-  token: string;
-  expires: number;
-}> {}
+export interface LoginApiResponse extends ApiResponse<LoginResponseData> {}
 
 // 获取用户信息API响应类型
 export interface GetUserInfoApiResponse extends ApiResponse<UserInfo> {}
 
 // 登出API响应类型
 export interface LogoutApiResponse extends ApiResponse<null> {}
+
+// 验证token API响应类型
+export interface ValidateTokenApiResponse extends ApiResponse<UserInfo> {}
+```
+
+**文件路径：** `src/api/auth/model/index.ts`
+**目的：** 导出模块所有类型
+
+**具体代码：**
+```typescript
+// src/api/auth/model/index.ts
+// 导出auth模块所有类型
+export * from './authTypes';
 ```
 
 **内容说明：**
-- 定义各个API接口的响应类型
-- 继承通用的ApiResponse类型
-- 确保API调用的类型安全
-- 这样做是为了在API层面保持类型一致性
+- 采用按模块组织类型的方式，参考syt-admin-final项目结构
+- 将基础类型、状态管理类型、API响应类型都放在一个模块内
+- 使用model目录集中管理该模块的所有类型定义
+- 这样做的好处：类型就近管理、模块内聚、易于维护
 
 ## 第五步：创建认证 API 服务
 **文件路径：** `src/api/auth/index.ts`
@@ -274,12 +346,13 @@ export interface LogoutApiResponse extends ApiResponse<null> {}
 ```typescript
 // src/api/auth/index.ts
 import { request } from '@/utils/http';
-import type { LoginFormData } from '@/types/auth';
-import type { 
-  LoginApiResponse, 
-  GetUserInfoApiResponse, 
-  LogoutApiResponse 
-} from './types';
+import type {
+  LoginFormData,
+  LoginApiResponse,
+  GetUserInfoApiResponse,
+  LogoutApiResponse,
+  ValidateTokenApiResponse
+} from './model';
 
 // 认证相关API服务
 export const authApi = {
@@ -299,7 +372,7 @@ export const authApi = {
   },
 
   // 验证token有效性
-  validateToken: (): Promise<GetUserInfoApiResponse> => {
+  validateToken: (): Promise<ValidateTokenApiResponse> => {
     return request.get('/auth/validate');
   },
 };
@@ -314,8 +387,11 @@ export default authApi;
 **具体代码：**
 ```typescript
 // src/api/index.ts
+// API服务统一导出
 export { authApi } from './auth';
-export type * from './auth/types';
+
+// 导出所有类型
+export type * from './auth/model';
 ```
 
 **内容说明：**
@@ -326,52 +402,204 @@ export type * from './auth/types';
 - 统一导出所有API服务和类型
 - 这样做是为了将 API 调用逻辑集中管理，便于维护和测试
 
-## 第六步：更新全局状态管理
-**文件路径：** `src/models/auth.ts`
-**目的：** 使用 Umi 的 model 管理全局认证状态
+## 第六步：配置Redux Provider
+**文件路径：** `src/app.tsx`
+**目的：** 配置Redux Provider，让整个应用能使用Redux状态管理
 
 **具体代码：**
 ```typescript
-// src/models/auth.ts
-import { useState, useCallback } from 'react';
-import { history } from '@umijs/max';
-import { message } from 'antd';
-import type { UserInfo, LoginFormData } from '@/types/auth';
-import { authApi } from '@/api';
-import { setToken, removeToken, isTokenValid } from '@/utils/token';
+// src/app.tsx
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from '@/app/store';
 
-export default function useAuthModel() {
-  const [user, setUser] = useState<UserInfo | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export function rootContainer(container: React.ReactElement) {
+  return (
+    <Provider store={store}>
+      {container}
+    </Provider>
+  );
+}
 
-  // 登录
-  const login = useCallback(async (credentials: LoginFormData) => {
-    setLoading(true);
+export { store };
+```
+
+**内容说明：**
+- 使用Redux Provider包装整个应用
+- 提供全局的Redux store访问
+- 这样做是为了让所有组件都能访问Redux状态管理
+
+## 第七步：创建Redux状态管理
+**文件路径：** `src/app/store.ts`
+**目的：** 配置Redux Toolkit状态管理，提供全局状态管理能力
+
+**具体代码：**
+```typescript
+// src/app/store.ts
+import { configureStore } from "@reduxjs/toolkit";
+import appSlice from "./appSlice";
+import authSlice from "./authSlice";
+
+// 创建Redux store
+export const store = configureStore({
+  reducer: {
+    // 应用通用状态（语言设置等）
+    app: appSlice,
+    // 认证状态（用户信息、token等）
+    auth: authSlice,
+  },
+});
+
+// 导出类型，用于TypeScript类型推断
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
+```
+
+**文件路径：** `src/app/appSlice.ts`
+**目的：** 管理应用通用状态（如语言设置）
+
+**具体代码：**
+```typescript
+// src/app/appSlice.ts
+import { createSlice } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+
+// 定义应用状态接口
+interface AppState {
+  lang: string;
+  theme: 'light' | 'dark';
+  collapsed: boolean; // 侧边栏是否折叠
+}
+
+// 获取初始状态
+function getInitialState(): AppState {
+  const lang = localStorage.getItem("lang") || "zh_CN";
+  const theme = localStorage.getItem("theme") as 'light' | 'dark' || "light";
+  const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+
+  return {
+    lang,
+    theme,
+    collapsed,
+  };
+}
+
+const initialState: AppState = getInitialState();
+
+// 创建应用状态切片
+export const appSlice = createSlice({
+  name: "app",
+  initialState,
+  reducers: {
+    // 设置语言
+    setLang(state, action) {
+      const lang = action.payload;
+      localStorage.setItem("lang", lang);
+      state.lang = lang;
+    },
+    // 设置主题
+    setTheme(state, action) {
+      const theme = action.payload;
+      localStorage.setItem("theme", theme);
+      state.theme = theme;
+    },
+    // 切换侧边栏折叠状态
+    toggleSidebar(state) {
+      state.collapsed = !state.collapsed;
+      localStorage.setItem("sidebarCollapsed", state.collapsed.toString());
+    },
+    // 设置侧边栏折叠状态
+    setSidebarCollapsed(state, action) {
+      state.collapsed = action.payload;
+      localStorage.setItem("sidebarCollapsed", action.payload.toString());
+    },
+  },
+});
+
+// 选择器函数
+export const selectLang = (state: RootState) => state.app.lang;
+export const selectTheme = (state: RootState) => state.app.theme;
+export const selectSidebarCollapsed = (state: RootState) => state.app.collapsed;
+
+// 导出actions
+export const { setLang, setTheme, toggleSidebar, setSidebarCollapsed } = appSlice.actions;
+
+// 默认导出reducer
+export default appSlice.reducer;
+```
+
+**文件路径：** `src/app/authSlice.ts`
+**目的：** 管理认证相关状态（用户信息、登录状态等）
+
+**具体代码：**
+```typescript
+// src/app/authSlice.ts
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+import { authApi } from "@/api";
+import { setToken, removeToken, isTokenValid } from "@/utils/token";
+import type { UserInfo, LoginFormData } from "@/types/auth";
+import { message } from "antd";
+
+// 定义认证状态接口
+interface AuthState {
+  user: UserInfo | null;
+  token: string | null;
+  isLoggedIn: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+// 初始状态
+const initialState: AuthState = {
+  user: null,
+  token: null,
+  isLoggedIn: false,
+  loading: false,
+  error: null,
+};
+
+// 异步登录thunk
+export const loginAsync = createAsyncThunk(
+  'auth/login',
+  async (credentials: LoginFormData, { rejectWithValue }) => {
     try {
       const response = await authApi.login(credentials);
       const { user, token, expires } = response.data;
       
-      // 保存token和用户信息
+      // 保存token
       setToken(token, expires);
-      setUser(user);
-      setIsLoggedIn(true);
       
-      message.success('登录成功');
-      // 跳转到 dashboard
-      history.push('/xt/dashboard');
-      return { success: true };
+      return { user, token };
     } catch (error: any) {
-      // 错误处理已在request拦截器中处理，这里只需要返回失败状态
-      return { success: false, message: error.message };
-    } finally {
-      setLoading(false);
+      return rejectWithValue(error.message || '登录失败');
     }
-  }, []);
+  }
+);
 
-  // 登出
-  const logout = useCallback(async () => {
-    setLoading(true);
+// 异步获取用户信息thunk
+export const getCurrentUserAsync = createAsyncThunk(
+  'auth/getCurrentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      if (!isTokenValid()) {
+        throw new Error('Token无效');
+      }
+      
+      const response = await authApi.getCurrentUser();
+      return response.data;
+    } catch (error: any) {
+      // token无效时清除本地存储
+      removeToken();
+      return rejectWithValue(error.message || '获取用户信息失败');
+    }
+  }
+);
+
+// 异步登出thunk
+export const logoutAsync = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
     try {
       await authApi.logout();
     } catch (error) {
@@ -379,64 +607,160 @@ export default function useAuthModel() {
     } finally {
       // 无论请求是否成功，都清除本地状态
       removeToken();
-      setUser(null);
-      setIsLoggedIn(false);
-      setLoading(false);
-      message.success('已退出登录');
-      history.push('/login');
     }
-  }, []);
+    return null;
+  }
+);
 
-  // 获取当前用户信息
-  const getCurrentUser = useCallback(async () => {
-    if (!isTokenValid()) {
-      return { success: false };
-    }
-    
-    setLoading(true);
-    try {
-      const response = await authApi.getCurrentUser();
-      setUser(response.data);
-      setIsLoggedIn(true);
-      return { success: true, user: response.data };
-    } catch (error) {
-      // token无效或过期，清除本地状态
-      removeToken();
-      setUser(null);
-      setIsLoggedIn(false);
-      return { success: false };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+// 创建认证状态切片
+export const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    // 清除错误信息
+    clearError(state) {
+      state.error = null;
+    },
+    // 重置认证状态
+    resetAuth(state) {
+      state.user = null;
+      state.token = null;
+      state.isLoggedIn = false;
+      state.loading = false;
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // 登录相关
+    builder
+      .addCase(loginAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isLoggedIn = true;
+        state.error = null;
+      })
+      .addCase(loginAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.isLoggedIn = false;
+      });
 
-  // 初始化认证状态
-  const initAuth = useCallback(async () => {
-    if (isTokenValid()) {
-      await getCurrentUser();
-    }
-  }, [getCurrentUser]);
+    // 获取用户信息相关
+    builder
+      .addCase(getCurrentUserAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCurrentUserAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isLoggedIn = true;
+        state.error = null;
+      })
+      .addCase(getCurrentUserAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.user = null;
+        state.token = null;
+        state.isLoggedIn = false;
+        state.error = action.payload as string;
+      });
 
-  return {
-    user,
-    loading,
-    isLoggedIn,
-    login,
-    logout,
-    getCurrentUser,
-    initAuth,
-  };
-}
+    // 登出相关
+    builder
+      .addCase(logoutAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logoutAsync.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.token = null;
+        state.isLoggedIn = false;
+        state.error = null;
+      });
+  },
+});
+
+// 选择器函数
+export const selectUser = (state: RootState) => state.auth.user;
+export const selectToken = (state: RootState) => state.auth.token;
+export const selectIsLoggedIn = (state: RootState) => state.auth.isLoggedIn;
+export const selectAuthLoading = (state: RootState) => state.auth.loading;
+export const selectAuthError = (state: RootState) => state.auth.error;
+
+// 导出actions
+export const { clearError, resetAuth } = authSlice.actions;
+
+// 默认导出reducer
+export default authSlice.reducer;
+```
+
+**文件路径：** `src/app/hooks.ts`
+**目的：** 创建类型安全的Redux hooks
+
+**具体代码：**
+```typescript
+// src/app/hooks.ts
+import { useDispatch, useSelector } from 'react-redux';
+import type { TypedUseSelectorHook } from 'react-redux';
+import type { RootState, AppDispatch } from './store';
+
+// 类型安全的useDispatch hook
+export const useAppDispatch: () => AppDispatch = useDispatch;
+
+// 类型安全的useSelector hook
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+**文件路径：** `src/app/index.ts`
+**目的：** 统一导出Redux相关内容
+
+**具体代码：**
+```typescript
+// src/app/index.ts
+export { store } from './store';
+export type { RootState, AppDispatch } from './store';
+export { useAppDispatch, useAppSelector } from './hooks';
+
+// 导出所有actions
+export { setLang, setTheme, toggleSidebar, setSidebarCollapsed } from './appSlice';
+export { 
+  loginAsync, 
+  getCurrentUserAsync, 
+  logoutAsync, 
+  clearError, 
+  resetAuth 
+} from './authSlice';
+
+// 导出所有selectors
+export { 
+  selectLang, 
+  selectTheme, 
+  selectSidebarCollapsed 
+} from './appSlice';
+export { 
+  selectUser, 
+  selectToken, 
+  selectIsLoggedIn, 
+  selectAuthLoading, 
+  selectAuthError 
+} from './authSlice';
 ```
 
 **内容说明：**
-- 使用新的API层（authApi）进行数据请求
-- 简化了错误处理逻辑，因为HTTP拦截器已经处理了大部分错误
-- 保持原有的状态管理逻辑不变
-- 自动享受统一的错误提示和token管理
-- 这样做是为了在全局范围内管理用户认证状态，符合 Umi 的状态管理模式
+- 使用Redux Toolkit创建现代化的状态管理
+- 分离应用状态(appSlice)和认证状态(authSlice)
+- 使用createAsyncThunk处理异步操作
+- 提供类型安全的hooks和selectors
+- 支持持久化存储(localStorage)
+- 统一的错误处理和加载状态管理
+- 这样做是为了提供更强大和灵活的全局状态管理能力
 
-## 第七步：修改 app.ts 配置
+## 第八步：修改 app.ts 配置
 **文件路径：** `src/app.ts`
 **目的：** 配置全局初始化状态和权限检查
 
@@ -445,7 +769,8 @@ export default function useAuthModel() {
 // src/app.ts
 import { RunTimeLayoutConfig } from '@umijs/max';
 import type { UserInfo } from '@/types/auth';
-import { authApi } from '@/api';
+import { store } from '@/app/store';
+import { getCurrentUserAsync } from '@/app/authSlice';
 import { isTokenValid } from '@/utils/token';
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
@@ -457,12 +782,15 @@ export async function getInitialState(): Promise<{
   // 检查是否有有效 token
   if (isTokenValid()) {
     try {
-      const response = await authApi.getCurrentUser();
-      return {
-        name: response.data.username,
-        user: response.data,
-        isLoggedIn: true,
-      };
+      // 使用Redux异步action获取用户信息
+      const result = await store.dispatch(getCurrentUserAsync());
+      if (getCurrentUserAsync.fulfilled.match(result)) {
+        return {
+          name: result.payload.username,
+          user: result.payload,
+          isLoggedIn: true,
+        };
+      }
     } catch (error) {
       console.error('获取用户信息失败:', error);
     }
@@ -496,13 +824,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
 ```
 
 **内容说明：**
-- 使用新的API层（authApi）获取用户信息
-- 移除了request拦截器配置，因为已在HTTP工具层统一处理
-- 简化了初始化逻辑，错误处理交给API层
+- 使用Redux store直接dispatch异步action获取用户信息
+- 集成Redux状态管理与Umi的初始化流程
 - 保持原有的布局配置不变
 - 这样做是为了在应用启动时自动检查用户登录状态，实现自动登录功能
 
-## 第八步：修改权限配置
+## 第九步：修改权限配置
 **文件路径：** `src/access.ts`
 **目的：** 基于用户登录状态配置页面访问权限
 
@@ -535,7 +862,7 @@ export default (initialState: { isLoggedIn?: boolean; user?: any }) => {
 - 定义 isGuest 权限，用于未登录用户访问登录页
 - 这样做是为了实现基于登录状态的页面访问控制
 
-## 第九步：创建登录页面
+## 第十步：创建登录页面
 **文件路径：** `src/pages/Login/index.tsx`
 **目的：** 创建登录表单页面
 
@@ -545,33 +872,42 @@ export default (initialState: { isLoggedIn?: boolean; user?: any }) => {
 import React, { useEffect } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useModel, history, useAccess } from '@umijs/max';
+import { history, useAccess } from '@umijs/max';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { loginAsync, clearError } from '@/app/authSlice';
 import type { LoginFormData } from '@/types/auth';
 import './index.less';
 
 const LoginPage: React.FC = () => {
-  const { login, loading } = useModel('auth');
+  const dispatch = useAppDispatch();
+  const { isLoggedIn, loading, error } = useAppSelector((state) => ({
+    isLoggedIn: state.auth.isLoggedIn,
+    loading: state.auth.loading,
+    error: state.auth.error,
+  }));
   const access = useAccess();
   const [form] = Form.useForm();
 
   // 如果已经登录，直接跳转到 dashboard
   useEffect(() => {
-    if (access.isAuthenticated) {
+    if (access.isAuthenticated || isLoggedIn) {
       history.push('/xt/dashboard');
     }
-  }, [access.isAuthenticated]);
+  }, [access.isAuthenticated, isLoggedIn]);
+
+  // 处理错误信息
+  useEffect(() => {
+    if (error) {
+      message.error(error);
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
 
   const handleSubmit = async (values: LoginFormData) => {
-    try {
-      const result = await login(values);
-      if (result.success) {
-        message.success('登录成功');
-        // 登录成功后会在 model 中自动跳转
-      } else {
-        message.error(result.message || '登录失败');
-      }
-    } catch (error) {
-      message.error('登录失败，请稍后重试');
+    const result = await dispatch(loginAsync(values));
+    if (loginAsync.fulfilled.match(result)) {
+      message.success('登录成功');
+      history.push('/xt/dashboard');
     }
   };
 
@@ -709,7 +1045,7 @@ export default LoginPage;
 - 添加提示信息说明自动保存登录状态
 - 这样做是为了简化登录流程，提供更好的用户体验
 
-## 第十步：创建 Dashboard 页面
+## 第十一步：创建 Dashboard 页面
 **文件路径：** `src/pages/Dashboard/index.tsx`
 **目的：** 创建需要登录才能访问的仪表板页面
 
@@ -719,18 +1055,23 @@ export default LoginPage;
 import React from 'react';
 import { Card, Button, Space, Avatar, Descriptions, message } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useModel, useAccess } from '@umijs/max';
+import { useAccess, history } from '@umijs/max';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { logoutAsync } from '@/app/authSlice';
 
 const DashboardPage: React.FC = () => {
-  const { user, logout, loading } = useModel('auth');
+  const dispatch = useAppDispatch();
+  const { user, loading } = useAppSelector((state) => ({
+    user: state.auth.user,
+    loading: state.auth.loading,
+  }));
   const access = useAccess();
 
   const handleLogout = async () => {
-    try {
-      await logout();
+    const result = await dispatch(logoutAsync());
+    if (logoutAsync.fulfilled.match(result)) {
       message.success('退出登录成功');
-    } catch (error) {
-      message.error('退出登录失败');
+      history.push('/login');
     }
   };
 
@@ -819,7 +1160,7 @@ export default DashboardPage;
 - 展示一些受保护的内容
 - 这样做是为了验证权限控制是否正常工作
 
-## 第十一步：创建 404 页面
+## 第十二步：创建 404 页面
 **文件路径：** `src/pages/404/index.tsx`
 **目的：** 创建 404 错误页面
 
@@ -867,7 +1208,7 @@ export default NotFoundPage;
 - 使用 Ant Design 的 Result 组件
 - 这样做是为了处理用户访问不存在页面的情况
 
-## 第十二步：创建 withAuthorization 高阶组件
+## 第十三步：创建 withAuthorization 高阶组件
 **文件路径：** `src/components/withAuthorization.tsx`
 **目的：** 创建权限控制的高阶组件包装器
 
@@ -990,7 +1331,7 @@ export const withAdminAccess = <P extends object>(Component: ComponentType<P>) =
 - 处理加载状态显示
 - 这样做是为了实现可复用的权限控制逻辑
 
-## 第十三步：创建受保护的 Layout 组件
+## 第十四步：创建受保护的 Layout 组件
 **文件路径：** `src/layouts/ProtectedLayout.tsx`
 **目的：** 创建需要登录才能访问的布局组件
 
@@ -1134,7 +1475,7 @@ export default withAuthorization(ProtectedLayout, {
 - 使用 withAuthorization 包装，确保只有登录用户能访问
 - 这样做是为了为受保护的页面提供统一的布局结构
 
-## 第十四步：修改路由配置
+## 第十五步：修改路由配置
 **文件路径：** `.umirc.ts`
 **目的：** 配置应用的路由规则
 
@@ -1206,7 +1547,7 @@ export default defineConfig({
 - 设置路由访问权限，dashboard 需要 canAccessDashboard 权限
 - 这样做是为了实现题目要求的路由访问控制逻辑
 
-## 第十五步：创建 Mock 数据（开发测试用）
+## 第十六步：创建 Mock 数据（开发测试用）
 **文件路径：** `mock/auth.ts`
 **目的：** 创建模拟登录接口，用于开发测试
 
@@ -1362,7 +1703,7 @@ export default {
 - 返回符合类型定义的模拟数据
 - 这样做是为了在没有后端接口的情况下进行前端开发和测试
 
-## 第十六步：添加全局样式
+## 第十七步：添加全局样式
 **文件路径：** `src/global.less`
 **目的：** 添加登录页面和整体应用的样式
 
@@ -1451,7 +1792,7 @@ html, body {
 - 添加响应式设计支持
 - 这样做是为了提供更好的用户界面体验
 
-## 第十七步：测试和验证
+## 第十八步：测试和验证
 **目的：** 验证所有功能是否按预期工作
 
 **测试步骤：**
