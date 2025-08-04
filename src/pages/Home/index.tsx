@@ -1,13 +1,10 @@
-import Guide from '@/components/Guide';
-import { trim } from '@/utils/format';
 import { PageContainer } from '@ant-design/pro-components';
-import { useModel } from '@umijs/max';
+
 import { Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './index.less';
 
 const HomePage: React.FC = () => {
-  const { name } = useModel('global');
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -23,23 +20,29 @@ const HomePage: React.FC = () => {
   const user = userInfo ? JSON.parse(userInfo) : null;
 
   return (
-    <PageContainer 
+    <PageContainer
       ghost
       extra={[
         <Button key="logout" onClick={handleLogout}>
           退出登录
-        </Button>
+        </Button>,
       ]}
     >
       <div className={styles.container}>
         {user && (
-          <div style={{ marginBottom: 20, padding: 16, background: '#f6f8fa', borderRadius: 8 }}>
+          <div
+            style={{
+              marginBottom: 20,
+              padding: 16,
+              background: '#f6f8fa',
+              borderRadius: 8,
+            }}
+          >
             <h3>欢迎回来，{user.name}！</h3>
             <p>当前用户权限路由：{user.routes?.join(', ')}</p>
             <p>按钮权限：{user.buttons?.join(', ')}</p>
           </div>
         )}
-        <Guide name={trim(name)} />
       </div>
     </PageContainer>
   );

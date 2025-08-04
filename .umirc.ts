@@ -7,6 +7,9 @@ export default defineConfig({
   initialState: {},
   request: {},
   layout: false, // 完全禁用 UMI 的布局插件
+  alias: {
+    '@': require('path').resolve(__dirname, 'src'),
+  },
   routes: [
     {
       path: '/',

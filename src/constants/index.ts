@@ -1,1 +1,184 @@
 export const DEFAULT_NAME = 'Umi Max';
+
+/** 通用状态码 */
+export type Status = 0 | 1;
+
+//工作台状态
+import { MenuCategory } from '@/types/workcenter';
+export const WORK_CENTER_MENUS: MenuCategory[] = [
+    {
+      id: '1xt-master',
+      name: '主体业务',
+      key: 'master',
+      icon: 'AppstoreOutlined',
+      subModules: [
+        { id: '0_ReportQuery', name: '报告查询', description: '医疗报告查询和管理系统', port: 3001 },
+        { id: '1_SettleMgmt', name: '结算管理', description: '医疗费用结算管理系统', port: 3002 },
+        { id: '2_DealerSettle', name: '经销商结算', description: '经销商费用结算系统', port: 3003 },
+        { id: '3_NucleicMobile', name: '核酸移动', description: '核酸检测移动端管理', port: 3004 },
+        { id: '4_TransCenter', name: '转运中心', description: '样本转运中心管理', port: 3005 },
+        { id: '5_MobileTrans', name: '移动转运', description: '移动端转运管理系统', port: 3006 },
+        { id: '6_PretreatWS', name: '预处理工作站', description: '样本预处理工作站', port: 3007 },
+        { id: '7_SpecPretreatWS', name: '特殊预处理工作站', description: '特殊样本预处理工作站', port: 3008 },
+        { id: '8_RoutineTestWS', name: '常规检验工作站', description: '常规检验工作站管理', port: 3009 },
+        { id: '9_ELISAMgmt', name: 'ELISA管理', description: 'ELISA检测管理系统', port: 3010 },
+        { id: '10_SpecTestWS', name: '特检工作站', description: '特殊检验工作站', port: 3011 },
+        { id: '11_SampleMgmtWS', name: '样本管理工作站', description: '样本管理工作站系统', port: 3012 },
+        { id: '12_EnvHygiene', name: '环境卫生', description: '环境卫生监测管理', port: 3013 },
+        { id: '13_MicroTestWS', name: '微生物检验工作站', description: '微生物检验工作站', port: 3014 },
+        { id: '14_MicroRule', name: '微生物规则', description: '微生物检验规则管理', port: 3015 },
+        { id: '15_BloodTrans', name: '输血管理', description: '输血管理系统', port: 3016 }
+      ]
+    },
+    {
+      id: '2xt-sample',
+      name: '样本管理',
+      key: 'sample',
+      icon: 'ExperimentOutlined',
+      subModules: [
+        { id: 'P3SampleMgmt', name: 'P3样本管理', description: 'P3级别样本管理系统', port: 3101 }
+      ]
+    },
+    {
+      id: '3xt-quality',
+      name: '质量控制',
+      key: 'quality',
+      icon: 'SafetyOutlined',
+      subModules: [
+        { id: '1-PerfValidation', name: '性能验证', description: '设备性能验证管理', port: 3201 },
+        { id: '2-SmartQC_Mgmt', name: '智能质控管理', description: '智能质控管理系统', port: 3202 },
+        { id: '3-MobileAvg_PBRTQC', name: '移动平均PBRT质控', description: '移动平均PBRT质控系统', port: 3203 },
+        { id: '4-EQA_Workstation', name: 'EQA工作站', description: '室间质评工作站', port: 3204 },
+        { id: '5-ComparisonWS', name: '比对工作站', description: '检验结果比对工作站', port: 3205 },
+        { id: '6-GluComparisonWS', name: '血糖比对工作站', description: '血糖检测比对工作站', port: 3206 },
+        { id: '7-BloodGasComp_Mgmt', name: '血气比对管理', description: '血气分析比对管理', port: 3207 },
+        { id: '8-RegSampleComp_Mgmt', name: '常规样本比对管理', description: '常规样本检测比对管理', port: 3208 },
+        { id: '9-POCT_Mgmt_Center', name: 'POCT管理中心', description: 'POCT设备管理中心', port: 3209 }
+      ]
+    },
+    {
+      id: '4xt-bi-analytics',
+      name: 'BI分析',
+      key: 'bi',
+      icon: 'BarChartOutlined',
+      subModules: [
+        { id: '1-DataWash_Mgmt', name: '数据清洗管理', description: '数据清洗和预处理管理', port: 3301 },
+        { id: '2-SmartDocs', name: '智能文档', description: '智能文档生成和管理', port: 3302 },
+        { id: '3-SmartReportPlatform', name: '智能报告平台', description: '智能报告生成平台', port: 3303 },
+        { id: '4-LabReportCenter', name: '实验室报告中心', description: '实验室报告管理中心', port: 3304 },
+        { id: '5-OpControlWS_Screen', name: '运营控制工作站大屏', description: '运营控制大屏展示', port: 3305 },
+        { id: '6-ISO15189ReportPlatform', name: 'ISO15189报告平台', description: 'ISO15189标准报告平台', port: 3306 },
+        { id: '7-BIAnalysis', name: 'BI分析', description: '商业智能数据分析', port: 3307 },
+        { id: '8-AUGS', name: 'AUGS', description: '自动化指导系统', port: 3308 },
+        { id: '9-QualityIndexMgmtWS', name: '质量指标管理工作站', description: '质量指标管理工作站', port: 3309 },
+        { id: '10-QualityIndexStats_Report_Archiving', name: '质量指标统计报告归档', description: '质量指标统计报告归档系统', port: 3310 }
+      ]
+    },
+    {
+      id: '5xt-lab',
+      name: '实验室管理',
+      key: 'lab',
+      icon: 'ExperimentOutlined',
+      subModules: [
+        { id: '1-StaffMgmt', name: '人员管理', description: '实验室人员管理系统', port: 3401 },
+        { id: '2-EquipmentMgmt', name: '设备管理', description: '实验室设备管理系统', port: 3402 },
+        { id: '3-SmartScheduling', name: '智能排班', description: '实验室智能排班系统', port: 3403 },
+        { id: '4-ExamMgmt1', name: '考试管理1', description: '人员考试管理系统1', port: 3404 },
+        { id: '5-ExamMgmt2', name: '考试管理2', description: '人员考试管理系统2', port: 3405 },
+        { id: '6-PaperMarkingMgmt', name: '阅卷管理', description: '考试阅卷管理系统', port: 3406 },
+        { id: '7-WrongQuestionMgmt', name: '错题管理', description: '考试错题管理系统', port: 3407 },
+        { id: '8-ArchiveCenter', name: '档案中心', description: '实验室档案管理中心', port: 3408 },
+        { id: '9-AffairMgmt', name: '事务管理', description: '实验室事务管理系统', port: 3409 },
+        { id: '10-PostAffair', name: '岗位事务', description: '岗位事务管理系统', port: 3410 }
+        // 省略其他子模块...
+      ]
+    },
+    {
+      id: '6xt-knowledge',
+      name: '知识库',
+      key: 'knowledge',
+      icon: 'BookOutlined',
+      subModules: [
+        { id: 'InspectionKnowledgeBase', name: '检验知识库', description: '医学检验知识库系统', port: 3601 }
+      ]
+    },
+    {
+      id: '7xt-samples-lib',
+      name: '样本库',
+      key: 'sampleslib',
+      icon: 'DatabaseOutlined',
+      subModules: [
+        { id: 'ResearchVisitWS', name: '科研访问工作站', description: '科研样本访问工作站', port: 3701 }
+      ]
+    },
+    {
+      id: '8xt-outdoor',
+      name: '外勤管理',
+      key: 'outdoor',
+      icon: 'CarOutlined',
+      subModules: [
+        { id: '1-LabDoctorStation', name: '实验医生站', description: '实验医生工作站', port: 3801 },
+        { id: '2-LabNurseStation', name: '实验护士站', description: '实验护士工作站', port: 3802 },
+        { id: '3-MobileLabNurseStation', name: '移动实验护士站', description: '移动实验护士工作站', port: 3803 },
+        { id: '4-CollectionWS', name: '采集工作站', description: '样本采集工作站', port: 3804 },
+        { id: '5-CollectionAppointment', name: '采集预约', description: '样本采集预约系统', port: 3805 }
+      ]
+    },
+    {
+      id: '9xt-third-party',
+      name: '第三方',
+      key: 'thirdparty',
+      icon: 'ApiOutlined',
+      subModules: [
+        { id: 'Test', name: '测试模块', description: '第三方接口测试模块', port: 3901 }
+      ]
+    },
+    {
+      id: '10xt-maintenance',
+      name: '维护管理',
+      key: 'maintenance',
+      icon: 'ToolOutlined',
+      subModules: [
+        { id: '1-SystemMaintenanceMgmt', name: '系统维护管理', description: '系统维护管理平台', port: 4001 },
+        { id: '2-SystemDataMgmt', name: '系统数据管理', description: '系统数据管理平台', port: 4002 },
+        { id: '3-SystemDataMgmt', name: '系统数据管理', description: '系统数据管理平台2', port: 4003 },
+        { id: '4-SmartReview_AutoReview', name: '智能审核自动审核', description: '智能审核自动审核系统', port: 4004 },
+        { id: '5-ClinicalRatingScaleMgmt', name: '临床评分量表管理', description: '临床评分量表管理系统', port: 4005 }
+      ]
+    },
+    {
+      id: '11xt-designer',
+      name: '设计器',
+      key: 'designer',
+      icon: 'DesktopOutlined',
+      subModules: [
+        { id: '1-AffairProcessMgmtPlatform', name: '事务处理管理平台', description: '事务处理管理平台', port: 4101 },
+        { id: '2-DocumentDesigner', name: '文档设计器', description: '文档设计器工具', port: 4102 }
+      ]
+    },
+    {
+      id: '12xt-safety',
+      name: '生物安全',
+      key: 'safety',
+      icon: 'SafetyCertificateOutlined',
+      subModules: [
+        { id: '1-BioSafetyRiskAssessment', name: '生物安全风险评估', description: '生物安全风险评估系统', port: 4201 },
+        { id: '2-RiskAssessmentData', name: '风险评估数据', description: '风险评估数据管理', port: 4202 },
+        { id: '3-StaffMgmt', name: '人员管理', description: '生物安全人员管理', port: 4203 },
+        { id: '4-EquipmentMgmt', name: '设备管理', description: '生物安全设备管理', port: 4204 },
+        { id: '5-ExamMgmt', name: '考试管理', description: '生物安全考试管理', port: 4205 }
+        // 省略其他子模块...
+      ]
+    },
+    {
+      id: '13xt-poct',
+      name: 'POCT管理',
+      key: 'poct',
+      icon: 'MonitorOutlined',
+      subModules: [
+        { id: '1-POCT_Mgmt_Committee', name: 'POCT管理委员会', description: 'POCT管理委员会系统', port: 4301 },
+        { id: '2-ProjectMgmt', name: '项目管理', description: 'POCT项目管理系统', port: 4302 },
+        { id: '3-QC_Overview', name: '质控总览', description: 'POCT质控总览系统', port: 4303 }
+      ]
+    }
+  ];
