@@ -113,6 +113,7 @@ export default function Dashboard() {
 ```
 
 ### Page with React 18 Features
+
 ```typescript
 import { useState, useEffect } from 'react';
 
@@ -140,12 +141,14 @@ export default function InteractivePage() {
 ## Multi-Page Navigation
 
 ### Navigation Patterns
+
 - Use `window.location.href` for page navigation
 - Implement proper page-to-page state transfer via URL params or localStorage
 - Avoid SPA routing patterns - embrace full page reloads
 - Use anchor tags for proper linking between pages
 
 ### Navigation Examples
+
 ```typescript
 // Direct navigation
 const navigateToAbout = () => {
@@ -167,12 +170,14 @@ const navigateWithState = (data: any) => {
 ## Asset Management
 
 ### Page-Specific Assets
+
 - Keep page-specific assets in page directories
 - Use dynamic imports for page-specific code
 - Implement proper webpack entry configuration for shared assets
 - Optimize assets per page rather than globally
 
 ### Asset Organization
+
 ```typescript
 // Page-specific asset imports
 import './home.less';
@@ -190,6 +195,7 @@ export default function HomePage() {
 ## Development Workflow
 
 ### Selective Development
+
 ```bash
 # Develop specific pages only
 MPA_FILTER=home,about npm run dev
@@ -199,12 +205,14 @@ MPA_FILTER=dashboard
 ```
 
 ### Testing Strategies
+
 - Test pages independently in isolation
 - Implement page-specific testing strategies
 - Use proper build optimization for multiple entries
 - Mock inter-page dependencies appropriately
 
 ### Build Configuration
+
 ```typescript
 // .umirc.ts
 export default {
@@ -226,6 +234,7 @@ export default {
 ## Template Customization
 
 ### Custom HTML Templates
+
 ```html
 <!-- src/template.html -->
 <!DOCTYPE html>
@@ -242,6 +251,7 @@ export default {
 ```
 
 ### Template Variables
+
 - Use template variables for dynamic content injection
 - Implement proper meta tags per page
 - Handle SEO requirements at page level
@@ -250,12 +260,14 @@ export default {
 ## Performance Optimization
 
 ### Bundle Optimization
+
 - Optimize bundle size per page entry
 - Avoid shared state between pages
 - Implement proper lazy loading within pages
 - Use page-specific analytics and tracking
 
 ### Code Splitting
+
 ```typescript
 // Dynamic imports for page-specific modules
 const loadPageModule = async () => {
@@ -275,6 +287,7 @@ export default function OptimizedPage() {
 ```
 
 ### Performance Best Practices
+
 - Minimize inter-page dependencies
 - Use proper caching strategies for shared resources
 - Implement page-specific error boundaries
@@ -283,6 +296,7 @@ export default function OptimizedPage() {
 ## Error Handling
 
 ### Page-Level Error Boundaries
+
 ```typescript
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -300,6 +314,7 @@ export default function SafePage() {
 ```
 
 ### Error Recovery
+
 - Implement graceful error recovery per page
 - Provide fallback UI for failed page loads
 - Handle navigation errors appropriately
@@ -308,6 +323,7 @@ export default function SafePage() {
 ## SEO and Meta Management
 
 ### Page-Specific SEO
+
 ```typescript
 export const config = {
   title: 'Product Details',
@@ -319,6 +335,7 @@ export const config = {
 ```
 
 ### Dynamic Meta Tags
+
 - Configure meta tags per page requirements
 - Implement proper Open Graph tags
 - Handle structured data per page type
@@ -327,14 +344,16 @@ export const config = {
 ## Migration from SPA
 
 ### Key Differences from SPA Mode
+
 - No client-side routing
 - No umi.js runtime
 - No history API usage
 - Independent page bundles
 
 ### Migration Steps
+
 1. Restructure pages to MPA entry format
-2. Replace routing with direct navigation
-3. Move shared state to appropriate storage
-4. Update build configuration for MPA mode
-5. Test each page independently
+1. Replace routing with direct navigation
+1. Move shared state to appropriate storage
+1. Update build configuration for MPA mode
+1. Test each page independently
