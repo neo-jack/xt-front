@@ -63,9 +63,11 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         transition: 'all 0.3s ease',
         overflow: 'hidden',
       }}
-      bodyStyle={{ 
-        padding: '20px',
-        position: 'relative',
+      styles={{
+        body: {
+          padding: '20px',
+          position: 'relative',
+        }
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-4px)';

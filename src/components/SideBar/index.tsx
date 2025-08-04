@@ -12,6 +12,7 @@ import {
 import { Menu, MenuProps } from 'antd';
 import { FC } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import './index.less';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -89,7 +90,10 @@ const SideBar: FC = () => {
         borderRight: 0,
         backgroundColor: '#001529',
         color: '#A5EAFF',
+        fontSize: '16px',
+        flex: 1,
       }}
+      className="sidebar-menu"
     />
   );
 };

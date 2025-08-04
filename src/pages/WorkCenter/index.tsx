@@ -133,7 +133,7 @@ const WorkCenter: React.FC = () => {
       }}
     >
       {/* 左侧菜单栏 */}
-      <div style={{ width: '240px', backgroundColor: '#fff', height: '100%' }}>
+      <div style={{ width: '280px', backgroundColor: '#fff', height: '100%' }}>
         <WorkCenterSidebar
           selectedKey={selectedCategoryKey}
           onSelect={handleMenuSelect}

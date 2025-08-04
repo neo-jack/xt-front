@@ -89,6 +89,7 @@ const WorkCenterSidebar: React.FC<WorkCenterSidebarProps> = ({
         style={{
           height: '100%', // 占满整个高度
           borderRight: 0, // 移除右边框，避免重复
+          fontSize: '16px', // 增大字体
         }}
       />
     </div>

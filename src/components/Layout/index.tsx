@@ -18,14 +18,20 @@ const BaseLayout: FC = () => {
     setCollapsed(!collapsed);
   };
   return (
-    <AntdLayout style={{ minHeight: '100vh' }}>
+    <AntdLayout style={{ height: '100vh', minHeight: '100vh' }}>
       {/* 侧边栏 */}
       <Sider
-        width={200}
+        width={250}
         collapsible
         collapsed={collapsed}
         trigger={null}
-        style={{ background: '#001529' }}
+        style={{
+          background: '#001529',
+          height: '100vh',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
         <div
           style={{
@@ -43,7 +49,9 @@ const BaseLayout: FC = () => {
           <AppstoreOutlined style={{ fontSize: '18px' }} />
           {!collapsed && <span>XT</span>}
         </div>
-        <SideBar />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <SideBar />
+        </div>
       </Sider>
 
       {/* 主内容区域 */}
@@ -52,11 +60,21 @@ const BaseLayout: FC = () => {
         <Header collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
 
         {/* 内容区域 */}
-        <Content>
+        <Content
+          style={{
+            margin: 0,
+            padding: 0,
+            background: '#fff',
+            minHeight: 'calc(100vh - 64px)', // 减去头部高度
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           <div
             style={{
               background: '#fff',
-              minHeight: 360,
+              flex: 1,
+              padding: '16px',
             }}
           >
             <Outlet />
