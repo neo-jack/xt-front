@@ -1,2603 +1,1205 @@
-# 登录页面与权限控制实现步骤
+# 工作中台左侧菜单栏实现步骤
 
-## 第一步：创建类型定义文件
-**文件路径：** `src/types/auth.ts`
-**目的：** 定义用户信息、认证状态等相关类型，确保类型安全
+## 1. 创建数据类型定义
+文件：src/types/workcenter.ts
+目的：定义工作中台相关的数据结构，包括菜单项、模块配置和收藏功能的类型
+内容：
+- MenuCategory: 一级菜单分类接口（对应xt0-main下的文件夹）
+- SubModule: 子模块接口（对应各个具体功能模块）
+- FavoriteModule: 收藏模块接口
+- WorkCenterState: 工作中台状态接口
 
-**具体代码：**
 ```typescript
-// src/types/auth.ts
-// 用户信息
-export interface UserInfo {
-    //用户id
-    id: string;
-    //用户名
-    username: string;
-    //邮箱
-    email: string;
-    //头像
-    avatar: string;
-    // 角色
-    roles: string[];
-}
+// 工作中台相关的数据类型定义
 
-// 登录状态
-export interface AuthState {
-    //当前用户信息
-    user: UserInfo | null;
-    //认证令牌
-    token: string | null;
-    //是否已登录
-    isLoggedIn: boolean;
-    //加载状态
-    loading: boolean;
-}
-
-// 登录表单数据
-export interface LoginFormData {
-    //用户名
-    username: string;
-    //密码
-    password: string;
-}
-
-// 登录响应
-export interface LoginResponse {
-    //请求是否成功
-    success: boolean;
-    //响应数据
-    data: {
-        //用户信息
-        user: UserInfo;
-        //认证令牌
-        token: string;
-        //令牌过期时间（毫秒）
-        expires: number;
-    };
-    //响应消息
-    message?: string;
-}
-
-// 通用API响应格式
-export interface ApiResponse<T = any> {
-    //请求是否成功
-    success: boolean;
-    //响应数据
-    data: T;
-    //响应消息
-    message?: string;
-    //状态码
-    code?: number;
-}
-```
-
-**内容说明：**
-- 定义 UserInfo 接口，包含用户基本信息
-- 定义 AuthState 接口，包含用户信息、token、登录状态等
-- 定义 LoginFormData 接口，只包含用户名和密码（简化登录表单）
-- 定义 LoginResponse 接口，包含完整的登录响应数据
-- 这样做是为了在整个应用中保持类型一致性，符合 TypeScript 最佳实践
-
-## 第二步：创建通用HTTP请求工具
-**文件路径：** `src/utils/http/request.ts`
-**目的：** 基于axios封装通用的HTTP请求工具，为所有API模块提供统一的请求拦截、响应拦截、错误处理
-
-**具体代码：**
-```typescript
-// src/utils/http/request.ts
-import axios from 'axios';
-import { message } from 'antd';
-import { getToken, removeToken } from '@/utils/token';
-
-// 创建axios实例
-const request = axios.create({
-  baseURL: process.env.UMI_APP_API_URL || '/api',
-  timeout: 10000,
-});
-
-// 请求拦截器
-request.interceptors.request.use(
-  (config) => {
-    // 确保headers对象存在
-    config.headers = config.headers || {};
-    
-    // 自动添加token到请求头（如果存在）
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    // 可以在这里添加其他通用请求头
-    // config.headers['Content-Type'] = 'application/json';
-    // config.headers['X-Requested-With'] = 'XMLHttpRequest';
-    
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// 响应拦截器
-request.interceptors.response.use(
-  (response) => {
-    const { data } = response;
-    
-    // 根据业务状态码处理响应
-    if (data.success) {
-      return data;
-    } else {
-      // 业务错误处理
-      message.error(data.message || '请求失败');
-      return Promise.reject(new Error(data.message || '请求失败'));
-    }
-  },
-  (error) => {
-    // HTTP状态码错误处理
-    if (error.response?.status === 401) {
-      // token过期或无效
-      message.error('登录已过期，请重新登录');
-      removeToken();
-      window.location.href = '/login';
-    } else if (error.response?.status === 403) {
-      message.error('没有权限访问');
-    } else if (error.response?.status === 500) {
-      message.error('服务器内部错误');
-    } else {
-      message.error(error.message || '网络错误');
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default request;
-```
-
-**文件路径：** `src/utils/http/index.ts`
-**目的：** 统一导出HTTP工具
-
-**具体代码：**
-```typescript
-// src/utils/http/index.ts
-import request from './request';
-
-export { request };
-export default request;
-```
-
-**内容说明：**
-- 基于axios创建统一的请求实例，供所有API模块使用
-- 请求拦截器：自动添加通用请求头（如token、Content-Type等）
-- 响应拦截器：统一处理业务错误和HTTP状态码错误
-- 自动处理认证失败（401）和权限不足（403）等常见错误
-- 提供统一的错误提示和异常处理机制
-- 这样做是为了让所有API请求都享受统一的行为和错误处理
-
-## 第三步：创建Token管理工具
-**文件路径：** `src/utils/token/index.ts`
-**目的：** 封装 token 的存储、获取、删除等操作
-
-**具体代码：**
-```typescript
-// src/utils/token/index.ts
-const TOKEN_KEY = 'auth_token';
-const TOKEN_EXPIRES_KEY = 'auth_token_expires';
-
-export const getToken = (): string | null => {
-  try {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const expires = localStorage.getItem(TOKEN_EXPIRES_KEY);
-    
-    if (!token || !expires) {
-      return null;
-    }
-    
-    // 检查 token 是否过期
-    if (Date.now() > parseInt(expires)) {
-      removeToken();
-      return null;
-    }
-    
-    return token;
-  } catch (error) {
-    console.error('获取 token 失败:', error);
-    return null;
-  }
-};
-
-export const setToken = (token: string, expiresIn: number = 24 * 60 * 60 * 1000): void => {
-  try {
-    const expires = Date.now() + expiresIn;
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(TOKEN_EXPIRES_KEY, expires.toString());
-  } catch (error) {
-    console.error('存储 token 失败:', error);
-  }
-};
-
-export const removeToken = (): void => {
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(TOKEN_EXPIRES_KEY);
-  } catch (error) {
-    console.error('删除 token 失败:', error);
-  }
-};
-
-export const isTokenValid = (): boolean => {
-  const token = getToken();
-  return !!token;
-};
-```
-
-**内容说明：**
-- 实现 getToken()、setToken()、removeToken() 函数
-- 实现 isTokenValid() 函数检查 token 有效性
-- 使用 localStorage 存储 token
-- 添加 token 过期时间检查逻辑
-- 这样做是为了统一管理认证相关的工具函数，避免重复代码
-
-## 第四步：创建认证模块类型定义
-**文件路径：** `src/api/auth/model/authTypes.ts`
-**目的：** 按模块组织，将所有认证相关的类型定义集中管理
-
-**具体代码：**
-```typescript
-// src/api/auth/model/authTypes.ts
-// 认证模块相关类型定义
-// 按照syt-admin-final的模式，将所有auth相关的类型统一管理在这里
-
-// ==================== 基础类型 ====================
-
-// 用户信息
-export interface UserInfo {
-    //用户id
-    id: string;
-    //用户名
-    username: string;
-    //邮箱
-    email: string;
-    //头像
-    avatar: string;
-    // 角色
-    roles: string[];
-}
-
-// 登录表单数据
-export interface LoginFormData {
-    //用户名
-    username: string;
-    //密码
-    password: string;
-}
-
-// ==================== 状态管理类型 ====================
-
-// 登录状态（用于Redux store）
-export interface AuthState {
-    //当前用户信息
-    user: UserInfo | null;
-    //认证令牌
-    token: string | null;
-    //是否已登录
-    isLoggedIn: boolean;
-    //加载状态
-    loading: boolean;
-}
-
-// ==================== API响应类型 ====================
-
-// 通用API响应格式
-export interface ApiResponse<T = any> {
-    //请求是否成功
-    success: boolean;
-    //响应数据
-    data: T;
-    //响应消息
-    message?: string;
-    //状态码
-    code?: number;
-}
-
-// 登录响应数据结构
-export interface LoginResponseData {
-    //用户信息
-    user: UserInfo;
-    //认证令牌
-    token: string;
-    //令牌过期时间（毫秒）
-    expires: number;
-}
-
-// 登录API响应类型
-export interface LoginApiResponse extends ApiResponse<LoginResponseData> {}
-
-// 获取用户信息API响应类型
-export interface GetUserInfoApiResponse extends ApiResponse<UserInfo> {}
-
-// 登出API响应类型
-export interface LogoutApiResponse extends ApiResponse<null> {}
-
-// 验证token API响应类型
-export interface ValidateTokenApiResponse extends ApiResponse<UserInfo> {}
-```
-
-**文件路径：** `src/api/auth/model/index.ts`
-**目的：** 导出模块所有类型
-
-**具体代码：**
-```typescript
-// src/api/auth/model/index.ts
-// 导出auth模块所有类型
-export * from './authTypes';
-```
-
-**内容说明：**
-- 采用按模块组织类型的方式，参考syt-admin-final项目结构
-- 将基础类型、状态管理类型、API响应类型都放在一个模块内
-- 使用model目录集中管理该模块的所有类型定义
-- 这样做的好处：类型就近管理、模块内聚、易于维护
-
-## 第五步：创建认证 API 服务
-**文件路径：** `src/api/auth/index.ts`
-**目的：** 封装登录、登出、获取用户信息等 API 调用
-
-**具体代码：**
-```typescript
-// src/api/auth/index.ts
-import { request } from '@/utils/http';
-import type {
-  LoginFormData,
-  LoginApiResponse,
-  GetUserInfoApiResponse,
-  LogoutApiResponse,
-  ValidateTokenApiResponse
-} from './model';
-
-// 认证相关API服务
-export const authApi = {
-  // 用户登录
-  login: (data: LoginFormData): Promise<LoginApiResponse> => {
-    return request.post('/auth/login', data);
-  },
-
-  // 获取当前用户信息
-  getCurrentUser: (): Promise<GetUserInfoApiResponse> => {
-    return request.get('/auth/currentUser');
-  },
-
-  // 用户登出
-  logout: (): Promise<LogoutApiResponse> => {
-    return request.post('/auth/logout');
-  },
-
-  // 验证token有效性
-  validateToken: (): Promise<ValidateTokenApiResponse> => {
-    return request.get('/auth/validate');
-  },
-};
-
-// 默认导出
-export default authApi;
-```
-
-**文件路径：** `src/api/index.ts`
-**目的：** 统一导出所有API服务
-
-**具体代码：**
-```typescript
-// src/api/index.ts
-// API服务统一导出
-export { authApi } from './auth';
-
-// 导出所有类型
-export type * from './auth/model';
-```
-
-**内容说明：**
-- 使用封装好的request工具发送HTTP请求
-- 自动享受请求拦截器的token添加功能
-- 自动享受响应拦截器的错误处理功能
-- 按模块组织API接口，便于维护
-- 统一导出所有API服务和类型
-- 这样做是为了将 API 调用逻辑集中管理，便于维护和测试
-
-## 第六步：配置Redux Provider
-**文件路径：** `src/app.tsx`
-**目的：** 配置Redux Provider，让整个应用能使用Redux状态管理
-
-**具体代码：**
-```typescript
-// src/app.tsx
-import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from '@/app/store';
-
-export function rootContainer(container: React.ReactElement) {
-  return (
-    <Provider store={store}>
-      {container}
-    </Provider>
-  );
-}
-
-export { store };
-```
-
-**内容说明：**
-- 使用Redux Provider包装整个应用
-- 提供全局的Redux store访问
-- 这样做是为了让所有组件都能访问Redux状态管理
-
-## 第七步：创建Redux基础配置
-**文件路径：** `src/app/store.ts`
-**目的：** 配置Redux Toolkit基础store，具体的业务模块根据需要动态添加slice
-
-**具体代码：**
-```typescript
-// src/app/store.ts
-// 从 "@reduxjs/toolkit" 这个包里导入 `configureStore` 函数。
-// Redux Toolkit 是官方推荐的、用来简化 Redux 开发的工具集。
-// `configureStore` 是一个高级函数，它简化了创建和配置 Redux "store" 的过程。
-import { configureStore } from "@reduxjs/toolkit";
-
-// `store` 是 Redux 应用的核心，可以把它想象成一个"全局的、集中的数据仓库"。
-// 整个应用所有需要共享的数据（状态）都存放在这个 `store` 对象中。
-// `export` 关键字让这个 `store` 对象可以在项目的其他地方被导入和使用。
-
-// 初始创建一个空的 store，具体的业务模块（如用户登录、权限管理等）
-// 可以在需要时动态添加自己的 slice
-export const store = configureStore({
-  // `configureStore` 函数接收一个配置对象，其中 `reducer` 属性是必需的。
-  // `reducer` 属性的值是一个对象，这个对象的作用是把我们所有不同模块的 reducer 函数组合起来。
-  // Reducer 是一个纯函数，它接收当前的状态和一个 action（指令），然后返回一个新的状态。
-  reducer: {
-    // 初始时为空对象，具体的业务模块需要时再添加
-    // 例如：login 页面可以添加 user slice
-    // 例如：其他页面可以添加各自的 slice
-  },
-});
-
-/*
-  业务模块使用示例：
-  
-  如果 login 页面需要用户状态管理，可以：
-  1. 在 pages/login/slice.ts 中创建 userSlice
-  2. 在 store 中注册：
-     import userSlice from "@/pages/login/slice";
-     
-     然后在 reducer 中添加：
-     user: userSlice
-     
-  最终的状态结构可能是：
-    {
-      user: {
-        name: string;
-        avatar: string;
-        token: string;
-        routes: string[]; // 用户拥有的路由权限
-        buttons: string[]; // 用户拥有的按钮权限
-      },
-      // 其他模块的状态...
-    }
-*/
-
-// --- 下面的代码主要是为了配合 TypeScript 使用，提供更好的类型推断和代码安全 ---
-
-// `dispatch` 是用来"派发 action"的方法。可以把它想象成是向仓库管理员下达一个"更新数据"的指令。
-// 例如 `dispatch(loginSuccess(userInfo))` 就是告诉 Redux 去执行 `loginSuccess` 这个操作。
-// `typeof store.dispatch` 在 TypeScript 中，不是获取值，而是获取 `store.dispatch` 这个函数的"类型"。
-// `export type AppDispatch = ...` 这行代码创建并导出了一个名为 `AppDispatch` 的新类型。
-// 这样做的好处是，以后在组件中使用 `dispatch` 函数时，TypeScript 就能准确地知道这个函数接受哪些类型的 action，从而提供更好的代码提示和错误检查。
-export type AppDispatch = typeof store.dispatch;
-
-// `getState` 是一个用来"读取当前所有数据"的方法，调用 `store.getState()` 就会返回整个仓库的当前状态对象。
-// `typeof store.getState` 同样是获取 `store.getState` 这个函数本身的类型。
-// `ReturnType<...>` 是 TypeScript 提供的一个工具类型，它可以获取一个函数的返回值的类型。
-// 所以 `ReturnType<typeof store.getState>` 的意思就是："请告诉我 `store.getState()` 这个函数执行后，返回的数据是什么类型的？"
-// `export type RootState = ...` 这行代码创建并导出了一个名为 `RootState` 的新类型，这个类型就精确地代表了我们整个 Redux 仓库中所有数据的完整结构。
-// 这个 `RootState` 类型非常有用，特别是在使用 `useSelector` 这个 Hook 从 store 中读取数据时，它能让 TypeScript 知道你取出的数据是什么类型，从而避免很多潜在的 bug。
-export type RootState = ReturnType<typeof store.getState>;
-```
-
-**文件路径：** `src/app/hooks.ts`
-**目的：** 创建类型安全的Redux hooks
-
-**具体代码：**
-```typescript
-// src/app/hooks.ts
-import { useDispatch, useSelector } from 'react-redux'
-import type { TypedUseSelectorHook } from 'react-redux'
-import type { RootState, AppDispatch } from './store'
-
-// 当前应用的自定义useDispatch函数
-// 用于派发actions，修改store中的状态
-export const useAppDispatch: () => AppDispatch = useDispatch
-
-// 当前应用的自定义useSelector函数
-// 用于从store中获取状态数据
-// 它是基于Redux Toolkit的useSelector进行TypeScript类型增强的版本，提供更好的类型提示。
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-```
-
-**文件路径：** `src/app/index.ts`
-**目的：** 统一导出Redux基础配置
-
-**具体代码：**
-```typescript
-// src/app/index.ts
-// 统一导出Redux相关的基础内容
-// 具体的业务模块（如用户登录、权限管理等）需要时可以在各自的页面中创建slice
-
-export { store } from './store';
-export type { RootState, AppDispatch } from './store';
-export { useAppDispatch, useAppSelector } from './hooks';
-
-// 注意：具体的业务actions和selectors应该在各自的页面模块中定义和导出
-// 例如：在 pages/login/slice.ts 中定义用户相关的slice
-// 例如：在 pages/user/slice.ts 中定义用户管理相关的slice
-```
-
-## 第八步：业务模块slice使用示例
-**目的：** 演示如何在具体页面中创建和使用slice
-
-**示例：创建登录页面的用户状态管理**
-
-**文件路径：** `src/pages/login/slice.ts`
-**具体代码：**
-```typescript
-// src/pages/login/slice.ts
-// 这个文件是用户登录模块的Redux状态管理文件
-// Redux可以理解为一个全局的数据仓库，这个文件专门管理用户相关的数据
-
-// 导入Redux Toolkit的核心函数
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
-// 导入整个应用的数据类型定义
-import { RootState } from "@/app/store";
-
-// 导入API请求函数
-// import { reqLogin, reqGetUserInfo, reqLogout } from "@api/user";
-
-// 定义登录时需要的参数类型
-export interface LoginParams {
-  username: string;
-  password: string;
-}
-
-// 定义用户状态接口
-interface UserState {
+export interface SubModule {
+  id: string;
   name: string;
-  avatar: string;
-  token: string;
-  routes: string[]; // 用户拥有的路由权限
-  buttons: string[]; // 用户拥有的按钮权限
+  description: string;
+  icon?: string;
+  port?: number;
+  projectPath?: string;
+  isFavorite?: boolean;
 }
 
-// 初始状态
-const initialState: UserState = {
-  // token先从localStorage里取，如果没有就用空字符串
-  token: localStorage.getItem("token") || "",
-  name: "",
-  avatar: "",
-  routes: [],
-  buttons: [],
+export interface MenuCategory {
+  id: string;
+  name: string;
+  key: string;
+  icon: string;
+  subModules: SubModule[];
+}
+
+export interface FavoriteModule extends SubModule {
+  categoryName: string;
+  addedAt: string;
+}
+
+export interface WorkCenterState {
+  selectedCategoryKey: string;
+  favoriteModules: FavoriteModule[];
+  runningModules: string[]; // 正在运行的模块ID列表
+}
+
+export interface ModuleStartConfig {
+  moduleId: string;
+  moduleName: string;
+  port: number;
+  command: string;
+  projectPath: string;
+}
+```
+
+## 2. 创建菜单数据配置
+文件：src/constants/workCenterMenus.ts
+目的：根据xt0-main文件夹结构创建静态菜单配置数据
+原因：基于实际的业务模块结构创建配置，便于维护和扩展
+内容：
+- 主体业务（1xt-master）：包含报告查询、结算管理、核酸移动等16个子模块
+- 样本管理（2xt-sample）：P3样本管理
+- 质量控制（3xt-quality）：包含性能验证、智能质控等9个子模块
+- BI分析（4xt-bi-analytics）：包含数据清洗、智能文档等10个子模块
+- 实验室管理（5xt-lab）：包含人员管理、设备管理等29个子模块
+- 知识库（6xt-knowledge）：检验知识库
+- 样本库（7xt-samples-lib）：科研访问工作站
+- 外勤管理（8xt-outdoor）：包含实验医生站、护士站等5个子模块
+- 第三方（9xt-third-party）：测试模块
+- 维护管理（10xt-maintenance）：包含系统维护、数据管理等5个子模块
+- 设计器（11xt-designer）：包含事务处理、文档设计器2个子模块
+- 生物安全（12xt-safety）：包含风险评估、样本流程等16个子模块
+- POCT管理（13xt-poct）：包含POCT管理委员会、项目管理等3个子模块
+
+```typescript
+import { MenuCategory } from '@/types/workcenter';
+
+export const WORK_CENTER_MENUS: MenuCategory[] = [
+  {
+    id: '1xt-master',
+    name: '主体业务',
+    key: 'master',
+    icon: 'AppstoreOutlined',
+    subModules: [
+      { id: '0_ReportQuery', name: '报告查询', description: '医疗报告查询和管理系统', port: 3001 },
+      { id: '1_SettleMgmt', name: '结算管理', description: '医疗费用结算管理系统', port: 3002 },
+      { id: '2_DealerSettle', name: '经销商结算', description: '经销商费用结算系统', port: 3003 },
+      { id: '3_NucleicMobile', name: '核酸移动', description: '核酸检测移动端管理', port: 3004 },
+      { id: '4_TransCenter', name: '转运中心', description: '样本转运中心管理', port: 3005 },
+      { id: '5_MobileTrans', name: '移动转运', description: '移动端转运管理系统', port: 3006 },
+      { id: '6_PretreatWS', name: '预处理工作站', description: '样本预处理工作站', port: 3007 },
+      { id: '7_SpecPretreatWS', name: '特殊预处理工作站', description: '特殊样本预处理工作站', port: 3008 },
+      { id: '8_RoutineTestWS', name: '常规检验工作站', description: '常规检验工作站管理', port: 3009 },
+      { id: '9_ELISAMgmt', name: 'ELISA管理', description: 'ELISA检测管理系统', port: 3010 },
+      { id: '10_SpecTestWS', name: '特检工作站', description: '特殊检验工作站', port: 3011 },
+      { id: '11_SampleMgmtWS', name: '样本管理工作站', description: '样本管理工作站系统', port: 3012 },
+      { id: '12_EnvHygiene', name: '环境卫生', description: '环境卫生监测管理', port: 3013 },
+      { id: '13_MicroTestWS', name: '微生物检验工作站', description: '微生物检验工作站', port: 3014 },
+      { id: '14_MicroRule', name: '微生物规则', description: '微生物检验规则管理', port: 3015 },
+      { id: '15_BloodTrans', name: '输血管理', description: '输血管理系统', port: 3016 }
+    ]
+  },
+  {
+    id: '2xt-sample',
+    name: '样本管理',
+    key: 'sample',
+    icon: 'ExperimentOutlined',
+    subModules: [
+      { id: 'P3SampleMgmt', name: 'P3样本管理', description: 'P3级别样本管理系统', port: 3101 }
+    ]
+  },
+  {
+    id: '3xt-quality',
+    name: '质量控制',
+    key: 'quality',
+    icon: 'SafetyOutlined',
+    subModules: [
+      { id: '1-PerfValidation', name: '性能验证', description: '设备性能验证管理', port: 3201 },
+      { id: '2-SmartQC_Mgmt', name: '智能质控管理', description: '智能质控管理系统', port: 3202 },
+      { id: '3-MobileAvg_PBRTQC', name: '移动平均PBRT质控', description: '移动平均PBRT质控系统', port: 3203 },
+      { id: '4-EQA_Workstation', name: 'EQA工作站', description: '室间质评工作站', port: 3204 },
+      { id: '5-ComparisonWS', name: '比对工作站', description: '检验结果比对工作站', port: 3205 },
+      { id: '6-GluComparisonWS', name: '血糖比对工作站', description: '血糖检测比对工作站', port: 3206 },
+      { id: '7-BloodGasComp_Mgmt', name: '血气比对管理', description: '血气分析比对管理', port: 3207 },
+      { id: '8-RegSampleComp_Mgmt', name: '常规样本比对管理', description: '常规样本检测比对管理', port: 3208 },
+      { id: '9-POCT_Mgmt_Center', name: 'POCT管理中心', description: 'POCT设备管理中心', port: 3209 }
+    ]
+  },
+  {
+    id: '4xt-bi-analytics',
+    name: 'BI分析',
+    key: 'bi',
+    icon: 'BarChartOutlined',
+    subModules: [
+      { id: '1-DataWash_Mgmt', name: '数据清洗管理', description: '数据清洗和预处理管理', port: 3301 },
+      { id: '2-SmartDocs', name: '智能文档', description: '智能文档生成和管理', port: 3302 },
+      { id: '3-SmartReportPlatform', name: '智能报告平台', description: '智能报告生成平台', port: 3303 },
+      { id: '4-LabReportCenter', name: '实验室报告中心', description: '实验室报告管理中心', port: 3304 },
+      { id: '5-OpControlWS_Screen', name: '运营控制工作站大屏', description: '运营控制大屏展示', port: 3305 },
+      { id: '6-ISO15189ReportPlatform', name: 'ISO15189报告平台', description: 'ISO15189标准报告平台', port: 3306 },
+      { id: '7-BIAnalysis', name: 'BI分析', description: '商业智能数据分析', port: 3307 },
+      { id: '8-AUGS', name: 'AUGS', description: '自动化指导系统', port: 3308 },
+      { id: '9-QualityIndexMgmtWS', name: '质量指标管理工作站', description: '质量指标管理工作站', port: 3309 },
+      { id: '10-QualityIndexStats_Report_Archiving', name: '质量指标统计报告归档', description: '质量指标统计报告归档系统', port: 3310 }
+    ]
+  },
+  {
+    id: '5xt-lab',
+    name: '实验室管理',
+    key: 'lab',
+    icon: 'ExperimentOutlined',
+    subModules: [
+      { id: '1-StaffMgmt', name: '人员管理', description: '实验室人员管理系统', port: 3401 },
+      { id: '2-EquipmentMgmt', name: '设备管理', description: '实验室设备管理系统', port: 3402 },
+      { id: '3-SmartScheduling', name: '智能排班', description: '实验室智能排班系统', port: 3403 },
+      { id: '4-ExamMgmt1', name: '考试管理1', description: '人员考试管理系统1', port: 3404 },
+      { id: '5-ExamMgmt2', name: '考试管理2', description: '人员考试管理系统2', port: 3405 },
+      { id: '6-PaperMarkingMgmt', name: '阅卷管理', description: '考试阅卷管理系统', port: 3406 },
+      { id: '7-WrongQuestionMgmt', name: '错题管理', description: '考试错题管理系统', port: 3407 },
+      { id: '8-ArchiveCenter', name: '档案中心', description: '实验室档案管理中心', port: 3408 },
+      { id: '9-AffairMgmt', name: '事务管理', description: '实验室事务管理系统', port: 3409 },
+      { id: '10-PostAffair', name: '岗位事务', description: '岗位事务管理系统', port: 3410 }
+      // 省略其他子模块...
+    ]
+  },
+  {
+    id: '6xt-knowledge',
+    name: '知识库',
+    key: 'knowledge',
+    icon: 'BookOutlined',
+    subModules: [
+      { id: 'InspectionKnowledgeBase', name: '检验知识库', description: '医学检验知识库系统', port: 3601 }
+    ]
+  },
+  {
+    id: '7xt-samples-lib',
+    name: '样本库',
+    key: 'sampleslib',
+    icon: 'DatabaseOutlined',
+    subModules: [
+      { id: 'ResearchVisitWS', name: '科研访问工作站', description: '科研样本访问工作站', port: 3701 }
+    ]
+  },
+  {
+    id: '8xt-outdoor',
+    name: '外勤管理',
+    key: 'outdoor',
+    icon: 'CarOutlined',
+    subModules: [
+      { id: '1-LabDoctorStation', name: '实验医生站', description: '实验医生工作站', port: 3801 },
+      { id: '2-LabNurseStation', name: '实验护士站', description: '实验护士工作站', port: 3802 },
+      { id: '3-MobileLabNurseStation', name: '移动实验护士站', description: '移动实验护士工作站', port: 3803 },
+      { id: '4-CollectionWS', name: '采集工作站', description: '样本采集工作站', port: 3804 },
+      { id: '5-CollectionAppointment', name: '采集预约', description: '样本采集预约系统', port: 3805 }
+    ]
+  },
+  {
+    id: '9xt-third-party',
+    name: '第三方',
+    key: 'thirdparty',
+    icon: 'ApiOutlined',
+    subModules: [
+      { id: 'Test', name: '测试模块', description: '第三方接口测试模块', port: 3901 }
+    ]
+  },
+  {
+    id: '10xt-maintenance',
+    name: '维护管理',
+    key: 'maintenance',
+    icon: 'ToolOutlined',
+    subModules: [
+      { id: '1-SystemMaintenanceMgmt', name: '系统维护管理', description: '系统维护管理平台', port: 4001 },
+      { id: '2-SystemDataMgmt', name: '系统数据管理', description: '系统数据管理平台', port: 4002 },
+      { id: '3-SystemDataMgmt', name: '系统数据管理', description: '系统数据管理平台2', port: 4003 },
+      { id: '4-SmartReview_AutoReview', name: '智能审核自动审核', description: '智能审核自动审核系统', port: 4004 },
+      { id: '5-ClinicalRatingScaleMgmt', name: '临床评分量表管理', description: '临床评分量表管理系统', port: 4005 }
+    ]
+  },
+  {
+    id: '11xt-designer',
+    name: '设计器',
+    key: 'designer',
+    icon: 'DesktopOutlined',
+    subModules: [
+      { id: '1-AffairProcessMgmtPlatform', name: '事务处理管理平台', description: '事务处理管理平台', port: 4101 },
+      { id: '2-DocumentDesigner', name: '文档设计器', description: '文档设计器工具', port: 4102 }
+    ]
+  },
+  {
+    id: '12xt-safety',
+    name: '生物安全',
+    key: 'safety',
+    icon: 'SafetyCertificateOutlined',
+    subModules: [
+      { id: '1-BioSafetyRiskAssessment', name: '生物安全风险评估', description: '生物安全风险评估系统', port: 4201 },
+      { id: '2-RiskAssessmentData', name: '风险评估数据', description: '风险评估数据管理', port: 4202 },
+      { id: '3-StaffMgmt', name: '人员管理', description: '生物安全人员管理', port: 4203 },
+      { id: '4-EquipmentMgmt', name: '设备管理', description: '生物安全设备管理', port: 4204 },
+      { id: '5-ExamMgmt', name: '考试管理', description: '生物安全考试管理', port: 4205 }
+      // 省略其他子模块...
+    ]
+  },
+  {
+    id: '13xt-poct',
+    name: 'POCT管理',
+    key: 'poct',
+    icon: 'MonitorOutlined',
+    subModules: [
+      { id: '1-POCT_Mgmt_Committee', name: 'POCT管理委员会', description: 'POCT管理委员会系统', port: 4301 },
+      { id: '2-ProjectMgmt', name: '项目管理', description: 'POCT项目管理系统', port: 4302 },
+      { id: '3-QC_Overview', name: '质控总览', description: 'POCT质控总览系统', port: 4303 }
+    ]
+  }
+];
+```
+
+## 3. 创建左侧菜单组件
+文件：src/components/WorkCenterSidebar/index.tsx
+目的：实现可折叠的左侧菜单栏，显示业务模块分类
+原因：需要独立的菜单组件来管理工作中台的特殊导航需求
+功能：
+- 使用Ant Design的Menu组件创建分组菜单
+- 支持菜单项的选中状态管理
+- 点击菜单项时触发右侧内容区域更新
+
+```tsx
+import React from 'react';
+import { Menu } from 'antd';
+import { 
+  AppstoreOutlined, 
+  ExperimentOutlined, 
+  SafetyOutlined,
+  BarChartOutlined,
+  BookOutlined,
+  DatabaseOutlined,
+  CarOutlined,
+  ApiOutlined,
+  ToolOutlined,
+  DesktopOutlined,
+  SafetyCertificateOutlined,
+  MonitorOutlined
+} from '@ant-design/icons';
+import { WORK_CENTER_MENUS } from '@/constants/workCenterMenus';
+
+interface WorkCenterSidebarProps {
+  selectedKey: string;
+  onSelect: (key: string) => void;
+}
+
+const iconMap = {
+  AppstoreOutlined,
+  ExperimentOutlined,
+  SafetyOutlined,
+  BarChartOutlined,
+  BookOutlined,
+  DatabaseOutlined,
+  CarOutlined,
+  ApiOutlined,
+  ToolOutlined,
+  DesktopOutlined,
+  SafetyCertificateOutlined,
+  MonitorOutlined,
 };
 
-// 异步登录操作
-export const loginAsync = createAsyncThunk(
-  "user/loginAsync",
-  ({ username, password }: LoginParams) => {
-    // 这里调用实际的API
-    // return reqLogin(username, password);
+const WorkCenterSidebar: React.FC<WorkCenterSidebarProps> = ({
+  selectedKey,
+  onSelect,
+}) => {
+  const menuItems = WORK_CENTER_MENUS.map(category => {
+    const IconComponent = iconMap[category.icon as keyof typeof iconMap];
     
-    // 示例：模拟登录请求
-    return Promise.resolve("mock-token-12345");
-  }
-);
+    return {
+      key: category.key,
+      icon: IconComponent ? <IconComponent /> : <AppstoreOutlined />,
+      label: category.name,
+    };
+  });
 
-// 异步获取用户信息
-export const getUserInfoAsync = createAsyncThunk(
-  "user/getUserInfoAsync",
-  () => {
-    // return reqGetUserInfo();
-    
-    // 示例：模拟获取用户信息
-    return Promise.resolve({
-      name: "张三",
-      avatar: "https://example.com/avatar.jpg",
-      routes: ["/dashboard", "/user"],
-      buttons: ["add", "edit", "delete"]
-    });
-  }
-);
-
-// 创建用户状态切片
-const userSlice = createSlice({
-  name: "user",
-  initialState,
-  reducers: {
-    // 可以在这里添加同步的reducer
-    clearUserInfo(state) {
-      state.token = "";
-      state.name = "";
-      state.avatar = "";
-      state.routes = [];
-      state.buttons = [];
-      localStorage.removeItem("token");
-    }
-  },
-  extraReducers: (builder) =>
-    builder
-      // 处理登录成功
-      .addCase(loginAsync.fulfilled, (state, action) => {
-        const token = action.payload;
-        state.token = token;
-        localStorage.setItem("token", token);
-      })
-      // 处理获取用户信息成功
-      .addCase(getUserInfoAsync.fulfilled, (state, action) => {
-        const { name, avatar, routes, buttons } = action.payload;
-        state.name = name;
-        state.avatar = avatar;
-        state.routes = routes;
-        state.buttons = buttons;
-      }),
-});
-
-// 导出选择器函数
-export const selectUser = (state: RootState) => state.user;
-export const selectUserToken = (state: RootState) => state.user?.token;
-export const selectUserName = (state: RootState) => state.user?.name;
-
-// 导出actions
-export const { clearUserInfo } = userSlice.actions;
-
-// 导出reducer
-export default userSlice.reducer;
-```
-
-**然后在 store.ts 中注册这个slice：**
-```typescript
-// src/app/store.ts
-import { configureStore } from "@reduxjs/toolkit";
-import userSlice from "@/pages/login/slice"; // 导入用户slice
-
-export const store = configureStore({
-  reducer: {
-    user: userSlice, // 注册用户slice
-    // 其他模块的slice...
-  },
-});
-
-export type AppDispatch = typeof store.dispatch;
-export type RootState = ReturnType<typeof store.getState>;
-```
-
-**在组件中使用：**
-```typescript
-// src/pages/login/index.tsx
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { loginAsync, selectUser } from './slice';
-
-function Login() {
-  const dispatch = useAppDispatch();
-  const user = useAppSelector(selectUser);
-
-  const handleLogin = async (values: LoginParams) => {
-    const result = await dispatch(loginAsync(values));
-    if (result.type === "user/loginAsync/fulfilled") {
-      // 登录成功，跳转页面
-      navigate("/dashboard");
-    }
+  const handleMenuClick = ({ key }: { key: string }) => {
+    onSelect(key);
   };
 
   return (
-    // 登录表单JSX...
-  );
-}
-```
-
-**内容说明：**
-- 采用模块化的slice管理方式，每个页面或功能模块都可以有自己的slice
-- 全局store只提供基础配置，具体业务逻辑在各自模块中管理
-- 参考syt-admin-final项目的模式，业务slice放在对应的页面目录下
-- 需要时在store中动态注册slice，保持代码的模块化和可维护性
-- 提供类型安全的hooks和selectors，确保开发体验
-- 这样做能够更好地组织代码，避免单一文件过于庞大，便于团队协作
-
-## 第八步：实现权限控制架构
-**目的：** 基于高阶组件的权限控制系统，实现统一的路由守卫
-
-### 8.1 创建权限检查高阶组件
-**文件路径：** `src/components/withAuthorization/index.tsx`
-**目的：** 创建权限检查守门员，控制页面访问权限
-
-**具体代码：**
-```typescript
-// src/components/withAuthorization/index.tsx
-// 权限检查高阶组件 - UMI版本
-// 这个组件负责检查用户权限并决定显示哪个页面
-
-import { FC } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { Spin } from 'antd';
-
-// 权限检查的高阶组件
-function withAuthorization(WrappedComponent: FC) {
-  return () => {
-    // 获取当前路由位置
-    const { pathname } = useLocation();
-    
-    // 使用localStorage检查token和用户信息
-    // 后续可以轻松替换为Redux状态管理
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('userInfo');
-    
-    /*
-      权限检查逻辑：
-      
-      1. 如果用户已登录（有token）：
-         - 访问 /login → 重定向到 /home
-         - 访问其他页面 → 正常显示
-         
-      2. 如果用户未登录（无token）：
-         - 访问 /login → 正常显示登录页
-         - 访问其他页面 → 重定向到 /login
-    */
-    
-    if (token) {
-      // 用户已登录
-      if (pathname === '/login') {
-        // 已登录用户访问登录页，重定向到首页
-        return <Navigate to="/home" replace />;
-      }
-      
-      // 检查是否有用户详细信息
-      if (userInfo) {
-        // 有完整信息，正常渲染组件
-        return <WrappedComponent />;
-      } else {
-        // 有token但没有用户详细信息，可能需要重新获取
-        console.log('需要获取用户详细信息');
-        return <WrappedComponent />;
-      }
-    } else {
-      // 用户未登录
-      if (pathname === '/login') {
-        // 未登录用户访问登录页，正常显示
-        return <WrappedComponent />;
-      } else {
-        // 未登录用户访问其他页面，重定向到登录页
-        return <Navigate to="/login" replace />;
-      }
-    }
-  };
-}
-
-export default withAuthorization;
-```
-
-### 8.2 创建权限布局组件
-**文件路径：** `src/layouts/AuthLayout.tsx`
-**目的：** 创建空的布局容器，作为所有路由的统一入口
-
-**具体代码：**
-```typescript
-// src/layouts/AuthLayout.tsx
-// 权限布局组件 - 所有路由的统一入口
-// 这是一个空的容器组件，被 withAuthorization 包裹后负责权限控制
-
-import { FC } from 'react';
-import { Outlet } from 'react-router-dom';
-import withAuthorization from '@/components/withAuthorization';
-
-// 基础的空布局组件
-const BaseAuthLayout: FC = () => {
-  return (
-    <div>
-      {/* Outlet 会渲染匹配的子路由组件 */}
-      <Outlet />
+    <div style={{ height: '100%', borderRight: '1px solid #f0f0f0' }}>
+      <div style={{ 
+        padding: '16px', 
+        borderBottom: '1px solid #f0f0f0',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        textAlign: 'center'
+      }}>
+        业务模块
+      </div>
+      <Menu
+        mode="inline"
+        selectedKeys={[selectedKey]}
+        items={menuItems}
+        onClick={handleMenuClick}
+        style={{ 
+          height: 'calc(100% - 57px)', 
+          borderRight: 0,
+          paddingTop: '8px'
+        }}
+      />
     </div>
   );
 };
 
-// 使用 withAuthorization 包裹，添加权限检查功能
-const AuthLayout = withAuthorization(BaseAuthLayout);
-
-export default AuthLayout;
+export default WorkCenterSidebar;
 ```
 
-### 8.3 创建登录页面
-**文件路径：** `src/pages/Login/index.tsx`
-**目的：** 实现用户登录功能
+## 4. 创建模块卡片组件
+文件：src/components/ModuleCard/index.tsx
+目的：显示单个业务模块的卡片，包含收藏功能
+原因：每个子模块需要统一的展示形式，便于用户识别和操作
+功能：
+- 显示模块名称、描述和图标
+- 收藏/取消收藏按钮
+- 启动模块功能（模拟启动新的umi项目）
+- 卡片样式与交互效果
 
-**具体代码：**
-```typescript
-// src/pages/Login/index.tsx
-// 登录页面
-import { FC } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import styles from './index.less';
+```tsx
+import React from 'react';
+import { Card, Button, message, Tooltip } from 'antd';
+import { 
+  StarOutlined, 
+  StarFilled, 
+  PlayCircleOutlined,
+  AppstoreOutlined 
+} from '@ant-design/icons';
+import { SubModule } from '@/types/workcenter';
 
-interface LoginForm {
-  username: string;
-  password: string;
+interface ModuleCardProps {
+  module: SubModule;
+  categoryName: string;
+  onFavoriteToggle: (module: SubModule, categoryName: string) => void;
+  onLaunch: (module: SubModule) => void;
 }
 
-const Login: FC = () => {
-  const navigate = useNavigate();
+const ModuleCard: React.FC<ModuleCardProps> = ({
+  module,
+  categoryName,
+  onFavoriteToggle,
+  onLaunch,
+}) => {
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFavoriteToggle(module, categoryName);
+    message.success(module.isFavorite ? '已取消收藏' : '已添加到收藏');
+  };
 
-  const onFinish = (values: LoginForm) => {
-    console.log('登录信息:', values);
-    
-    // 模拟登录逻辑
-    if (values.username === 'admin' && values.password === '123456') {
-      // 登录成功，保存token和用户信息
-      localStorage.setItem('token', 'mock-token-12345');
-      localStorage.setItem('userInfo', JSON.stringify({
-        name: '管理员',
-        avatar: 'https://example.com/avatar.jpg',
-        routes: ['/home', '/access', '/table'],
-        buttons: ['add', 'edit', 'delete']
-      }));
-      
-      message.success('登录成功！');
-      navigate('/home');
-    } else {
-      message.error('用户名或密码错误！');
-    }
+  const handleLaunchClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onLaunch(module);
   };
 
   return (
-    <div className={styles.loginContainer}>
-      <Card title="用户登录" className={styles.loginCard}>
-        <Form
-          name="login"
-          onFinish={onFinish}
-          autoComplete="off"
-          size="large"
-        >
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: '请输入用户名!' }]}
-          >
-            <Input 
-              prefix={<UserOutlined />} 
-              placeholder="用户名 (admin)" 
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: '请输入密码!' }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="密码 (123456)"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              登录
-            </Button>
-          </Form.Item>
-        </Form>
-        
-        <div className={styles.tips}>
-          <p>测试账号：admin</p>
-          <p>测试密码：123456</p>
-        </div>
-      </Card>
-    </div>
-  );
-};
-
-export default Login;
-```
-
-**文件路径：** `src/pages/Login/index.less`
-**目的：** 登录页面样式
-
-**具体代码：**
-```less
-// src/pages/Login/index.less
-.loginContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.loginCard {
-  width: 400px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  border: none; /* 去除边框 */
-  
-  :global(.ant-card-head-title) {
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  /* 确保卡片内容也没有边框 */
-  :global(.ant-card-body) {
-    border: none;
-  }
-}
-
-.tips {
-  margin-top: 16px;
-  padding: 12px;
-  background: #f6f8fa;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #666;
-  text-align: center;
-  
-  p {
-    margin: 4px 0;
-  }
-}
-```
-
-### 8.4 修改路由配置
-**文件路径：** `.umirc.ts`
-**目的：** 配置权限控制路由架构
-
-**具体代码：**
-```typescript
-// .umirc.ts
-import { defineConfig } from '@umijs/max';
-
-export default defineConfig({
-  antd: {},
-  access: {},
-  model: {},
-  initialState: {},
-  request: {},
-  layout: {
-    title: '管理系统',
-  },
-  routes: [
-    // 第一组路由：登录相关页面，使用空布局
-    {
-      path: '/',
-      component: '@/layouts/EmptyLayout', // 空布局，用于登录页
-      routes: [
-        {
-          path: '/',
-          redirect: '/login',
-        },
-        {
-          name: '登录',
-          path: '/login',
-          component: './Login',
-        },
-      ],
-    },
-    // 第二组路由：业务页面，使用权限布局
-    {
-      path: '/xt',
-      component: '@/layouts/AuthLayout', // 权限布局，用于业务页面
-      routes: [
-        {
-          path: '/xt',
-          redirect: '/xt/home',
-        },
-        {
-          name: '首页',
-          path: '/xt/home',
-          component: './Home',
-        },
-        {
-          name: '权限演示',
-          path: '/xt/access',
-          component: './Access',
-        },
-        {
-          name: 'CRUD 示例',
-          path: '/xt/table',
-          component: './Table',
-        },
-      ],
-    },
-  ],
-  npmClient: 'npm',
-});
-```
-
-### 8.5 增强首页功能
-**文件路径：** `src/pages/Home/index.tsx`
-**目的：** 添加用户信息显示和退出登录功能
-
-**具体代码：**
-```typescript
-// src/pages/Home/index.tsx - 修改部分
-import Guide from '@/components/Guide';
-import { trim } from '@/utils/format';
-import { PageContainer } from '@ant-design/pro-components';
-import { useModel } from '@umijs/max';
-import { Button, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import styles from './index.less';
-
-const HomePage: React.FC = () => {
-  const { name } = useModel('global');
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // 清除登录信息
-    localStorage.removeItem('token');
-    localStorage.removeItem('userInfo');
-    message.success('退出登录成功！');
-    navigate('/login');
-  };
-
-  // 获取用户信息
-  const userInfo = localStorage.getItem('userInfo');
-  const user = userInfo ? JSON.parse(userInfo) : null;
-
-  return (
-    <PageContainer 
-      ghost
-      extra={[
-        <Button key="logout" onClick={handleLogout}>
-          退出登录
-        </Button>
+    <Card
+      hoverable
+      style={{
+        width: 280,
+        margin: '8px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }}
+      bodyStyle={{ padding: '16px' }}
+      actions={[
+        <Tooltip title={module.isFavorite ? '取消收藏' : '添加收藏'} key="favorite">
+          <Button
+            type="text"
+            icon={module.isFavorite ? <StarFilled style={{ color: '#faad14' }} /> : <StarOutlined />}
+            onClick={handleFavoriteClick}
+          />
+        </Tooltip>,
+        <Tooltip title="启动模块" key="launch">
+          <Button
+            type="text"
+            icon={<PlayCircleOutlined style={{ color: '#52c41a' }} />}
+            onClick={handleLaunchClick}
+          />
+        </Tooltip>,
       ]}
     >
-      <div className={styles.container}>
-        {user && (
-          <div style={{ marginBottom: 20, padding: 16, background: '#f6f8fa', borderRadius: 8 }}>
-            <h3>欢迎回来，{user.name}！</h3>
-            <p>当前用户权限路由：{user.routes?.join(', ')}</p>
-            <p>按钮权限：{user.buttons?.join(', ')}</p>
+      <Card.Meta
+        avatar={
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '8px',
+            backgroundColor: '#f0f0f0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#1890ff'
+          }}>
+            <AppstoreOutlined style={{ fontSize: '20px' }} />
           </div>
-        )}
-        <Guide name={trim(name)} />
-      </div>
-    </PageContainer>
-  );
-};
-
-export default HomePage;
-```
-
-**内容说明：**
-- **权限控制架构**：基于高阶组件的统一权限管理
-- **路由守卫**：所有路由都通过AuthLayout进行权限检查
-- **登录功能**：完整的登录表单和状态管理
-- **用户体验**：优雅的登录页面设计，无边框卡片
-- **权限逻辑**：已登录访问/login自动跳转首页，未登录访问其他页面跳转登录页
-- **扩展性**：架构支持后续集成Redux、真实API等功能
-
-## 第九步：修改 app.ts 配置
-**文件路径：** `src/app.ts`
-**目的：** 配置UMI运行时基础配置
-
-**具体代码：**
-```typescript
-// src/app.ts
-
-// 全局初始化数据配置，用于 Layout 用户信息和权限初始化
-export async function getInitialState(): Promise<{
-  name?: string;
-  user?: UserInfo;
-  isLoggedIn?: boolean;
-}> {
-  // 检查是否有有效 token
-  if (isTokenValid()) {
-    try {
-      // 使用Redux异步action获取用户信息
-      const result = await store.dispatch(getCurrentUserAsync());
-      if (getCurrentUserAsync.fulfilled.match(result)) {
-        return {
-          name: result.payload.username,
-          user: result.payload,
-          isLoggedIn: true,
-        };
-      }
-    } catch (error) {
-      console.error('获取用户信息失败:', error);
-    }
-  }
-  
-  return {
-    name: 'Guest',
-    isLoggedIn: false,
-  };
-}
-
-// 运行时布局配置
-export const layout: RunTimeLayoutConfig = ({ initialState }) => {
-  return {
-    logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
-    menu: {
-      locale: false,
-    },
-    rightContentRender: () => {
-      if (initialState?.isLoggedIn) {
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>欢迎，{initialState.user?.username}</span>
+        }
+        title={
+          <div style={{ 
+            fontSize: '16px', 
+            fontWeight: 'bold',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {module.name}
           </div>
-        );
-      }
-      return null;
-    },
-  };
-};
-```
-
-**内容说明：**
-- 使用Redux store直接dispatch异步action获取用户信息
-- 集成Redux状态管理与Umi的初始化流程
-- 保持原有的布局配置不变
-- 这样做是为了在应用启动时自动检查用户登录状态，实现自动登录功能
-
-## 第九步：修改权限配置
-**文件路径：** `src/access.ts`
-**目的：** 基于用户登录状态配置页面访问权限
-
-**具体代码：**
-```typescript
-// src/access.ts
-export default (initialState: { isLoggedIn?: boolean; user?: any }) => {
-  // 在这里按照初始化数据定义项目中的权限，统一管理
-  const { isLoggedIn, user } = initialState || {};
-  
-  return {
-    // 是否可以访问仪表板（需要登录）
-    canAccessDashboard: !!isLoggedIn,
-    
-    // 是否是访客（未登录用户）
-    isGuest: !isLoggedIn,
-    
-    // 是否可以看到管理员功能
-    canSeeAdmin: !!(isLoggedIn && user && user.roles?.includes('admin')),
-    
-    // 是否已登录
-    isAuthenticated: !!isLoggedIn,
-  };
-};
-```
-
-**内容说明：**
-- 修改权限判断逻辑，基于 initialState 中的登录状态
-- 定义 canAccessDashboard 权限，需要用户已登录
-- 定义 isGuest 权限，用于未登录用户访问登录页
-- 这样做是为了实现基于登录状态的页面访问控制
-
-## 第十步：创建登录页面
-**文件路径：** `src/pages/Login/index.tsx`
-**目的：** 创建登录表单页面
-
-**具体代码：**
-```typescript
-// src/pages/Login/index.tsx
-import React, { useEffect } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { history, useAccess } from '@umijs/max';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { loginAsync, clearError } from '@/app/authSlice';
-import type { LoginFormData } from '@/types/auth';
-import './index.less';
-
-const LoginPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { isLoggedIn, loading, error } = useAppSelector((state) => ({
-    isLoggedIn: state.auth.isLoggedIn,
-    loading: state.auth.loading,
-    error: state.auth.error,
-  }));
-  const access = useAccess();
-  const [form] = Form.useForm();
-
-  // 如果已经登录，直接跳转到 dashboard
-  useEffect(() => {
-    if (access.isAuthenticated || isLoggedIn) {
-      history.push('/xt/dashboard');
-    }
-  }, [access.isAuthenticated, isLoggedIn]);
-
-  // 处理错误信息
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-      dispatch(clearError());
-    }
-  }, [error, dispatch]);
-
-  const handleSubmit = async (values: LoginFormData) => {
-    const result = await dispatch(loginAsync(values));
-    if (loginAsync.fulfilled.match(result)) {
-      message.success('登录成功');
-      history.push('/xt/dashboard');
-    }
-  };
-
-  return (
-    <div className="login-container">
-      <Card className="login-card" title="用户登录" bordered={false}>
-        <Form
-          form={form}
-          name="login"
-          onFinish={handleSubmit}
-          autoComplete="off"
-          size="large"
-        >
-          <Form.Item
-            name="username"
-            rules={[
-              { required: true, message: '请输入用户名' },
-              { min: 3, message: '用户名至少3个字符' },
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="请输入用户名"
-              autoComplete="username"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: '请输入密码' },
-              { min: 6, message: '密码至少6个字符' },
-            ]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="请输入密码"
-              autoComplete="current-password"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-            >
-              登录
-            </Button>
-          </Form.Item>
-        </Form>
-        
-        <div className="login-tips">
-          <p>测试账号：admin / 123456</p>
-          <p>测试账号：user / 123456</p>
-          <p>登录后自动保存状态，下次访问无需重新登录</p>
+        }
+        description={
+          <div style={{ 
+            color: '#666',
+            fontSize: '12px',
+            height: '36px',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical'
+          }}>
+            {module.description}
+          </div>
+        }
+      />
+      {module.port && (
+        <div style={{ 
+          marginTop: '8px', 
+          fontSize: '12px', 
+          color: '#999',
+          textAlign: 'right'
+        }}>
+          端口: {module.port}
         </div>
-      </Card>
-    </div>
+      )}
+    </Card>
   );
 };
 
-export default LoginPage;
+export default ModuleCard;
 ```
 
-**样式文件：** `src/pages/Login/index.less`
-```less
-// src/pages/Login/index.less
-.login-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+## 5. 创建模块网格容器组件
+文件：src/components/ModuleGrid/index.tsx
+目的：使用flex布局展示当前选中分类下的所有子模块
+原因：需要响应式的网格布局来展示多个模块卡片
+功能：
+- 响应式flex布局
+- 自动换行和间距调整
+- 支持不同屏幕尺寸的适配
 
-  .login-card {
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-
-    .ant-card-head {
-      text-align: center;
-      border-bottom: 1px solid #f0f0f0;
-      
-      .ant-card-head-title {
-        font-size: 24px;
-        font-weight: 600;
-        color: #1890ff;
-      }
-    }
-
-    .ant-card-body {
-      padding: 32px;
-    }
-  }
-
-  .login-tips {
-    margin-top: 16px;
-    padding: 12px;
-    background: #f6f8fa;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #666;
-    
-    p {
-      margin: 4px 0;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .login-container {
-    padding: 10px;
-    
-    .login-card {
-      max-width: 100%;
-      
-      .ant-card-body {
-        padding: 20px;
-      }
-    }
-  }
-}
-```
-
-**内容说明：**
-- 使用 Ant Design 的 Form 组件创建简化的登录表单
-- 只包含用户名、密码输入框和登录按钮（移除记住密码选项）
-- 实现表单验证逻辑
-- 调用 auth model 的 login effect 处理登录
-- 登录成功后自动保存token，跳转到 dashboard 页面
-- 添加提示信息说明自动保存登录状态
-- 这样做是为了简化登录流程，提供更好的用户体验
-
-## 第十一步：创建 Dashboard 页面
-**文件路径：** `src/pages/Dashboard/index.tsx`
-**目的：** 创建需要登录才能访问的仪表板页面
-
-**具体代码：**
-```typescript
-// src/pages/Dashboard/index.tsx
+```tsx
 import React from 'react';
-import { Card, Button, Space, Avatar, Descriptions, message } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useAccess, history } from '@umijs/max';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { logoutAsync } from '@/app/authSlice';
+import { Empty } from 'antd';
+import { SubModule } from '@/types/workcenter';
+import ModuleCard from '@/components/ModuleCard';
 
-const DashboardPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { user, loading } = useAppSelector((state) => ({
-    user: state.auth.user,
-    loading: state.auth.loading,
-  }));
-  const access = useAccess();
+interface ModuleGridProps {
+  modules: SubModule[];
+  categoryName: string;
+  onFavoriteToggle: (module: SubModule, categoryName: string) => void;
+  onLaunch: (module: SubModule) => void;
+}
 
-  const handleLogout = async () => {
-    const result = await dispatch(logoutAsync());
-    if (logoutAsync.fulfilled.match(result)) {
-      message.success('退出登录成功');
-      history.push('/login');
-    }
-  };
-
-  if (!access.canAccessDashboard) {
+const ModuleGrid: React.FC<ModuleGridProps> = ({
+  modules,
+  categoryName,
+  onFavoriteToggle,
+  onLaunch,
+}) => {
+  if (!modules || modules.length === 0) {
     return (
-      <Card>
-        <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <h3>无权限访问</h3>
-          <p>您没有权限访问此页面</p>
-        </div>
-      </Card>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '300px'
+      }}>
+        <Empty description="暂无模块" />
+      </div>
     );
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card
-        title="仪表板"
+    <div style={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '16px',
+      padding: '16px',
+      justifyContent: 'flex-start',
+      alignContent: 'flex-start'
+    }}>
+      {modules.map(module => (
+        <ModuleCard
+          key={module.id}
+          module={module}
+          categoryName={categoryName}
+          onFavoriteToggle={onFavoriteToggle}
+          onLaunch={onLaunch}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default ModuleGrid;
+```
+
+## 6. 创建收藏管理服务
+文件：src/services/favoriteService.ts
+目的：管理模块收藏功能的业务逻辑
+原因：收藏功能需要在工作中台和工作看板之间共享数据
+功能：
+- 添加/移除收藏模块
+- 获取收藏列表
+- 本地存储管理（后续可扩展为API调用）
+
+```typescript
+import { FavoriteModule, SubModule } from '@/types/workcenter';
+
+const STORAGE_KEY = 'work_center_favorites';
+
+export class FavoriteService {
+  // 获取收藏列表
+  static getFavorites(): FavoriteModule[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('获取收藏列表失败:', error);
+      return [];
+    }
+  }
+
+  // 添加收藏
+  static addFavorite(module: SubModule, categoryName: string): boolean {
+    try {
+      const favorites = this.getFavorites();
+      const existingIndex = favorites.findIndex(fav => fav.id === module.id);
+      
+      if (existingIndex === -1) {
+        const newFavorite: FavoriteModule = {
+          ...module,
+          categoryName,
+          addedAt: new Date().toISOString(),
+          isFavorite: true
+        };
+        favorites.push(newFavorite);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('添加收藏失败:', error);
+      return false;
+    }
+  }
+
+  // 移除收藏
+  static removeFavorite(moduleId: string): boolean {
+    try {
+      const favorites = this.getFavorites();
+      const newFavorites = favorites.filter(fav => fav.id !== moduleId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFavorites));
+      return true;
+    } catch (error) {
+      console.error('移除收藏失败:', error);
+      return false;
+    }
+  }
+
+  // 检查是否已收藏
+  static isFavorite(moduleId: string): boolean {
+    const favorites = this.getFavorites();
+    return favorites.some(fav => fav.id === moduleId);
+  }
+
+  // 切换收藏状态
+  static toggleFavorite(module: SubModule, categoryName: string): boolean {
+    if (this.isFavorite(module.id)) {
+      return this.removeFavorite(module.id);
+    } else {
+      return this.addFavorite(module, categoryName);
+    }
+  }
+}
+```
+
+## 7. 修改工作中台页面主体
+文件：src/pages/WorkCenter/index.tsx
+目的：重构工作中台页面，实现左侧菜单+右侧内容的布局
+原因：当前页面只是简单的Card，需要实现完整的左右分栏功能
+结构：
+- 左侧：WorkCenterSidebar组件（固定宽度200px）
+- 右侧：ModuleGrid组件（自适应宽度）
+- 状态管理：当前选中的菜单分类
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { Layout, Card, message } from 'antd';
+import WorkCenterSidebar from '@/components/WorkCenterSidebar';
+import ModuleGrid from '@/components/ModuleGrid';
+import { WORK_CENTER_MENUS } from '@/constants/workCenterMenus';
+import { FavoriteService } from '@/services/favoriteService';
+import { SubModule } from '@/types/workcenter';
+import { startModule } from '@/utils/moduleRunner';
+
+const { Sider, Content } = Layout;
+
+const WorkCenter: React.FC = () => {
+  const [selectedCategoryKey, setSelectedCategoryKey] = useState('master');
+  const [favoriteModuleIds, setFavoriteModuleIds] = useState<Set<string>>(new Set());
+
+  // 初始化收藏状态
+  useEffect(() => {
+    const favorites = FavoriteService.getFavorites();
+    setFavoriteModuleIds(new Set(favorites.map(fav => fav.id)));
+  }, []);
+
+  // 获取当前选中分类的模块
+  const getCurrentModules = () => {
+    const category = WORK_CENTER_MENUS.find(cat => cat.key === selectedCategoryKey);
+    if (!category) return [];
+    
+    return category.subModules.map(module => ({
+      ...module,
+      isFavorite: favoriteModuleIds.has(module.id)
+    }));
+  };
+
+  // 获取当前分类名称
+  const getCurrentCategoryName = () => {
+    const category = WORK_CENTER_MENUS.find(cat => cat.key === selectedCategoryKey);
+    return category?.name || '';
+  };
+
+  // 处理菜单选择
+  const handleMenuSelect = (key: string) => {
+    setSelectedCategoryKey(key);
+  };
+
+  // 处理收藏切换
+  const handleFavoriteToggle = (module: SubModule, categoryName: string) => {
+    const success = FavoriteService.toggleFavorite(module, categoryName);
+    if (success) {
+      setFavoriteModuleIds(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(module.id)) {
+          newSet.delete(module.id);
+        } else {
+          newSet.add(module.id);
+        }
+        return newSet;
+      });
+    }
+  };
+
+  // 处理模块启动
+  const handleModuleLaunch = async (module: SubModule) => {
+    try {
+      const success = await startModule(module);
+      if (success) {
+        message.success(`${module.name} 启动成功！端口: ${module.port}`);
+      } else {
+        message.error(`${module.name} 启动失败`);
+      }
+    } catch (error) {
+      message.error(`启动模块时发生错误: ${error}`);
+    }
+  };
+
+  return (
+    <div style={{ height: 'calc(100vh - 112px)' }}>
+      <Layout style={{ height: '100%' }}>
+        <Sider width={240} style={{ backgroundColor: '#fff' }}>
+          <WorkCenterSidebar
+            selectedKey={selectedCategoryKey}
+            onSelect={handleMenuSelect}
+          />
+        </Sider>
+        <Content style={{ padding: '16px', backgroundColor: '#f5f5f5' }}>
+          <Card 
+            title={getCurrentCategoryName()}
+            style={{ height: '100%' }}
+            bodyStyle={{ height: 'calc(100% - 57px)', overflow: 'auto' }}
+          >
+            <ModuleGrid
+              modules={getCurrentModules()}
+              categoryName={getCurrentCategoryName()}
+              onFavoriteToggle={handleFavoriteToggle}
+              onLaunch={handleModuleLaunch}
+            />
+          </Card>
+        </Content>
+      </Layout>
+    </div>
+  );
+};
+
+export default WorkCenter;
+```
+
+## 8. 修改工作看板页面
+文件：src/pages/Workflow/index.tsx  
+目的：在工作看板中显示用户收藏的模块
+原因：用户收藏的模块需要在工作看板中快速访问
+功能：
+- 获取并显示收藏的模块列表
+- 提供快速启动收藏模块的功能
+- 支持从收藏列表中移除模块
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { Card, Row, Col, Button, Empty, message, Tooltip } from 'antd';
+import { 
+  StarFilled, 
+  PlayCircleOutlined, 
+  DeleteOutlined,
+  AppstoreOutlined 
+} from '@ant-design/icons';
+import { FavoriteService } from '@/services/favoriteService';
+import { FavoriteModule } from '@/types/workcenter';
+import { startModule } from '@/utils/moduleRunner';
+
+const Workflow: React.FC = () => {
+  const [favoriteModules, setFavoriteModules] = useState<FavoriteModule[]>([]);
+
+  // 加载收藏模块
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+
+  const loadFavorites = () => {
+    const favorites = FavoriteService.getFavorites();
+    setFavoriteModules(favorites);
+  };
+
+  // 启动模块
+  const handleLaunch = async (module: FavoriteModule) => {
+    try {
+      const success = await startModule(module);
+      if (success) {
+        message.success(`${module.name} 启动成功！端口: ${module.port}`);
+      } else {
+        message.error(`${module.name} 启动失败`);
+      }
+    } catch (error) {
+      message.error(`启动模块时发生错误: ${error}`);
+    }
+  };
+
+  // 移除收藏
+  const handleRemoveFavorite = (moduleId: string, moduleName: string) => {
+    const success = FavoriteService.removeFavorite(moduleId);
+    if (success) {
+      message.success(`已从收藏中移除 ${moduleName}`);
+      loadFavorites(); // 重新加载收藏列表
+    } else {
+      message.error('移除收藏失败');
+    }
+  };
+
+  return (
+    <div>
+      <Card 
+        title="工作看板 - 我的收藏模块" 
+        bordered={false}
         extra={
-          <Space>
-            <Button
-              type="primary"
-              danger
-              icon={<LogoutOutlined />}
-              loading={loading}
-              onClick={handleLogout}
-            >
-              退出登录
-            </Button>
-          </Space>
+          <span style={{ color: '#999', fontSize: '14px' }}>
+            共 {favoriteModules.length} 个收藏模块
+          </span>
         }
       >
-        <div style={{ marginBottom: '24px' }}>
-          <Space size="large">
-            <Avatar size={64} icon={<UserOutlined />} src={user?.avatar} />
-            <div>
-              <h2>欢迎回来，{user?.username}！</h2>
-              <p style={{ color: '#666', margin: 0 }}>
-                您已成功登录到系统
-              </p>
-            </div>
-          </Space>
-        </div>
-
-        <Descriptions title="用户信息" bordered column={2}>
-          <Descriptions.Item label="用户名">
-            {user?.username}
-          </Descriptions.Item>
-          <Descriptions.Item label="用户ID">
-            {user?.id}
-          </Descriptions.Item>
-          <Descriptions.Item label="邮箱">
-            {user?.email || '未设置'}
-          </Descriptions.Item>
-          <Descriptions.Item label="角色">
-            {user?.roles?.join(', ') || '普通用户'}
-          </Descriptions.Item>
-        </Descriptions>
-
-        <Card
-          title="功能区域"
-          style={{ marginTop: '24px' }}
-          bodyStyle={{ padding: '24px' }}
-        >
-          <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <h3>这是受保护的内容区域</h3>
-            <p>只有登录用户才能看到这些内容</p>
-            <Space>
-              <Button type="primary">功能按钮 1</Button>
-              <Button>功能按钮 2</Button>
-              <Button>功能按钮 3</Button>
-            </Space>
-          </div>
-        </Card>
+        {favoriteModules.length === 0 ? (
+          <Empty 
+            description="暂无收藏模块"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            style={{ padding: '60px 0' }}
+          >
+            <p style={{ color: '#999' }}>
+              前往工作中台收藏你常用的模块吧！
+            </p>
+          </Empty>
+        ) : (
+          <Row gutter={[16, 16]}>
+            {favoriteModules.map(module => (
+              <Col xs={24} sm={12} md={8} lg={6} xl={6} key={module.id}>
+                <Card
+                  size="small"
+                  hoverable
+                  style={{
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  }}
+                  actions={[
+                    <Tooltip title="启动模块" key="launch">
+                      <Button
+                        type="text"
+                        icon={<PlayCircleOutlined style={{ color: '#52c41a' }} />}
+                        onClick={() => handleLaunch(module)}
+                      />
+                    </Tooltip>,
+                    <Tooltip title="移除收藏" key="remove">
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
+                        onClick={() => handleRemoveFavorite(module.id, module.name)}
+                      />
+                    </Tooltip>,
+                  ]}
+                >
+                  <Card.Meta
+                    avatar={
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '6px',
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#1890ff'
+                      }}>
+                        <AppstoreOutlined style={{ fontSize: '16px' }} />
+                      </div>
+                    }
+                    title={
+                      <div style={{ 
+                        fontSize: '14px', 
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        <StarFilled style={{ color: '#faad14', marginRight: '4px' }} />
+                        {module.name}
+                      </div>
+                    }
+                    description={
+                      <>
+                        <div style={{ 
+                          color: '#666',
+                          fontSize: '12px',
+                          marginBottom: '4px',
+                          height: '24px',
+                          overflow: 'hidden',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}>
+                          {module.description}
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '11px',
+                          color: '#999'
+                        }}>
+                          <span>{module.categoryName}</span>
+                          <span>端口: {module.port}</span>
+                        </div>
+                      </>
+                    }
+                  />
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
       </Card>
     </div>
   );
 };
 
-export default DashboardPage;
+export default Workflow;
 ```
 
-**内容说明：**
-- 显示当前登录用户信息
-- 提供登出功能按钮
-- 展示一些受保护的内容
-- 这样做是为了验证权限控制是否正常工作
+## 9. 添加样式文件
+文件：src/pages/WorkCenter/index.less
+目的：工作中台页面的专用样式
+内容：
+- 左右分栏布局样式
+- 菜单和内容区域的间距调整
+- 响应式适配样式
 
-## 第十二步：创建 404 页面
-**文件路径：** `src/pages/404/index.tsx`
-**目的：** 创建 404 错误页面
-
-**具体代码：**
-```typescript
-// src/pages/404/index.tsx
-import React from 'react';
-import { Result, Button } from 'antd';
-import { history } from '@umijs/max';
-
-const NotFoundPage: React.FC = () => {
-  const handleBackHome = () => {
-    history.push('/login');
-  };
-
-  const handleBackDashboard = () => {
-    history.push('/xt/dashboard');
-  };
-
-  return (
-    <Result
-      status="404"
-      title="404"
-      subTitle="抱歉，您访问的页面不存在。"
-      extra={
-        <div>
-          <Button type="primary" onClick={handleBackHome} style={{ marginRight: 8 }}>
-            返回登录页
-          </Button>
-          <Button onClick={handleBackDashboard}>
-            返回仪表板
-          </Button>
-        </div>
-      }
-    />
-  );
-};
-
-export default NotFoundPage;
-```
-
-**内容说明：**
-- 显示页面未找到的提示信息
-- 提供返回首页的链接
-- 使用 Ant Design 的 Result 组件
-- 这样做是为了处理用户访问不存在页面的情况
-
-## 第十三步：创建 withAuthorization 高阶组件
-**文件路径：** `src/components/withAuthorization.tsx`
-**目的：** 创建权限控制的高阶组件包装器
-
-**具体代码：**
-```typescript
-// src/components/withAuthorization.tsx
-import React, { useEffect, ComponentType } from 'react';
-import { Spin, Result, Button } from 'antd';
-import { useAccess, useModel, history } from '@umijs/max';
-
-export interface AuthorizationConfig {
-  // 需要的权限列表
-  permissions?: string[];
-  // 是否需要登录
-  requireAuth?: boolean;
-  // 权限不足时的重定向路径
-  redirectTo?: string;
-  // 权限不足时的提示信息
-  noPermissionMessage?: string;
-}
-
-const withAuthorization = <P extends object>(
-  WrappedComponent: ComponentType<P>,
-  config: AuthorizationConfig = {}
-) => {
-  const AuthorizedComponent: React.FC<P> = (props) => {
-    const access = useAccess();
-    const { user, loading, initAuth } = useModel('auth');
-    const {
-      permissions = [],
-      requireAuth = true,
-      redirectTo = '/login',
-      noPermissionMessage = '您没有权限访问此页面'
-    } = config;
-
-    useEffect(() => {
-      // 初始化认证状态
-      initAuth();
-    }, [initAuth]);
-
-    // 显示加载状态
-    if (loading) {
-      return (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '200px' 
-        }}>
-          <Spin size="large" tip="加载中..." />
-        </div>
-      );
-    }
-
-    // 检查是否需要登录
-    if (requireAuth && !access.isAuthenticated) {
-      // 自动重定向到登录页
-      history.push(redirectTo);
-      return null;
-    }
-
-    // 检查特定权限
-    if (permissions.length > 0) {
-      const hasPermission = permissions.every(permission => {
-        // 根据权限名称检查对应的 access 属性
-        return access[permission as keyof typeof access];
-      });
-
-      if (!hasPermission) {
-        return (
-          <Result
-            status="403"
-            title="403"
-            subTitle={noPermissionMessage}
-            extra={
-              <Button type="primary" onClick={() => history.push('/login')}>
-                返回登录页
-              </Button>
-            }
-          />
-        );
-      }
-    }
-
-    // 权限检查通过，渲染组件
-    return <WrappedComponent {...props} />;
-  };
-
-  // 设置显示名称便于调试
-  AuthorizedComponent.displayName = `withAuthorization(${WrappedComponent.displayName || WrappedComponent.name})`;
-
-  return AuthorizedComponent;
-};
-
-export default withAuthorization;
-
-// 便捷的预设配置
-export const withLoginRequired = <P extends object>(Component: ComponentType<P>) =>
-  withAuthorization(Component, { requireAuth: true });
-
-export const withDashboardAccess = <P extends object>(Component: ComponentType<P>) =>
-  withAuthorization(Component, { 
-    requireAuth: true, 
-    permissions: ['canAccessDashboard'] 
-  });
-
-export const withAdminAccess = <P extends object>(Component: ComponentType<P>) =>
-  withAuthorization(Component, { 
-    requireAuth: true, 
-    permissions: ['canSeeAdmin'],
-    noPermissionMessage: '需要管理员权限才能访问此页面'
-  });
-```
-
-**内容说明：**
-- 接收一个组件和权限要求作为参数
-- 检查用户是否有访问权限
-- 如果没有权限，重定向到登录页或 404 页
-- 如果有权限，渲染被包装的组件
-- 处理加载状态显示
-- 这样做是为了实现可复用的权限控制逻辑
-
-## 第十四步：创建受保护的 Layout 组件
-**文件路径：** `src/layouts/ProtectedLayout.tsx`
-**目的：** 创建需要登录才能访问的布局组件
-
-**具体代码：**
-```typescript
-// src/layouts/ProtectedLayout.tsx
-import React from 'react';
-import { Layout, Menu, Avatar, Dropdown, Space, Button } from 'antd';
-import { UserOutlined, LogoutOutlined, DashboardOutlined } from '@ant-design/icons';
-import { useModel, Outlet } from '@umijs/max';
-import withAuthorization from '@/components/withAuthorization';
-
-const { Header, Content, Sider } = Layout;
-
-const ProtectedLayout: React.FC = () => {
-  const { user, logout } = useModel('auth');
-
-  const handleLogout = async () => {
-    await logout();
-  };
-
-  const userMenuItems = [
-    {
-      key: 'profile',
-      label: '个人资料',
-      icon: <UserOutlined />,
-    },
-    {
-      type: 'divider' as const,
-    },
-    {
-      key: 'logout',
-      label: '退出登录',
-      icon: <LogoutOutlined />,
-      onClick: handleLogout,
-    },
-  ];
-
-  const sideMenuItems = [
-    {
-      key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: '仪表板',
-    },
-  ];
-
-  return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        collapsible
-        theme="light"
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-        }}
-      >
-        <div style={{
-          height: 32,
-          margin: 16,
-          background: 'rgba(255, 255, 255, 0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          color: '#1890ff'
-        }}>
-          系统后台
-        </div>
-        <Menu
-          theme="light"
-          mode="inline"
-          defaultSelectedKeys={['dashboard']}
-          items={sideMenuItems}
-        />
-      </Sider>
-      
-      <Layout style={{ marginLeft: 200 }}>
-        <Header style={{
-          padding: '0 24px',
-          background: '#fff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          boxShadow: '0 1px 4px rgba(0,21,41,.08)'
-        }}>
-          <div>
-            <h2 style={{ margin: 0, color: '#1890ff' }}>管理系统</h2>
-          </div>
-          
-          <Space size="middle">
-            <span>欢迎，{user?.username}</span>
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              placement="bottomRight"
-              arrow
-            >
-              <Button type="text" style={{ padding: '4px 8px' }}>
-                <Space>
-                  <Avatar 
-                    size="small" 
-                    icon={<UserOutlined />} 
-                    src={user?.avatar}
-                  />
-                  {user?.username}
-                </Space>
-              </Button>
-            </Dropdown>
-          </Space>
-        </Header>
-        
-        <Content style={{
-          margin: '24px 16px',
-          padding: 24,
-          minHeight: 280,
-          background: '#fff',
-          borderRadius: 6,
-        }}>
-          <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
-  );
-};
-
-// 使用 withAuthorization 包装，确保只有登录用户能访问
-export default withAuthorization(ProtectedLayout, {
-  requireAuth: true,
-  permissions: ['canAccessDashboard'],
-  redirectTo: '/login'
-});
-```
-
-**内容说明：**
-- 使用 Ant Design 的 Layout 组件
-- 包含头部导航、侧边栏、内容区域
-- 在头部显示用户信息和登出按钮
-- 使用 withAuthorization 包装，确保只有登录用户能访问
-- 这样做是为了为受保护的页面提供统一的布局结构
-
-## 第十五步：修改路由配置
-**文件路径：** `.umirc.ts`
-**目的：** 配置应用的路由规则
-
-**具体代码：**
-```typescript
-// .umirc.ts
-import { defineConfig } from '@umijs/max';
-
-export default defineConfig({
-  antd: {},
-  access: {},
-  model: {},
-  initialState: {},
-  request: {},
-  layout: {
-    title: '管理系统',
-  },
-  routes: [
-    // 根路径重定向到登录页
-    {
-      path: '/',
-      redirect: '/login',
-    },
-    // 登录页路由
-    {
-      name: '登录',
-      path: '/login',
-      component: './Login',
-      layout: false, // 不使用默认布局
-    },
-    // 受保护的路由组
-    {
-      path: '/xt',
-      component: '@/layouts/ProtectedLayout',
-      access: 'canAccessDashboard', // 需要 dashboard 访问权限
-      routes: [
-        {
-          name: '仪表板',
-          path: '/xt/dashboard',
-          component: './Dashboard',
-        },
-        // 可以在这里添加更多受保护的路由
-      ],
-    },
-    // 404 页面 - 必须放在最后
-    {
-      path: '*',
-      component: './404',
-      layout: false,
-    },
-  ],
-  npmClient: 'npm',
-  // 代理配置（开发环境）
-  proxy: {
-    '/api': {
-      target: 'http://localhost:8000',
-      changeOrigin: true,
-      pathRewrite: { '^/api': '/api' },
-    },
-  },
-});
-```
-
-**内容说明：**
-- 配置根路径 "/" 重定向到 "/login"
-- 配置 "/login" 路由指向登录页面，设置 layout: false
-- 配置 "/xt/dashboard" 路由指向 Dashboard 页面，使用 ProtectedLayout
-- 配置通配符路由 "*" 指向 404 页面
-- 设置路由访问权限，dashboard 需要 canAccessDashboard 权限
-- 这样做是为了实现题目要求的路由访问控制逻辑
-
-## 第十六步：创建 Mock 数据（开发测试用）
-**文件路径：** `mock/auth.ts`
-**目的：** 创建模拟登录接口，用于开发测试
-
-**具体代码：**
-```typescript
-// mock/auth.ts
-import { Request, Response } from 'express';
-
-// 模拟用户数据
-const users = [
-  {
-    id: '1',
-    username: 'admin',
-    password: '123456',
-    email: 'admin@example.com',
-    avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
-    roles: ['admin', 'user'],
-  },
-  {
-    id: '2',
-    username: 'user',
-    password: '123456',
-    email: 'user@example.com',
-    avatar: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-    roles: ['user'],
-  },
-];
-
-// 模拟 token 存储
-let tokenStore: Record<string, any> = {};
-
-function generateToken(user: any): string {
-  const token = `token_${user.id}_${Date.now()}`;
-  tokenStore[token] = {
-    user,
-    expires: Date.now() + 24 * 60 * 60 * 1000, // 24小时过期
-  };
-  return token;
-}
-
-function validateToken(token: string): any {
-  const tokenData = tokenStore[token];
-  if (!tokenData) return null;
-  
-  if (Date.now() > tokenData.expires) {
-    delete tokenStore[token];
-    return null;
-  }
-  
-  return tokenData.user;
-}
-
-export default {
-  // 登录接口
-  'POST /api/auth/login': (req: Request, res: Response) => {
-    const { username, password } = req.body;
-    
-    // 模拟网络延迟
-    setTimeout(() => {
-      const user = users.find(u => u.username === username && u.password === password);
-      
-      if (user) {
-        const token = generateToken(user);
-        const { password: _, ...userInfo } = user; // 移除密码字段
-        
-        res.json({
-          success: true,
-          data: {
-            user: userInfo,
-            token,
-            expires: 24 * 60 * 60 * 1000, // 24小时
-          },
-          message: '登录成功',
-        });
-      } else {
-        res.status(401).json({
-          success: false,
-          message: '用户名或密码错误',
-          code: 401,
-        });
-      }
-    }, 1000);
-  },
-
-  // 获取当前用户信息
-  'GET /api/auth/currentUser': (req: Request, res: Response) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    setTimeout(() => {
-      if (!token) {
-        return res.status(401).json({
-          success: false,
-          message: '未提供认证令牌',
-          code: 401,
-        });
-      }
-
-      const user = validateToken(token);
-      if (user) {
-        res.json({
-          success: true,
-          data: user,
-          message: '获取用户信息成功',
-        });
-      } else {
-        res.status(401).json({
-          success: false,
-          message: '认证令牌无效或已过期',
-          code: 401,
-        });
-      }
-    }, 500);
-  },
-
-  // 登出接口
-  'POST /api/auth/logout': (req: Request, res: Response) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    setTimeout(() => {
-      if (token) {
-        delete tokenStore[token];
-      }
-      
-      res.json({
-        success: true,
-        message: '退出登录成功',
-      });
-    }, 300);
-  },
-
-  // 验证 token
-  'GET /api/auth/validate': (req: Request, res: Response) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    setTimeout(() => {
-      const user = token ? validateToken(token) : null;
-      
-      res.json({
-        success: true,
-        data: {
-          valid: !!user,
-        },
-      });
-    }, 200);
-  },
-};
-```
-
-**内容说明：**
-- 模拟 POST /api/auth/login 接口
-- 模拟 GET /api/auth/currentUser 接口
-- 模拟 POST /api/auth/logout 接口
-- 返回符合类型定义的模拟数据
-- 这样做是为了在没有后端接口的情况下进行前端开发和测试
-
-## 第十七步：添加全局样式
-**文件路径：** `src/global.less`
-**目的：** 添加登录页面和整体应用的样式
-
-**具体代码：**
 ```less
-// src/global.less
-* {
-  box-sizing: border-box;
+.work-center-container {
+  height: calc(100vh - 112px);
+  
+  .work-center-layout {
+    height: 100%;
+    
+    .work-center-sider {
+      background-color: #fff;
+      border-right: 1px solid #f0f0f0;
+    }
+    
+    .work-center-content {
+      padding: 16px;
+      background-color: #f5f5f5;
+      
+      .content-card {
+        height: 100%;
+        
+        .ant-card-body {
+          height: calc(100% - 57px);
+          overflow: auto;
+          padding: 0;
+        }
+      }
+    }
+  }
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol';
-  font-size: 14px;
-  line-height: 1.5;
-  color: rgba(0, 0, 0, 0.85);
-  background-color: #f0f2f5;
-}
-
-// 全局loading样式
-.global-loading {
+.module-grid {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  justify-content: flex-start;
+  align-content: flex-start;
+  
+  .module-card {
+    width: 280px;
+    margin: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .ant-card-body {
+      padding: 16px;
+    }
+    
+    .ant-card-actions {
+      border-top: 1px solid #f0f0f0;
+      
+      li {
+        margin: 8px 0;
+      }
+    }
+  }
 }
 
-// 修复antd某些组件的样式问题
-.ant-layout {
-  background: #f0f2f5;
-}
-
-.ant-layout-content {
-  background: #fff;
-}
-
-// 响应式设计
+// 响应式适配
 @media (max-width: 768px) {
-  .ant-layout-sider {
-    position: fixed !important;
-    height: 100vh;
-    left: 0;
-    z-index: 999;
+  .work-center-container {
+    .work-center-layout {
+      .work-center-sider {
+        width: 200px !important;
+      }
+    }
   }
   
-  .ant-layout {
-    margin-left: 0 !important;
-  }
-}
-
-// 自定义滚动条样式
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-// 打印样式
-@media print {
-  .no-print {
-    display: none !important;
-  }
-}
-```
-
-**内容说明：**
-- 设置登录页面的居中布局样式
-- 设置表单的样式美化
-- 添加响应式设计支持
-- 这样做是为了提供更好的用户界面体验
-
-## 第十八步：测试和验证
-**目的：** 验证所有功能是否按预期工作
-
-**测试步骤：**
-1. **启动开发服务器**
-   ```bash
-   cd react-project/xt-umi
-   npm run dev
-   ```
-
-2. **测试路由跳转逻辑**
-   - 访问根路径 "http://localhost:8000/"，应该自动重定向到 "http://localhost:8000/login"
-   - 访问 "http://localhost:8000/login"，应该显示登录页面
-
-3. **测试登录功能**
-   - 在登录页面输入测试账号：
-     - 用户名：admin，密码：123456
-     - 或者用户名：user，密码：123456
-   - 点击登录按钮，应该显示"登录成功"提示，并自动跳转到 "/xt/dashboard"
-
-4. **测试权限控制**
-   - 直接访问 "http://localhost:8000/xt/dashboard"
-   - 如果已登录：应该正常显示仪表板页面
-   - 如果未登录：应该自动跳转到登录页
-
-5. **测试404页面**
-   - 访问不存在的路径，如 "http://localhost:8000/nonexistent"
-   - 应该显示404错误页面，并提供返回按钮
-
-6. **测试登出功能**
-   - 在仪表板页面点击右上角的用户头像下拉菜单
-   - 点击"退出登录"按钮
-   - 应该显示"退出登录成功"提示，并跳转到登录页
-   - 此时访问 "/xt/dashboard" 应该被重定向到登录页
-
-7. **测试自动登录**
-   - 登录成功后，刷新页面
-   - 应该保持登录状态，不会跳转到登录页
-   - 关闭浏览器重新打开，如果token未过期，应该自动登录
-
-8. **测试响应式设计**
-   - 调整浏览器窗口大小到移动端尺寸
-   - 登录页面和仪表板页面都应该正常显示和操作
-
-**预期结果：**
-- ✅ 根路径自动重定向到登录页
-- ✅ 登录页面正常显示和操作
-- ✅ 登录成功后跳转到仪表板
-- ✅ 未登录用户访问受保护页面被重定向
-- ✅ 404页面正常显示
-- ✅ 登出功能正常工作
-- ✅ 自动登录功能正常工作
-- ✅ 页面响应式设计正常
-
-## 实现原理说明：
-
-1. **自动登录机制**：
-   - 用户登录成功后，token自动保存到localStorage
-   - 应用启动时通过 app.ts 的 getInitialState 检查 localStorage 中的 token
-   - 如果存在有效 token 则自动获取用户信息，实现无感知自动登录
-   - 无需用户手动选择"记住密码"或"自动登录"
-
-2. **简化的登录流程**：
-   - 登录表单只包含用户名和密码两个必填字段
-   - 登录成功后自动保存认证状态，无需额外操作
-   - 下次访问时如果token未过期，直接进入系统
-
-3. **权限控制机制**：使用 Umi 的 access 功能结合 withAuthorization 高阶组件，在路由层面和组件层面双重控制访问权限。
-
-4. **路由跳转逻辑**：
-   - "/" -> 自动重定向到 "/login"
-   - "/login" -> 登录页面（EmptyLayout）
-   - "/xt/*" -> 业务页面（AuthLayout + 权限检查）
-   - 其他路径 -> 404 页面
-
-5. **状态管理**：使用 Umi 的 model 管理全局认证状态，确保登录状态在整个应用中保持一致。
-
-6. **类型安全**：通过 TypeScript 类型定义确保整个认证流程的类型安全。
-
-按照以上步骤逐一实现，可以完整地实现您要求的登录页面和权限控制功能。每个步骤都有明确的目的和实现方式，确保最终效果符合您的需求。
-
-## 注意事项：
-
-1. **文件创建顺序**：建议按照步骤顺序创建文件，因为后面的文件可能依赖前面的文件。
-2. **类型导入**：注意检查所有的类型导入路径是否正确。
-3. **Mock 数据**：开发阶段使用 Mock 数据，生产环境需要替换为真实的后端接口。
-4. **Token 安全**：生产环境中应该使用更安全的 token 存储方式，如 httpOnly cookie。
-5. **错误处理**：可以根据实际需求增加更详细的错误处理逻辑。
-
----
-
-# 布局结构优化重构（2024年新增）
-
-## 目标
-将原来的布局结构进行模块化重构，实现登录页面使用空布局，业务页面使用完整布局的效果。
-
-## 重构步骤
-
-### 1. 创建模块化布局组件
-
-#### 1.1 创建空布局组件
-**文件：** `src/components/EmptyLayout/index.tsx`
-```tsx
-// 空布局组件 - 用于登录页等不需要任何布局的页面
-import { FC } from 'react';
-import { Outlet } from 'react-router-dom';
-
-const EmptyLayout: FC = () => {
-  return (
-    <div style={{ width: '100%', height: '100vh' }}>
-      {/* 完全空的布局，只渲染子路由 */}
-      <Outlet />
-    </div>
-  );
-};
-
-export default EmptyLayout;
-```
-
-#### 1.2 创建用户头像组件
-**文件：** `src/components/Avatar/index.tsx`
-```tsx
-// 用户头像组件
-import { FC } from 'react';
-import { Avatar as AntdAvatar, Dropdown, MenuProps } from 'antd';
-import { UserOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-
-const Avatar: FC = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userInfo');
-    navigate('/login');
-  };
-
-  const items: MenuProps['items'] = [
-    {
-      key: 'profile',
-      label: '个人设置',
-      icon: <SettingOutlined />,
-      onClick: () => {
-        console.log('跳转到个人设置');
-      },
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      label: '退出登录',
-      icon: <LogoutOutlined />,
-      onClick: handleLogout,
-    },
-  ];
-
-  return (
-    <Dropdown menu={{ items }} placement="bottomRight" arrow>
-      <AntdAvatar
-        style={{ cursor: 'pointer' }}
-        icon={<UserOutlined />}
-        size="small"
-      />
-    </Dropdown>
-  );
-};
-
-export default Avatar;
-```
-
-#### 1.3 创建面包屑导航组件
-**文件：** `src/components/Breadcrumb/index.tsx`
-```tsx
-// 面包屑导航组件
-import { FC } from 'react';
-import { Breadcrumb as AntdBreadcrumb } from 'antd';
-import { useLocation } from 'react-router-dom';
-import { HomeOutlined } from '@ant-design/icons';
-
-const Breadcrumb: FC = () => {
-  const location = useLocation();
-  const pathSnippets = location.pathname.split('/').filter(i => i);
-
-  // 路径映射表
-  const pathNameMap: Record<string, string> = {
-    'xt': '系统',
-    'home': '首页',
-    'access': '权限演示',
-    'table': 'CRUD 示例',
-  };
-
-  const breadcrumbItems = [
-    {
-      title: (
-        <>
-          <HomeOutlined />
-          <span>首页</span>
-        </>
-      ),
-    },
-  ];
-
-  // 生成面包屑项目
-  pathSnippets.forEach((snippet, index) => {
-    if (snippet !== 'xt') { // 跳过 'xt' 前缀
-      const title = pathNameMap[snippet] || snippet;
-      breadcrumbItems.push({
-        title,
-      });
+  .module-grid {
+    justify-content: center;
+    
+    .module-card {
+      width: 100%;
+      max-width: 300px;
     }
-  });
+  }
+}
 
-  return (
-    <AntdBreadcrumb
-      style={{ margin: '16px 0' }}
-      items={breadcrumbItems}
-    />
-  );
-};
-
-export default Breadcrumb;
-```
-
-#### 1.4 创建侧边栏组件
-**文件：** `src/components/SideBar/index.tsx`
-```tsx
-// 侧边栏导航组件
-import { FC } from 'react';
-import { Menu, MenuProps } from 'antd';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  HomeOutlined,
-  SafetyOutlined,
-  TableOutlined,
-} from '@ant-design/icons';
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-const SideBar: FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // 菜单项配置
-  const menuItems: MenuItem[] = [
-    {
-      key: '/xt/home',
-      icon: <HomeOutlined />,
-      label: '首页',
-    },
-    {
-      key: '/xt/access',
-      icon: <SafetyOutlined />,
-      label: '权限演示',
-    },
-    {
-      key: '/xt/table',
-      icon: <TableOutlined />,
-      label: 'CRUD 示例',
-    },
-  ];
-
-  const handleMenuClick = ({ key }: { key: string }) => {
-    navigate(key);
-  };
-
-  return (
-    <Menu
-      mode="inline"
-      selectedKeys={[location.pathname]}
-      items={menuItems}
-      onClick={handleMenuClick}
-      style={{ height: '100%', borderRight: 0 }}
-    />
-  );
-};
-
-export default SideBar;
-```
-
-#### 1.5 创建主布局组件
-**文件：** `src/components/Layout/index.tsx`
-```tsx
-// 主布局组件 - 包含头部、侧边栏、面包屑和内容区域
-import { FC } from 'react';
-import { Layout as AntdLayout } from 'antd';
-import { Outlet } from 'react-router-dom';
-import Avatar from '@/components/Avatar';
-import Breadcrumb from '@/components/Breadcrumb';
-import SideBar from '@/components/SideBar';
-import withAuthorization from '@/utils/auth';
-
-const { Header, Sider, Content } = AntdLayout;
-
-const BaseLayout: FC = () => {
-  return (
-    <AntdLayout style={{ minHeight: '100vh' }}>
-      {/* 侧边栏 */}
-      <Sider width={200} style={{ background: '#fff' }}>
-        <div style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.1)' }}>
-          {/* Logo 区域 */}
-        </div>
-        <SideBar />
-      </Sider>
+@media (max-width: 576px) {
+  .work-center-container {
+    .work-center-layout {
+      flex-direction: column;
       
-      {/* 主内容区域 */}
-      <AntdLayout>
-        {/* 头部 */}
-        <Header style={{ 
-          background: '#fff', 
-          padding: '0 16px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          boxShadow: '0 1px 4px rgba(0,21,41,.08)'
-        }}>
-          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            管理系统
-          </div>
-          <Avatar />
-        </Header>
-        
-        {/* 内容区域 */}
-        <Content style={{ margin: '0 16px' }}>
-          <Breadcrumb />
-          <div style={{ 
-            padding: 24, 
-            background: '#fff', 
-            minHeight: 360,
-            borderRadius: '6px'
-          }}>
-            <Outlet />
-          </div>
-        </Content>
-      </AntdLayout>
-    </AntdLayout>
-  );
+      .work-center-sider {
+        width: 100% !important;
+        height: auto;
+      }
+      
+      .work-center-content {
+        padding: 8px;
+      }
+    }
+  }
+  
+  .module-grid {
+    padding: 8px;
+    gap: 8px;
+  }
+}
+```
+
+## 10. 创建模块启动工具函数
+文件：src/utils/moduleRunner.ts
+目的：模拟启动新的umi项目功能
+原因：用户点击模块时需要启动对应的本地项目
+功能：
+- 根据模块配置生成启动命令
+- 模拟端口分配和项目启动
+- 提供启动状态反馈
+
+```typescript
+import { SubModule, ModuleStartConfig } from '@/types/workcenter';
+
+// 模拟运行中的模块存储
+const runningModules = new Map<string, ModuleStartConfig>();
+
+// 启动模块
+export const startModule = async (module: SubModule): Promise<boolean> => {
+  try {
+    // 检查模块是否已经在运行
+    if (runningModules.has(module.id)) {
+      console.log(`模块 ${module.name} 已经在运行中`);
+      const config = runningModules.get(module.id)!;
+      // 打开现有的模块窗口
+      window.open(`http://localhost:${config.port}`, '_blank');
+      return true;
+    }
+
+    // 创建启动配置
+    const startConfig: ModuleStartConfig = {
+      moduleId: module.id,
+      moduleName: module.name,
+      port: module.port || getAvailablePort(),
+      command: generateStartCommand(module),
+      projectPath: module.projectPath || generateProjectPath(module)
+    };
+
+    // 模拟启动过程
+    console.log(`正在启动模块: ${module.name}`);
+    console.log(`启动命令: ${startConfig.command}`);
+    console.log(`项目路径: ${startConfig.projectPath}`);
+    console.log(`端口: ${startConfig.port}`);
+
+    // 模拟异步启动过程
+    await simulateModuleStart(startConfig);
+
+    // 记录运行状态
+    runningModules.set(module.id, startConfig);
+
+    // 打开新窗口显示模块
+    const moduleUrl = `http://localhost:${startConfig.port}`;
+    window.open(moduleUrl, '_blank');
+
+    console.log(`模块 ${module.name} 启动成功，访问地址: ${moduleUrl}`);
+    return true;
+
+  } catch (error) {
+    console.error(`启动模块 ${module.name} 失败:`, error);
+    return false;
+  }
 };
 
-// 使用 withAuthorization 包裹，添加权限检查功能
-const Layout = withAuthorization(BaseLayout);
-
-export default Layout;
-```
-
-### 2. 移动权限检查组件
-
-#### 2.1 将权限检查组件移动到 utils 目录
-**文件：** `src/utils/auth/index.tsx`
-```tsx
-// 权限检查高阶组件 - UMI版本
-// 这个组件负责检查用户权限并决定显示哪个页面
-
-import { FC } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { Spin } from 'antd';
-
-// 权限检查的高阶组件
-function withAuthorization(WrappedComponent: FC) {
-  return () => {
-    // 获取当前路由位置
-    const { pathname } = useLocation();
-    
-    // 使用localStorage检查token和用户信息
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('userInfo');
-    
-    if (token) {
-      // 用户已登录，正常渲染受保护的页面
-      return <WrappedComponent />;
-    } else {
-      // 用户未登录，重定向到登录页
-      return <Navigate to="/login" replace />;
+// 停止模块
+export const stopModule = async (moduleId: string): Promise<boolean> => {
+  try {
+    const config = runningModules.get(moduleId);
+    if (!config) {
+      console.log(`模块 ${moduleId} 未在运行中`);
+      return false;
     }
-  };
-}
 
-export default withAuthorization;
+    // 模拟停止过程
+    console.log(`正在停止模块: ${config.moduleName}`);
+    await simulateModuleStop(config);
+
+    // 移除运行记录
+    runningModules.delete(moduleId);
+
+    console.log(`模块 ${config.moduleName} 已停止`);
+    return true;
+
+  } catch (error) {
+    console.error(`停止模块失败:`, error);
+    return false;
+  }
+};
+
+// 获取运行中的模块列表
+export const getRunningModules = (): ModuleStartConfig[] => {
+  return Array.from(runningModules.values());
+};
+
+// 检查模块是否在运行
+export const isModuleRunning = (moduleId: string): boolean => {
+  return runningModules.has(moduleId);
+};
+
+// 生成启动命令
+const generateStartCommand = (module: SubModule): string => {
+  const projectPath = module.projectPath || generateProjectPath(module);
+  const port = module.port || getAvailablePort();
+  
+  return `cd ${projectPath} && npm start -- --port ${port}`;
+};
+
+// 生成项目路径
+const generateProjectPath = (module: SubModule): string => {
+  // 根据模块ID生成对应的项目路径
+  const basePath = process.env.NODE_ENV === 'development' 
+    ? 'C:/projects/xt-modules' 
+    : '/opt/xt-modules';
+  
+  return `${basePath}/${module.id}`;
+};
+
+// 获取可用端口
+const getAvailablePort = (): number => {
+  const usedPorts = Array.from(runningModules.values()).map(config => config.port);
+  let port = 3000;
+  
+  while (usedPorts.includes(port)) {
+    port++;
+  }
+  
+  return port;
+};
+
+// 模拟模块启动过程
+const simulateModuleStart = async (config: ModuleStartConfig): Promise<void> => {
+  return new Promise((resolve) => {
+    // 模拟启动延迟
+    setTimeout(() => {
+      console.log(`模块 ${config.moduleName} 启动完成`);
+      resolve();
+    }, 1000 + Math.random() * 2000); // 1-3秒随机延迟
+  });
+};
+
+// 模拟模块停止过程
+const simulateModuleStop = async (config: ModuleStartConfig): Promise<void> => {
+  return new Promise((resolve) => {
+    // 模拟停止延迟
+    setTimeout(() => {
+      console.log(`模块 ${config.moduleName} 停止完成`);
+      resolve();
+    }, 500 + Math.random() * 1000); // 0.5-1.5秒随机延迟
+  });
+};
+
+// 批量停止所有模块
+export const stopAllModules = async (): Promise<boolean> => {
+  try {
+    const moduleIds = Array.from(runningModules.keys());
+    const stopPromises = moduleIds.map(id => stopModule(id));
+    
+    await Promise.all(stopPromises);
+    console.log('所有模块已停止');
+    return true;
+    
+  } catch (error) {
+    console.error('批量停止模块失败:', error);
+    return false;
+  }
+};
 ```
 
-### 3. 更新配置文件
+## 实施原则：
+1. 遵循现有项目的代码规范和组件结构
+2. 使用TypeScript确保类型安全
+3. 复用Ant Design组件保持UI一致性
+4. 确保响应式设计，适配不同屏幕尺寸
+5. 考虑后续扩展性，预留API接口的空间
+6. 保持与现有路由和状态管理的兼容性
 
-#### 3.1 更新路由配置
-**文件：** `.umirc.ts`
-```typescript
-import { defineConfig } from '@umijs/max';
-
-export default defineConfig({
-  antd: {},
-  access: {},
-  model: {},
-  initialState: {},
-  request: {},
-  layout: false, // 完全禁用 UMI 的布局插件
-  routes: [
-    {
-      path: '/',
-      component: '@/components/EmptyLayout', // 空布局，用于登录页
-      routes: [
-        {
-          path: '/',
-          redirect: '/login',
-        },
-        {
-          name: '登录',
-          path: '/login',
-          component: './Login',
-        },
-      ],
-    },
-    {
-      path: '/xt',
-      component: '@/components/Layout', // 主布局，用于业务页面
-      routes: [
-        {
-          path: '/xt',
-          redirect: '/xt/home',
-        },
-        {
-          name: '首页',
-          path: '/xt/home',
-          component: './Home',
-        },
-        {
-          name: '权限演示',
-          path: '/xt/access',
-          component: './Access',
-        },
-        {
-          name: 'CRUD 示例',
-          path: '/xt/table',
-          component: './Table',
-        },
-      ],
-    },
-  ],
-  npmClient: 'npm',
-});
-```
-
-#### 3.2 更新运行时配置
-**文件：** `src/app.ts`
-```typescript
-// 运行时配置
-
-// 全局初始化数据配置，用于 Layout 用户信息和权限初始化
-// 更多信息见文档：https://umijs.org/docs/api/runtime-config#getinitialstate
-export async function getInitialState(): Promise<{ name: string }> {
-  return { name: '@umijs/max' };
-}
-
-// 注释掉 layout 配置，因为我们使用自定义布局
-// export const layout = () => {
-//   return {
-//     logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
-//     menu: {
-//       locale: false,
-//     },
-//   };
-// };
-```
-
-### 4. 清理旧文件
-
-删除以下文件：
-- `src/layouts/EmptyLayout.tsx`
-- `src/layouts/AuthLayout.tsx`
-
-### 5. 重构完成效果
-
-**登录页面** (`/login`)：
-- 使用 `EmptyLayout` 组件
-- 完全空白的布局，只显示登录表单
-- 无任何导航栏、侧边栏等装饰元素
-
-**业务页面** (`/xt/*`)：
-- 使用自定义的 `Layout` 组件
-- 包含完整的管理系统布局：
-  - 顶部导航栏（标题 + 用户头像）
-  - 左侧导航菜单
-  - 面包屑导航
-  - 主内容区域
-- 所有页面都经过权限验证
-
-### 6. 关键技术点
-
-1. **UMI 布局插件禁用**：通过 `layout: false` 完全禁用 UMI 内置布局
-2. **组件模块化**：将布局拆分为独立的可复用组件
-3. **权限控制统一**：使用高阶组件统一处理权限验证
-4. **路由结构优化**：登录页和业务页使用不同的布局组件
-
-### 7. 注意事项
-
-1. **重启服务器**：修改 UMI 配置后必须重启开发服务器
-2. **导入路径**：注意检查所有组件的导入路径是否正确
-3. **类型安全**：确保所有 TypeScript 类型定义正确
-4. **样式一致性**：保持 Ant Design 组件样式的一致性
+## 为什么这样设计：
+1. 分离关注点：将菜单、卡片、网格等拆分为独立组件，便于维护和复用
+2. 数据驱动：通过配置文件管理菜单结构，便于后续动态配置
+3. 状态管理：使用React state管理当前选中状态，简单直接
+4. 收藏功能：通过服务层抽象，便于后续接入后端API
+5. 模块化设计：每个功能都有独立的文件，便于团队协作开发

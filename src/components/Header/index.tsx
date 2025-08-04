@@ -1,8 +1,8 @@
-import { FC } from 'react';
-import { Button } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import Avatar from '@/components/Avatar';
-import PageTitle from '@/components/PageTitle';
+import { Button } from 'antd';
+import { FC } from 'react';
+import Avatar from './Avatar';
+import PageTitle from './PageTitle';
 
 interface HeaderProps {
   collapsed: boolean;
@@ -11,15 +11,17 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ collapsed, onToggleCollapsed }) => {
   return (
-    <div style={{ 
-      background: '#fff', 
-      padding: '0 16px', 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center',
-      boxShadow: '0 1px 4px rgba(0,21,41,.08)',
-      height: '64px'
-    }}>
+    <div
+      style={{
+        background: '#fff',
+        padding: '0 16px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+        height: '64px',
+      }}
+    >
       {/* 左侧：折叠按钮 + 页面标题 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <Button
@@ -34,7 +36,7 @@ const Header: FC<HeaderProps> = ({ collapsed, onToggleCollapsed }) => {
         />
         <PageTitle />
       </div>
-      
+
       {/* 右侧：用户头像 */}
       <Avatar />
     </div>

@@ -1,7 +1,11 @@
 // 用户头像组件
-import { FC } from 'react';
+import {
+  LogoutOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Avatar as AntdAvatar, Dropdown, MenuProps } from 'antd';
-import { UserOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
+import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Avatar: FC = () => {

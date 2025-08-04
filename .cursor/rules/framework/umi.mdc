@@ -9,13 +9,15 @@ alwaysApply: false
 ## Page Structure and Organization
 
 ### Entry File Convention
+
 - Each page entry should be in `src/pages/*/index.[jt]sx?`
 - Each page directory becomes a separate HTML entry
 - Keep pages independent and self-contained
 - Avoid routing logic - use direct page navigation
 
 ### Directory Structure
-```
+
+```text
 src/
 ├── pages/
 │   ├── home/
@@ -32,7 +34,9 @@ src/
 ## Page Configuration
 
 ### Configuration Methods
+
 1. **config.json in page directory**
+
 ```json
 {
   "title": "Home Page",
@@ -41,7 +45,8 @@ src/
 }
 ```
 
-2. **Export config from entry file**
+1. **Export config from entry file**
+
 ```typescript
 // src/pages/home/index.tsx
 export const config = {
@@ -55,7 +60,8 @@ export default function HomePage() {
 }
 ```
 
-3. **Global configuration in .umirc.ts**
+1. **Global configuration in .umirc.ts**
+
 ```typescript
 export default {
   mpa: {
@@ -70,6 +76,7 @@ export default {
 ```
 
 ### Configuration Options
+
 - `title`: Page title for HTML head
 - `layout`: Global layout component or false to disable
 - `template`: Custom HTML template path
@@ -78,6 +85,7 @@ export default {
 ## Entry File Patterns
 
 ### Basic Page Component
+
 ```typescript
 // Simple page export
 export default function HomePage() {
@@ -91,6 +99,7 @@ export default function HomePage() {
 ```
 
 ### Page with Configuration
+
 ```typescript
 // Page with inline config
 export const config = {
