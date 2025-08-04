@@ -56,10 +56,10 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       style={{
         width: 280,
         margin: '12px',
-        borderRadius: '16px',
+        borderRadius: '0px',
         border: 'none',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        background: 'linear-gradient(145deg, #ffffff 0%, #fafafa 100%)',
+        background: '#F6F9FF',
         transition: 'all 0.3s ease',
         overflow: 'hidden',
       }}

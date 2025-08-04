@@ -80,19 +80,6 @@ const WorkCenterSidebar: React.FC<WorkCenterSidebarProps> = ({
 
   return (
     <div style={{ height: '100%', borderRight: '1px solid #f0f0f0' }}>
-      {/* 菜单标题区域 */}
-      <div
-        style={{
-          padding: '16px',
-          borderBottom: '1px solid #f0f0f0',
-          fontWeight: 'bold',
-          fontSize: '16px',
-          textAlign: 'center',
-        }}
-      >
-        业务模块
-      </div>
-
       {/* 菜单列表区域 */}
       <Menu
         mode="inline" // 内联模式，适合侧边栏布局
@@ -100,9 +87,8 @@ const WorkCenterSidebar: React.FC<WorkCenterSidebarProps> = ({
         items={menuItems} // 菜单项数据
         onClick={handleMenuClick} // 点击事件处理
         style={{
-          height: 'calc(100% - 57px)', // 减去标题高度的剩余高度
+          height: '100%', // 占满整个高度
           borderRight: 0, // 移除右边框，避免重复
-          paddingTop: '8px', // 顶部间距
         }}
       />
     </div>

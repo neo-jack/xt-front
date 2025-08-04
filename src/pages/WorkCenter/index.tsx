@@ -2,12 +2,10 @@ import { WORK_CENTER_MENUS } from '@/constants';
 import favoriteService from '@/services/favorite';
 import { SubModule } from '@/types/workcenter';
 import { startModule } from '@/utils/moduleRunner';
-import { Card, Layout, message } from 'antd';
+import { Empty, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import ModuleGrid from './components/ModuleGrid';
+import ModuleCard from './components/ModuleCard';
 import WorkCenterSidebar from './components/Sidebar';
-
-const { Sider, Content } = Layout;
 
 const WorkCenter: React.FC = () => {
   const [selectedCategoryKey, setSelectedCategoryKey] = useState('master');
@@ -124,30 +122,61 @@ const WorkCenter: React.FC = () => {
     }
   };
 
+  const modules = getCurrentModules();
+
   return (
-    <div style={{ height: 'calc(100vh - 112px)' }}>
-      <Layout style={{ height: '100%' }}>
-        <Sider width={240} style={{ backgroundColor: '#fff' }}>
-          <WorkCenterSidebar
-            selectedKey={selectedCategoryKey}
-            onSelect={handleMenuSelect}
-          />
-        </Sider>
-        <Content style={{ padding: '16px', backgroundColor: '#f5f5f5' }}>
-          <Card
-            title={getCurrentCategoryName()}
-            style={{ height: '100%' }}
-            bodyStyle={{ height: 'calc(100% - 57px)', overflow: 'auto' }}
+    <div
+      style={{
+        height: 'calc(100vh - 112px)',
+        display: 'flex',
+        backgroundColor: '#F6F9FF',
+      }}
+    >
+      {/* 左侧菜单栏 */}
+      <div style={{ width: '240px', backgroundColor: '#fff', height: '100%' }}>
+        <WorkCenterSidebar
+          selectedKey={selectedCategoryKey}
+          onSelect={handleMenuSelect}
+        />
+      </div>
+
+      {/* 右侧内容区 */}
+      <div
+        style={{
+          flex: 1,
+          backgroundColor: '#F6F9FF',
+          padding: '20px',
+          overflow: 'auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px',
+          alignContent: 'flex-start',
+        }}
+      >
+        {modules.length === 0 ? (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '300px',
+            }}
           >
-            <ModuleGrid
-              modules={getCurrentModules()}
+            <Empty description="暂无模块" />
+          </div>
+        ) : (
+          modules.map((module) => (
+            <ModuleCard
+              key={module.id}
+              module={module}
               categoryName={getCurrentCategoryName()}
               onFavoriteToggle={handleFavoriteToggle}
               onLaunch={handleModuleLaunch}
             />
-          </Card>
-        </Content>
-      </Layout>
+          ))
+        )}
+      </div>
     </div>
   );
 };

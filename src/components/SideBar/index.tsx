@@ -83,7 +83,13 @@ const SideBar: FC = () => {
       selectedKeys={[location.pathname]}
       items={menuItems}
       onClick={handleMenuClick}
-      style={{ height: '100%', borderRight: 0 }}
+      theme="dark"
+      style={{
+        height: '100%',
+        borderRight: 0,
+        backgroundColor: '#001529',
+        color: '#A5EAFF',
+      }}
     />
   );
 };

@@ -25,7 +25,7 @@ const BaseLayout: FC = () => {
         collapsible
         collapsed={collapsed}
         trigger={null}
-        style={{ background: '#fff' }}
+        style={{ background: '#001529' }}
       >
         <div
           style={{
@@ -35,7 +35,7 @@ const BaseLayout: FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            color: '#1890ff',
+            color: '#A5EAFF',
             fontWeight: 'bold',
             fontSize: collapsed ? '12px' : '14px',
           }}
@@ -52,13 +52,11 @@ const BaseLayout: FC = () => {
         <Header collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
 
         {/* 内容区域 */}
-        <Content style={{ margin: '16px 16px 0 16px' }}>
+        <Content>
           <div
             style={{
-              padding: 24,
               background: '#fff',
               minHeight: 360,
-              borderRadius: '6px',
             }}
           >
             <Outlet />
