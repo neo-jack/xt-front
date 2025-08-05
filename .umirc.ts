@@ -10,8 +10,12 @@ export default defineConfig({
   define: {
     UMI_APP_BASE_URL: 'http://localhost', // 定义基础 URL
   },
+  styles: [
+    '@style/global.css', // 使用别名访问全局样式文件
+  ],
   alias: {
     '@': require('path').resolve(__dirname, 'src'),
+    '@style': require('path').resolve(__dirname, 'src/styles'),
   },
   routes: [
     {
