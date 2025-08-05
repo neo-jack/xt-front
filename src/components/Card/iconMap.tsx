@@ -94,6 +94,14 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
     gradient: 'linear-gradient(135deg, #D3ADF7 0%, #EFDBFF 100%)',
     shadow: '0 4px 8px rgba(211, 173, 247, 0.3)',
   },
+  red: {
+    gradient: 'linear-gradient(135deg, #FF7875 0%, #FFA39E 100%)',
+    shadow: '0 4px 8px rgba(255, 120, 117, 0.3)',
+  },
+  gold: {
+    gradient: 'linear-gradient(135deg, #FADB14 0%, #FFEC3D 100%)',
+    shadow: '0 4px 8px rgba(250, 219, 20, 0.3)',
+  },
 };
 
 /**
