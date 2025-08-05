@@ -144,7 +144,7 @@ const WorkCenter: React.FC = () => {
       <div
         style={{
           flex: 1,
-          backgroundColor: '#F6F9FF',
+          backgroundColor: '#FAFBFF',
           padding: '20px',
           overflow: 'auto',
           display: 'flex',

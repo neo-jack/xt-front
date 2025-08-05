@@ -1,11 +1,25 @@
 import { SubModule } from '@/types/workcenter';
 import {
   AppstoreOutlined,
+  BugOutlined,
+  CarOutlined,
+  DatabaseOutlined,
+  DollarOutlined,
+  EnvironmentOutlined,
+  ExperimentOutlined,
+  FileSearchOutlined,
+  MedicineBoxOutlined,
+  MobileOutlined,
   PlayCircleOutlined,
+  RadarChartOutlined,
+  SafetyOutlined,
+  SendOutlined,
+  SettingOutlined,
+  ShopOutlined,
   StarFilled,
   StarOutlined,
 } from '@ant-design/icons';
-import { Button, Card, message, Tooltip } from 'antd';
+import { Button, Card, Tooltip } from 'antd';
 import React from 'react';
 
 interface ModuleCardProps {
@@ -42,19 +56,87 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 阻止事件冒泡到卡片点击事件
     onFavoriteToggle(module, categoryName); // 调用父组件的收藏切换函数
-    // 根据当前收藏状态显示相应的提示信息
-    message.success(module.isFavorite ? '已取消收藏' : '已添加到收藏');
+    // 移除重复的消息提示，父组件已经处理了消息显示
   };
   const handleLaunchClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 阻止事件冒泡到卡片点击事件
     onLaunch(module); // 调用父组件的启动函数
   };
 
+  // 根据图标名称渲染相应的图标
+  const renderIcon = () => {
+    const iconName = module.icon;
+
+    if (!iconName) {
+      return <AppstoreOutlined style={{ fontSize: '24px', color: '#fff' }} />;
+    }
+
+    // 如果是 SVG 图标（以 # 开头）
+    if (iconName.startsWith('#')) {
+      return (
+        <svg style={{ fontSize: '24px', width: '24px', height: '24px' }}>
+          <use xlinkHref={iconName} fill="#fff" />
+        </svg>
+      );
+    }
+
+    // Ant Design 图标映射
+    const iconMap: Record<string, React.ReactNode> = {
+      FileSearchOutlined: (
+        <FileSearchOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      DollarOutlined: (
+        <DollarOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      ShopOutlined: (
+        <ShopOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      MobileOutlined: (
+        <MobileOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      SendOutlined: (
+        <SendOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      CarOutlined: <CarOutlined style={{ fontSize: '24px', color: '#fff' }} />,
+      ExperimentOutlined: (
+        <ExperimentOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      MedicineBoxOutlined: (
+        <MedicineBoxOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      RadarChartOutlined: (
+        <RadarChartOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      BugOutlined: <BugOutlined style={{ fontSize: '24px', color: '#fff' }} />,
+      DatabaseOutlined: (
+        <DatabaseOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      EnvironmentOutlined: (
+        <EnvironmentOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      SafetyOutlined: (
+        <SafetyOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      SettingOutlined: (
+        <SettingOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+      AppstoreOutlined: (
+        <AppstoreOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      ),
+    };
+
+    return (
+      iconMap[iconName] || (
+        <AppstoreOutlined style={{ fontSize: '24px', color: '#fff' }} />
+      )
+    );
+  };
+
   return (
     <Card
       hoverable
       style={{
-        width: 280,
+        width: 220,
         margin: '12px',
         borderRadius: '0px',
         border: 'none',
@@ -65,9 +147,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       }}
       styles={{
         body: {
-          padding: '20px',
+          padding: '16px',
           position: 'relative',
-        }
+        },
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-4px)';
@@ -79,12 +161,14 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       }}
     >
       {/* 收藏按钮 */}
-      <div style={{
-        position: 'absolute',
-        top: '16px',
-        right: '16px',
-        zIndex: 1,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          zIndex: 1,
+        }}
+      >
         <Tooltip title={module.isFavorite ? '取消收藏' : '添加收藏'}>
           <Button
             type="text"
@@ -108,69 +192,60 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       </div>
 
       {/* 模块图标 */}
-      <div style={{
-        width: '56px',
-        height: '56px',
-        borderRadius: '16px',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: '16px',
-        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-      }}>
-        <AppstoreOutlined style={{ 
-          fontSize: '24px', 
-          color: '#fff',
-        }} />
+      <div
+        style={{
+          width: '56px',
+          height: '56px',
+          borderRadius: '16px',
+          background: '#1890ff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '16px',
+          boxShadow: '0 4px 12px rgba(24, 144, 255, 0.3)',
+        }}
+      >
+        {renderIcon()}
       </div>
 
       {/* 模块信息 */}
       <div>
-        <h3 style={{
-          fontSize: '18px',
-          fontWeight: '600',
-          margin: '0 0 8px 0',
-          color: '#333',
-          lineHeight: '1.4',
-        }}>
+        <h3
+          style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            margin: '0 0 12px 0',
+            color: '#333',
+            lineHeight: '1.4',
+          }}
+        >
           {module.name}
         </h3>
-        
-        <p style={{
-          color: '#666',
-          fontSize: '14px',
-          lineHeight: '1.5',
-          margin: '0 0 16px 0',
-          height: '42px',
-          overflow: 'hidden',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-        }}>
-          {module.description}
-        </p>
 
         {/* 端口信息和启动按钮 */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingTop: '12px',
-          borderTop: '1px solid #f0f0f0',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: '12px',
+            borderTop: '1px solid #f0f0f0',
+          }}
+        >
           {module.port && (
-            <span style={{
-              fontSize: '12px',
-              color: '#999',
-              background: '#f8f9fa',
-              padding: '4px 8px',
-              borderRadius: '12px',
-            }}>
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#999',
+                background: '#f8f9fa',
+                padding: '4px 8px',
+                borderRadius: '12px',
+              }}
+            >
               端口: {module.port}
             </span>
           )}
-          
+
           <Tooltip title="启动模块">
             <Button
               type="primary"
