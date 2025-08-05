@@ -16,7 +16,7 @@ html {
 /* 盒模型统一 */
 *,
 *::before,
-*::after {
+*::after { 
   box-sizing: border-box;
 }
 
