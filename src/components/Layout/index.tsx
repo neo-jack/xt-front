@@ -65,7 +65,7 @@ const BaseLayout: FC = () => {
             margin: 0,
             padding: 0,
             background: '#fff',
-            minHeight: 'calc(100vh - 64px)', // 减去头部高度
+            minHeight: 'calc(100vh - 104px)', // 减去头部高度并增加底部距离
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -74,7 +74,6 @@ const BaseLayout: FC = () => {
             style={{
               background: '#fff',
               flex: 1,
-              padding: '16px',
             }}
           >
             <Outlet />

@@ -4,7 +4,7 @@ import { FC } from 'react';
 const Sub1: FC = () => {
   return (
     <div>
-      <Card title="快速工作子功能1" bordered={false}>
+      <Card title="快速工作子功能1" variant="borderless">
         <p>快速工作子功能1页面内容</p>
       </Card>
     </div>
