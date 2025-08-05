@@ -65,7 +65,7 @@ const BaseLayout: FC = () => {
             margin: 0,
             padding: 0,
             background: '#fff',
-            minHeight: 'calc(100vh - 104px)', // 减去头部高度并增加底部距离
+            minHeight: 'calc(100vh - 80px)', // 减去头部高度并减少底部距离
             display: 'flex',
             flexDirection: 'column',
           }}

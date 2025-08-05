@@ -127,7 +127,7 @@ const WorkCenter: React.FC = () => {
   return (
     <div
       style={{
-        height: 'calc(100vh - 112px)',
+        height: 'calc(100vh - 88px)',
         display: 'flex',
         backgroundColor: '#F6F9FF',
       }}

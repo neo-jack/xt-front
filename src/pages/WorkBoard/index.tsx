@@ -195,7 +195,7 @@ const WorkBoard: FC = () => {
           body: {
             padding: 24,
             paddingBottom: 40,
-            height: 'calc(100vh - 200px)',
+            height: 'calc(100vh - 176px)',
             overflow: 'auto',
           },
         }}
