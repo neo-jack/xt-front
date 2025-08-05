@@ -174,7 +174,7 @@ const WorkBoard: FC = () => {
       style={{
         padding: '16px',
         backgroundColor: '#f5f5f5',
-        minHeight: '100vh',
+        height: '100%',
       }}
     >
       {/* 收藏模块展示区域 */}
