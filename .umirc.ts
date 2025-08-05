@@ -7,6 +7,9 @@ export default defineConfig({
   initialState: {},
   request: {},
   layout: false, // 完全禁用 UMI 的布局插件
+  define: {
+    UMI_APP_BASE_URL: 'http://localhost', // 定义基础 URL
+  },
   alias: {
     '@': require('path').resolve(__dirname, 'src'),
   },
@@ -90,8 +93,8 @@ export default defineConfig({
     {
       path: '*',
       component: '@/components/404',
-    }
+    },
   ],
-  
+
   npmClient: 'npm',
 });

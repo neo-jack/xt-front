@@ -1,10 +1,10 @@
+import ModuleCard from '@/components/Card';
 import { WORK_CENTER_MENUS } from '@/constants';
 import favoriteService from '@/services/favorite';
 import { SubModule } from '@/types/workcenter';
 import { startModule } from '@/utils/moduleRunner';
 import { Empty, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import ModuleCard from './components/ModuleCard';
 import WorkCenterSidebar from './components/Sidebar';
 
 const WorkCenter: React.FC = () => {
@@ -108,12 +108,12 @@ const WorkCenter: React.FC = () => {
     }
   };
 
-  // 处理模块启动
+  // 保留函数以防其他地方使用（已移除按钮调用）
   const handleModuleLaunch = async (module: SubModule) => {
     try {
       const success = await startModule(module);
       if (success) {
-        message.success(`${module.name} 启动成功！端口: ${module.port}`);
+        message.success(`${module.name} 启动成功！`);
       } else {
         message.error(`${module.name} 启动失败`);
       }
@@ -169,10 +169,12 @@ const WorkCenter: React.FC = () => {
           modules.map((module) => (
             <ModuleCard
               key={module.id}
-              module={module}
-              categoryName={getCurrentCategoryName()}
-              onFavoriteToggle={handleFavoriteToggle}
-              onLaunch={handleModuleLaunch}
+              id={module.id}
+              showFavorite={true}
+              isFavorite={module.isFavorite}
+              onFavoriteToggle={() =>
+                handleFavoriteToggle(module, getCurrentCategoryName())
+              }
             />
           ))
         )}

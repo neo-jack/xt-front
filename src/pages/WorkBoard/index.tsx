@@ -1,9 +1,8 @@
+import ModuleCard from '@/components/Card';
 import favoriteService from '@/services/favorite';
-import { startModule } from '@/utils/moduleRunner';
 import { StarOutlined } from '@ant-design/icons';
 import { Card, Empty, message, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
-import FavoriteModuleCard from './components/FavoriteModuleCard/index';
 
 /**
  * 收藏模块接口定义
@@ -72,32 +71,6 @@ const WorkBoard: FC = () => {
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
-    }
-  };
-
-  /**
-   * 处理模块启动
-   * @param module - 要启动的模块
-   */
-  const handleModuleStart = async (module: FavoriteModule) => {
-    try {
-      const success = await startModule({
-        id: module.id,
-        name: module.name,
-        description: module.description || '',
-        icon: module.icon,
-        port: module.port,
-        projectPath: module.projectPath,
-      });
-
-      if (success) {
-        message.success(`${module.name} 启动成功！端口: ${module.port}`);
-      } else {
-        message.error(`${module.name} 启动失败`);
-      }
-    } catch (error) {
-      console.error('启动模块错误:', error);
-      message.error(`启动模块时发生错误: ${error}`);
     }
   };
 
@@ -184,13 +157,13 @@ const WorkBoard: FC = () => {
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
         {favoriteModules.map((module) => (
-          <div key={module.id} style={{ flex: '0 0 220px' }}>
-            <FavoriteModuleCard
-              module={module}
-              onStart={handleModuleStart}
-              onRemove={handleRemoveFavorite}
-            />
-          </div>
+          <ModuleCard
+            key={module.id}
+            id={module.id}
+            showFavorite={false}
+            showRemove={true}
+            onRemove={() => handleRemoveFavorite(module)}
+          />
         ))}
       </div>
     );

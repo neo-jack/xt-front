@@ -1,0 +1,32 @@
+该界面为功能入口类组件，用于后台系统中快速访问 “供应商管理” 功能，由图标区和文字说明区两个核心模块组成，整体布局简洁直观，符合后台系统高效易用的设计风格，可封装为 SupplierManagementIcon React 组件。
+二、模块详细设计
+（一）整体容器（SupplierManagementIcon 最外层）
+布局：采用 flex 布局，flex-direction: column ，使图标和文字垂直排列，居中对齐（justify-content: center; align-items: center ）
+宽度：建议 120px（可根据整体布局适配，保持与其他功能入口组件统一 ）
+高度：建议 120px（保证图标和文字有充足展示空间 ）
+背景色：transparent（透明，融入页面背景 ）
+鼠标交互：hover 时，可给图标和文字增加轻微缩放或颜色变化反馈（增强交互感 ），如 transform: scale(1.05); transition: all 0.2s ease-in-out;
+（二）图标区（IconWrapper 子组件）
+布局：flex 布局，居中展示图标（justify-content: center; align-items: center ）
+图标容器样式：
+宽度：64px
+高度：64px
+背景色：#E2C4FF（浅紫色渐变，可设计为 linear-gradient(135deg, #D8AFFF 0%, #E8D1FF 100%) ，让视觉更丰富 ）
+圆角：20px 12px 20px 12px（不规则圆角，贴合设计图风格 ）
+边框：无
+阴影：可加轻微阴影 box-shadow: 0 4px 8px rgba(226, 196, 255, 0.3); ，增强立体感
+内部图标（以 SVG 为例，也可使用字体图标）：
+图标内容：双人组合图案（与 “供应商管理” 功能关联 ）
+宽度：32px
+高度：32px
+颜色：#FFFFFF（白色，与紫色背景形成对比，突出图标 ）
+位置：容器居中，通过 flex 布局或 margin: auto 实现
+（三）文字说明区（TextWrapper 子组件）
+布局：flex 布局，居中展示文字（justify-content: center; align-items: center ）
+文字内容：供应商管理
+字体样式：
+字体大小：14px（清晰易读，与后台系统整体字体规范统一 ）
+字体颜色：#333333（深灰色，保证在各类背景下可读性 ）
+字体权重：400（常规粗细，简洁不厚重 ）
+行高：1.4（让文字排版更舒展 ）
+与图标间距：8px（margin-top: 8px ，保证图标和文字区分开又不疏离 ）
