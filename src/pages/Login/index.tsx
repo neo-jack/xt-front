@@ -1,7 +1,8 @@
 // 登录页面
+import { login } from '@/services/login/LoginController';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, message } from 'antd';
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './index.less';
 
@@ -12,6 +13,7 @@ interface LoginForm {
 
 const Login: FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   // 检查是否已登录，如果已登录则重定向到首页
   useEffect(() => {
@@ -21,27 +23,32 @@ const Login: FC = () => {
     }
   }, [navigate]);
 
-  const onFinish = (values: LoginForm) => {
+  const onFinish = async (values: LoginForm) => {
     console.log('登录信息:', values);
+    setLoading(true);
 
-    // 模拟登录逻辑
-    if (values.username === 'admin' && values.password === '123456') {
-      // 登录成功，保存token和用户信息
-      localStorage.setItem('token', 'mock-token-12345');
-      localStorage.setItem(
-        'userInfo',
-        JSON.stringify({
-          name: '管理员',
-          avatar: 'https://example.com/avatar.jpg',
-          routes: ['/xt/workboard', '/xt/workcenter', '/xt/quickwork'],
-          buttons: ['add', 'edit', 'delete'],
-        }),
-      );
+    try {
+      // 调用后端登录API
+      const response = await login(values);
 
-      message.success('登录成功！');
-      navigate('/xt/workboard');
-    } else {
-      message.error('用户名或密码错误！');
+      if (response.code === 0) {
+        // 登录成功，保存token和用户信息
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem(
+          'userInfo',
+          JSON.stringify(response.data.userInfo),
+        );
+
+        message.success(response.msg || '登录成功！');
+        navigate('/xt/workboard');
+      } else {
+        message.error(response.msg || '登录失败！');
+      }
+    } catch (error: any) {
+      console.error('登录错误:', error);
+      message.error(error.message || '网络错误，请稍后重试！');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,7 +74,7 @@ const Login: FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button type="primary" htmlType="submit" block loading={loading}>
               登录
             </Button>
           </Form.Item>
