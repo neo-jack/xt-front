@@ -18,21 +18,6 @@ function withAuthorization(WrappedComponent: FC) {
     const token = localStorage.getItem('token');
     const userInfo = localStorage.getItem('userInfo');
     
-    /*
-      权限检查逻辑：
-      
-      现在登录页面(/login)已经独立于AuthLayout，不会经过这个HOC
-      这个HOC只处理需要权限保护的页面（除了/login之外的所有页面）
-      
-      1. 如果用户已登录（有token）：
-         - 正常渲染 WrappedComponent
-      
-      2. 如果用户未登录（无token）：
-         - 重定向到 /login
-    */
-    
-    //暂时未写token检测
-
     
     if (token) {
       // 用户已登录，正常渲染受保护的页面

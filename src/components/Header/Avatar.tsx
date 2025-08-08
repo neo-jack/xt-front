@@ -9,6 +9,8 @@ import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Avatar: FC = () => {
+
+  
   const navigate = useNavigate();
 
   const handleLogout = () => {

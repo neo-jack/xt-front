@@ -11,6 +11,7 @@ import { Outlet } from 'react-router-dom';
 const { Header: AntdHeader, Sider, Content } = AntdLayout;
 
 const BaseLayout: FC = () => {
+  
   const [collapsed, setCollapsed] = useState(false); // 添加这一行
 
   const toggleCollapsed = () => {
