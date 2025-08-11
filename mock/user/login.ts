@@ -54,11 +54,20 @@ const mockUsers = [
 ];
 
 // 生成模拟的 token
-const generateToken = (userId: number): string => {
+const generateToken = (
+  userId: number,
+  tokenType: 'access' | 'refresh',
+): string => {
   const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8); // 6位随机字符
   return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
-    JSON.stringify({ userId, timestamp }),
-  )}.mock_signature`;
+    JSON.stringify({
+      userId,
+      timestamp,
+      type: tokenType,
+      random: randomSuffix,
+    }),
+  )}.mock_signature_${tokenType}`;
 };
 
 //实现模拟
@@ -89,8 +98,8 @@ export default {
     }
 
     // 登录成功，返回用户信息和 token
-    const accessToken = generateToken(user.USER_ID);
-    const refreshToken = generateToken(user.USER_ID);
+    const accessToken = generateToken(user.USER_ID, 'access');
+    const refreshToken = generateToken(user.USER_ID, 'refresh');
     const expiresIn = 3600; // 1小时
 
     res.json({
@@ -107,44 +116,6 @@ export default {
           HOSPITAL_CNAME: user.HOSPITAL_CNAME,
           HOSPITAL_ID: user.HOSPITAL_ID,
         },
-      },
-      msg: null,
-    });
-  },
-
-  // 刷新令牌接口
-  'POST /api/user/refresh': (req: any, res: any) => {
-    const { refreshToken } = req.body;
-
-    // 验证请求参数
-    if (!refreshToken) {
-      return res.json({
-        code: 1,
-        data: null,
-        msg: '刷新令牌不能为空',
-      });
-    }
-
-    // 简单验证刷新令牌格式（实际项目中需要验证签名和有效期）
-    if (!refreshToken.includes('mock_signature')) {
-      return res.json({
-        code: 1,
-        data: null,
-        msg: '刷新令牌无效',
-      });
-    }
-
-    // 模拟刷新成功，生成新的访问令牌
-    const newAccessToken = generateToken(1); // 模拟用户ID为1
-    const newExpiresIn = 3600; // 1小时
-
-    res.json({
-      code: 0,
-      data: {
-        AccessToken: newAccessToken,
-        ExpiresIn: newExpiresIn,
-        // 可选：返回新的刷新令牌（高安全场景）
-        // RefreshToken: generateToken(1)
       },
       msg: null,
     });

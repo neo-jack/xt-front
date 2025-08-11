@@ -19,11 +19,20 @@ interface MockResponse {
 }
 
 // 生成模拟的 token
-const generateToken = (userId: number): string => {
+const generateToken = (
+  userId: number,
+  tokenType: 'access' | 'refresh',
+): string => {
   const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8); // 6位随机字符
   return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
-    JSON.stringify({ userId, timestamp }),
-  )}.mock_signature`;
+    JSON.stringify({
+      userId,
+      timestamp,
+      type: tokenType,
+      random: randomSuffix,
+    }),
+  )}.mock_signature_${tokenType}`;
 };
 
 // 解析模拟的 token，提取用户ID
@@ -97,8 +106,8 @@ export default {
     }
 
     // 刷新成功，生成新的令牌
-    const newAccessToken = generateToken(tokenData.userId);
-    const newRefreshToken = generateToken(tokenData.userId);
+    const newAccessToken = generateToken(tokenData.userId, 'access');
+    const newRefreshToken = generateToken(tokenData.userId, 'refresh');
     const expiresIn = 3600; // 1小时
 
     return res.json({
