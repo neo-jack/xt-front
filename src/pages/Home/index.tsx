@@ -1,5 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
+import { TokenManager } from '@/utils/auth';
 import { Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './index.less';
@@ -8,9 +9,8 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // 清除登录信息
-    localStorage.removeItem('token');
-    localStorage.removeItem('userInfo');
+    // 使用TokenManager清除所有令牌
+    TokenManager.clearTokens();
     message.success('退出登录成功！');
     navigate('/login');
   };
@@ -38,9 +38,11 @@ const HomePage: React.FC = () => {
               borderRadius: 8,
             }}
           >
-            <h3>欢迎回来，{user.name}！</h3>
-            <p>当前用户权限路由：{user.routes?.join(', ')}</p>
-            <p>按钮权限：{user.buttons?.join(', ')}</p>
+            <h3>欢迎回来，{user.USER_NAME || user.name}！</h3>
+            <p>用户角色：{user.USER_ROLE || user.role}</p>
+            <p>医院：{user.HOSPITAL_CNAME || '未设置'}</p>
+            <p>权限路由：{user.routes?.join(', ') || '无'}</p>
+            <p>按钮权限：{user.buttons?.join(', ') || '无'}</p>
           </div>
         )}
       </div>

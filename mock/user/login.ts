@@ -8,8 +8,7 @@ interface MockRequest {
 
 //Mock 响应接口类型定义
 interface MockResponse {
-  json: (
-    data: {
+  json: (data: {
     code: number; //响应状态码：0-成功，其他-失败
     data: {
       AccessToken: string; //访问令牌
@@ -108,6 +107,44 @@ export default {
           HOSPITAL_CNAME: user.HOSPITAL_CNAME,
           HOSPITAL_ID: user.HOSPITAL_ID,
         },
+      },
+      msg: null,
+    });
+  },
+
+  // 刷新令牌接口
+  'POST /api/user/refresh': (req: any, res: any) => {
+    const { refreshToken } = req.body;
+
+    // 验证请求参数
+    if (!refreshToken) {
+      return res.json({
+        code: 1,
+        data: null,
+        msg: '刷新令牌不能为空',
+      });
+    }
+
+    // 简单验证刷新令牌格式（实际项目中需要验证签名和有效期）
+    if (!refreshToken.includes('mock_signature')) {
+      return res.json({
+        code: 1,
+        data: null,
+        msg: '刷新令牌无效',
+      });
+    }
+
+    // 模拟刷新成功，生成新的访问令牌
+    const newAccessToken = generateToken(1); // 模拟用户ID为1
+    const newExpiresIn = 3600; // 1小时
+
+    res.json({
+      code: 0,
+      data: {
+        AccessToken: newAccessToken,
+        ExpiresIn: newExpiresIn,
+        // 可选：返回新的刷新令牌（高安全场景）
+        // RefreshToken: generateToken(1)
       },
       msg: null,
     });

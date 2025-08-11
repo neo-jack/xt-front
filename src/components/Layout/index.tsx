@@ -2,7 +2,7 @@
 
 import Header from '@/components/Header';
 import SideBar from '@/components/SideBar';
-import withAuthorization from '@/utils/auth';
+import { withAuthorization } from '@/utils/auth';
 import { AppstoreOutlined } from '@ant-design/icons';
 import { Layout as AntdLayout } from 'antd';
 import { FC, useState } from 'react';
@@ -11,7 +11,6 @@ import { Outlet } from 'react-router-dom';
 const { Header: AntdHeader, Sider, Content } = AntdLayout;
 
 const BaseLayout: FC = () => {
-  
   const [collapsed, setCollapsed] = useState(false); // 添加这一行
 
   const toggleCollapsed = () => {

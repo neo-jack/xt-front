@@ -1,32 +1,11 @@
 import { request } from '@umijs/max';
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  code: number;
-  data: {
-    token: string;
-    userInfo: {
-      id: number;
-      username: string;
-      name: string;
-      avatar: string;
-      role: string;
-      routes: string[];
-      buttons: string[];
-    };
-  };
-  msg: string;
-}
-
-export interface ApiResponse<T = any> {
-  code: number;
-  data: T;
-  msg: string;
-}
+import type {
+  ApiResponse,
+  LoginRequest,
+  LoginResponse,
+  RefreshTokenRequest,
+  RefreshTokenResponse,
+} from './typings';
 
 /**
  * 用户登录
@@ -56,5 +35,20 @@ export async function logout(): Promise<ApiResponse> {
 export async function getUserInfo(): Promise<ApiResponse> {
   return request<ApiResponse>('/api/user/info', {
     method: 'GET',
+  });
+}
+
+/**
+ * 刷新访问令牌
+ */
+export async function refreshToken(
+  params: RefreshTokenRequest,
+): Promise<RefreshTokenResponse> {
+  return request<RefreshTokenResponse>('/api/user/refresh', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: params,
   });
 }

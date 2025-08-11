@@ -17,8 +17,8 @@ const Login: FC = () => {
 
   // 检查是否已登录，如果已登录则重定向到首页
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
       navigate('/xt/workboard', { replace: true });
     }
   }, [navigate]);
@@ -31,13 +31,17 @@ const Login: FC = () => {
       // 调用后端登录API
       const response = await login(values);
 
-      if (response.code === 0) {
-        // 登录成功，保存token和用户信息
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem(
-          'userInfo',
-          JSON.stringify(response.data.userInfo),
-        );
+      if (response.code === 0 && response.data) {
+        // 登录成功，保存AccessToken、RefreshToken和过期时间
+        localStorage.setItem('accessToken', response.data.AccessToken);
+        localStorage.setItem('refreshToken', response.data.RefreshToken);
+
+        // 计算过期时间戳（当前时间 + ExpiresIn秒）
+        const expireTime = Date.now() + response.data.ExpiresIn * 1000;
+        localStorage.setItem('tokenExpireTime', expireTime.toString());
+
+        // 保存用户信息
+        localStorage.setItem('userInfo', JSON.stringify(response.data.USER));
 
         message.success(response.msg || '登录成功！');
         navigate('/xt/workboard');

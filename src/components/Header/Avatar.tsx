@@ -1,4 +1,5 @@
 // 用户头像组件
+import { TokenManager } from '@/utils/auth';
 import {
   LogoutOutlined,
   SettingOutlined,
@@ -9,13 +10,11 @@ import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Avatar: FC = () => {
-
-  
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userInfo');
+    // 使用TokenManager清除所有令牌
+    TokenManager.clearTokens();
     navigate('/login');
   };
 
