@@ -8,13 +8,13 @@ export default defineConfig({
   request: {
     dataField: '', // 不处理响应数据，直接返回
   },
-  proxy: {
-    '/api': {
-      target: 'http://localhost:8080',
-      changeOrigin: true,
-      pathRewrite: { '^/api': '/api' },
-    },
-  },
+  // proxy: {
+  //   '/api': {
+  //     target: 'http://localhost:8080',
+  //     changeOrigin: true,
+  //     pathRewrite: { '^/api': '/api' },
+  //   },
+  // },
   layout: false, // 完全禁用 UMI 的布局插件
   define: {
     UMI_APP_BASE_URL: 'http://localhost', // 定义基础 URL
