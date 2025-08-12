@@ -1,7 +1,6 @@
 import ModuleCard from '@/components/Card';
-import { WORK_CENTER_MENUS } from '@/constants';
+import { SubModule, WORK_CENTER_MENUS } from '@/constants/workboard';
 import favoriteService from '@/services/favorite';
-import { SubModule } from '@/types/workcenter';
 import { Empty, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import WorkCenterSidebar from './components/Sidebar';

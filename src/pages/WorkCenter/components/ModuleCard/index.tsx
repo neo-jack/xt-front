@@ -1,4 +1,4 @@
-import { SubModule } from '@/types/workcenter';
+import { SubModule } from '@/constants/workboard';
 import {
   AppstoreOutlined,
   BugOutlined,
