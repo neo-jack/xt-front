@@ -1,5 +1,6 @@
 // 登录页面
 import { login } from '@/services/login/LoginController';
+
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, message } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -18,10 +19,7 @@ const Login: FC = () => {
 
   // 检查是否已登录，如果已登录则重定向到首页
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
-      navigate('/xt/workboard', { replace: true });
-    }
+    // 检查是否已登录，如果已登录则重定向到首页 使用withAuthorization
   }, [navigate]);
 
   const onFinish = async (values: LoginForm) => {

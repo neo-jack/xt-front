@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-import { TokenManager } from '@/utils/auth';
+import { TokenManager } from '@/models/usetoken';
 import { Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './index.less';

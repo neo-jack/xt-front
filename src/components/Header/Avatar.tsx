@@ -1,6 +1,6 @@
 // 用户头像组件
+import { TokenManager } from '@/models/usetoken';
 import useUser from '@/models/useuser';
-import { TokenManager } from '@/utils/auth';
 import {
   LogoutOutlined,
   SettingOutlined,

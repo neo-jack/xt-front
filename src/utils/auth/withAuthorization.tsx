@@ -1,10 +1,10 @@
 // 权限检查高阶组件 - UMI版本
 // 这个组件负责检查用户权限并决定显示哪个页面
 
+import { TokenManager } from '@/models/usetoken';
 import { Spin, message } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { TokenManager } from './token';
 
 // 权限检查的高阶组件
 function withAuthorization(WrappedComponent: FC) {
@@ -73,6 +73,7 @@ function withAuthorization(WrappedComponent: FC) {
     }
 
     // 未认证，重定向到登录页
+
     return <Navigate to="/login" replace />;
   };
 }
