@@ -56,3 +56,7 @@ export interface ApiResponse<T = any> {
   data: T | null;
   msg: string | null;
 }
+
+export interface LogoutRequest {
+  user_id: number;
+}

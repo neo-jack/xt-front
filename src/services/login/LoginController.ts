@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   LoginRequest,
   LoginResponse,
+  LogoutRequest,
   RefreshTokenRequest,
   RefreshTokenResponse,
 } from './typings';
@@ -22,10 +23,19 @@ export async function login(params: LoginRequest): Promise<LoginResponse> {
 
 /**
  * 用户登出
+ * @param params 登出请求参数 { user_id: number }
+ * @returns Promise<ApiResponse> 响应格式: { code: 0|(-1), data: null, msg: string }
+ *   - code: 0 表示成功，-1 表示失败
+ *   - data: 登出操作返回 null
+ *   - msg: 响应消息 ('登出成功' | '用户ID参数无效')
  */
-export async function logout(): Promise<ApiResponse> {
+export async function logout(params: LogoutRequest): Promise<ApiResponse> {
   return request<ApiResponse>('/api/user/logout', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: params,
   });
 }
 

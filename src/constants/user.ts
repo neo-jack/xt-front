@@ -6,5 +6,4 @@ export const USER_INFO = {
     USER_ROLE: '',
     HOSPITAL_CNAME: '',
     HOSPITAL_ID: 0,
-
 };
