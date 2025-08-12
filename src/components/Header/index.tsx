@@ -1,8 +1,8 @@
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { FC } from 'react';
-import Avatar from './Avatar';
 import PageTitle from './PageTitle';
+import Avatar from './usesettle/Avatar';
 
 interface HeaderProps {
   collapsed: boolean;

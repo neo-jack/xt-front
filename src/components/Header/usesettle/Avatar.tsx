@@ -1,13 +1,12 @@
-// 用户头像组件
-// 支持两种头像mock方案:
-// 1. Base64方案: mock/user/avatar.ts (快速开发)
-// 2. 文件系统方案: mock/user/avatar-file-based.ts (生产环境)
 import { TokenManager } from '@/models/usetoken';
 import useUser from '@/models/useuser';
 import { logout } from '@/services/login/LoginController';
 import {
+  CameraOutlined,
+  InfoCircleOutlined,
+  LockOutlined,
   LogoutOutlined,
-  SettingOutlined,
+  QrcodeOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import {
@@ -19,6 +18,7 @@ import {
 } from 'antd';
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import HospitalInfo from '../hospital';
 
 const Avatar: FC = () => {
   const navigate = useNavigate();
@@ -84,12 +84,35 @@ const Avatar: FC = () => {
 
   const items: MenuProps['items'] = [
     {
-      key: 'profile',
-      label: '个人设置',
-      icon: <SettingOutlined />,
+      key: 'changeAvatar',
+      label: '修改头像',
+      icon: <CameraOutlined />,
       onClick: () => {
-        // 跳转到个人设置页面
-        console.log('跳转到个人设置');
+        console.log('修改头像');
+      },
+    },
+    {
+      key: 'qrcode',
+      label: '个人二维码',
+      icon: <QrcodeOutlined />,
+      onClick: () => {
+        console.log('个人二维码');
+      },
+    },
+    {
+      key: 'lockScreen',
+      label: '锁屏设计',
+      icon: <LockOutlined />,
+      onClick: () => {
+        console.log('锁屏设计');
+      },
+    },
+    {
+      key: 'about',
+      label: '关于系统',
+      icon: <InfoCircleOutlined />,
+      onClick: () => {
+        console.log('关于系统');
       },
     },
     {
@@ -105,20 +128,28 @@ const Avatar: FC = () => {
   ];
 
   return (
-    <Dropdown menu={{ items }} placement="bottomRight" arrow>
-      <Space style={{ cursor: 'pointer' }}>
-        <span style={{ color: '#000' }}>{userInfo?.USER_NAME || '用户'}</span>
-        <AntdAvatar
-          src={getAvatarSrc()}
-          icon={<UserOutlined />}
-          size="small"
-          onError={handleAvatarError}
-          style={{
-            backgroundColor: avatarError ? '#f56a00' : undefined,
-          }}
-        />
-      </Space>
-    </Dropdown>
+    <Space size={8} style={{ alignItems: 'center' }}>
+      <HospitalInfo />
+      <div>
+        {/* 空格分隔符 */}
+        <div style={{ width: 8 }} />
+      </div>
+
+      <Dropdown menu={{ items }} placement="bottomRight" arrow>
+        <Space size={5} style={{ cursor: 'pointer' }}>
+          <span style={{ color: '#000' }}>{userInfo?.USER_NAME || '用户'}</span>
+          <AntdAvatar
+            src={getAvatarSrc()}
+            icon={<UserOutlined />}
+            size="small"
+            onError={handleAvatarError}
+            style={{
+              backgroundColor: avatarError ? '#f56a00' : undefined,
+            }}
+          />
+        </Space>
+      </Dropdown>
+    </Space>
   );
 };
 

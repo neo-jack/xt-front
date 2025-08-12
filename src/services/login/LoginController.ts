@@ -8,8 +8,8 @@ import type {
   RefreshTokenResponse,
 } from './typings';
 
-/**
- * 用户登录
+/*
+ * ------------|| /api/user/login ------------||
  */
 export async function login(params: LoginRequest): Promise<LoginResponse> {
   return request<LoginResponse>('/api/user/login', {
@@ -21,14 +21,10 @@ export async function login(params: LoginRequest): Promise<LoginResponse> {
   });
 }
 
-/**
- * 用户登出
- * @param params 登出请求参数 { user_id: number }
- * @returns Promise<ApiResponse> 响应格式: { code: 0|(-1), data: null, msg: string }
- *   - code: 0 表示成功，-1 表示失败
- *   - data: 登出操作返回 null
- *   - msg: 响应消息 ('登出成功' | '用户ID参数无效')
+/*
+ * ------------|| /api/user/layout ------------||
  */
+
 export async function logout(params: LogoutRequest): Promise<ApiResponse> {
   return request<ApiResponse>('/api/user/logout', {
     method: 'POST',
@@ -39,18 +35,22 @@ export async function logout(params: LogoutRequest): Promise<ApiResponse> {
   });
 }
 
-/**
- * 获取当前用户信息
+/*
+ * ------------|| /api/user/info ------------||
  */
+
+
 export async function getUserInfo(): Promise<ApiResponse> {
   return request<ApiResponse>('/api/user/info', {
     method: 'GET',
   });
 }
 
-/**
- * 刷新访问令牌
+/*
+ * ------------|| /api/user/refresh ------------||
  */
+
+
 export async function refreshToken(
   params: RefreshTokenRequest,
 ): Promise<RefreshTokenResponse> {

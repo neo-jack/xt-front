@@ -2,10 +2,11 @@
 
 import Header from '@/components/Header';
 import SideBar from '@/components/SideBar';
+import { getSystemInfo } from '@/services/system';
 import { withAuthorization } from '@/utils/auth';
 import { AppstoreOutlined } from '@ant-design/icons';
 import { Layout as AntdLayout } from 'antd';
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
 const { Header: AntdHeader, Sider, Content } = AntdLayout;
@@ -17,6 +18,13 @@ const BaseLayout: FC = () => {
     // 添加这个函数
     setCollapsed(!collapsed);
   };
+
+  useEffect(() => {
+    getSystemInfo().then((res) => {
+      console.log(res);
+    });
+  }, []);
+
   return (
     <AntdLayout style={{ height: '100vh', minHeight: '100vh' }}>
       {/* 侧边栏 */}
