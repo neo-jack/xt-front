@@ -5,7 +5,6 @@ import { Button, Card, Form, Input, message } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import useUser from '@/models/useuser';
 import styles from './index.less';
 
 interface LoginForm {
@@ -16,7 +15,6 @@ interface LoginForm {
 const Login: FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { setUserInfo } = useUser();
 
   // 检查是否已登录，如果已登录则重定向到首页
   useEffect(() => {
@@ -43,8 +41,10 @@ const Login: FC = () => {
         const expireTime = Date.now() + response.data.ExpiresIn * 1000;
         localStorage.setItem('tokenExpireTime', expireTime.toString());
 
+        // 保存用户信息到 localStorage
+        localStorage.setItem('userInfo', JSON.stringify(response.data.USER));
+
         message.success(response.msg || '登录成功！');
-        setUserInfo(response.data.USER);
         navigate('/xt/workboard');
       } else {
         message.error(response.msg || '登录失败！');
