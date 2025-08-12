@@ -1,6 +1,7 @@
 // 权限检查高阶组件 - UMI版本
 // 这个组件负责检查用户权限并决定显示哪个页面
 
+
 import { TokenManager } from '@/models/usetoken';
 import { Spin, message } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -67,18 +68,23 @@ function withAuthorization(WrappedComponent: FC) {
       );
     }
 
-  
-
-
     // 已认证，渲染受保护的页面
     if (authState === 'authenticated') {
-      
+
+      if (pathname === '/login') {
+        return <Navigate to="/xt/workboard" replace />;
+      }
+
       return <WrappedComponent />;
     }
 
     // 未认证，重定向到登录页
-
-    return <Navigate to="/login" replace />;
+    if (pathname === '/login') {
+      return <WrappedComponent />;
+    }
+    else{
+      return <Navigate to="/login" replace />;
+    }
   };
 }
 
