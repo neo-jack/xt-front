@@ -20,6 +20,7 @@ const Login: FC = () => {
   // 检查是否已登录，如果已登录则重定向到首页
   useEffect(() => {
     // 检查是否已登录，如果已登录则重定向到首页 使用withAuthorization
+    
   }, [navigate]);
 
   const onFinish = async (values: LoginForm) => {

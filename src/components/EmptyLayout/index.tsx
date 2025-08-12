@@ -6,6 +6,7 @@ import withAuthorization from '@/utils/auth/withAuthorization';
 const EmptyLayout: FC = () => {
 
   return (
+    
     <div style={{ width: '100%', height: '100vh' }}>
       {/* 完全空的布局，只渲染子路由 */}
       <Outlet />

@@ -67,8 +67,12 @@ function withAuthorization(WrappedComponent: FC) {
       );
     }
 
+  
+
+
     // 已认证，渲染受保护的页面
     if (authState === 'authenticated') {
+      
       return <WrappedComponent />;
     }
 
