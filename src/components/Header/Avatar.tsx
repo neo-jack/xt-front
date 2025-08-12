@@ -1,16 +1,18 @@
 // 用户头像组件
+import useUser from '@/models/useuser';
 import { TokenManager } from '@/utils/auth';
 import {
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Avatar as AntdAvatar, Dropdown, MenuProps } from 'antd';
+import { Avatar as AntdAvatar, Dropdown, MenuProps, Space } from 'antd';
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Avatar: FC = () => {
   const navigate = useNavigate();
+  const { userInfo } = useUser();
 
   const handleLogout = () => {
     // 使用TokenManager清除所有令牌
@@ -41,11 +43,10 @@ const Avatar: FC = () => {
 
   return (
     <Dropdown menu={{ items }} placement="bottomRight" arrow>
-      <AntdAvatar
-        style={{ cursor: 'pointer' }}
-        icon={<UserOutlined />}
-        size="small"
-      />
+      <Space style={{ cursor: 'pointer' }}>
+        <span style={{ color: '#000' }}>{userInfo.USER_NAME || '用户'}</span>
+        <AntdAvatar icon={<UserOutlined />} size="small" />
+      </Space>
     </Dropdown>
   );
 };
