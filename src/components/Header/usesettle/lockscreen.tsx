@@ -12,6 +12,7 @@ const LockScreenModal: FC<LockScreenModalProps> = ({ open, onCancel }) => {
       title="锁屏设置"
       open={open}
       onCancel={onCancel}
+      centered
       width={500}
       footer={[
         <Button key="cancel" onClick={onCancel}>

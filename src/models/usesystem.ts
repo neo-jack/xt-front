@@ -38,7 +38,7 @@ export class SystemManager {
    * 获取服务器IP
    */
   static getServerIp(): string {
-    return this.systemInfo.serveip;
+    return (this.systemInfo as any).servedomain;
   }
 
   /**

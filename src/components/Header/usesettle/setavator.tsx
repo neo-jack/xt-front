@@ -20,6 +20,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
       title="修改头像"
       open={open}
       onCancel={onCancel}
+      centered
       width={500}
       footer={[
         <Button key="cancel" onClick={onCancel}>

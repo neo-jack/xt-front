@@ -1,7 +1,7 @@
 /*         系统信息            */
 export const DEFAULT_SYSTEM_INFO = {
   clientip: '',
-  serveip: '',
+  servedomain: '',
   version: '',
   major: 0,
 };

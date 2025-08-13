@@ -7,11 +7,11 @@ interface MockInfoRequest {
 
 // Mock 响应接口类型定义
 interface MockInfoResponse {
-  json: (data: {
+      json: (data: {
     code: number; // 响应状态码：0-成功，-1-失败，-2-网络错误
     data: {
       clientip: string; // 客户端地址
-      serveip: string; // 服务器地址
+          servedomain: string; // 服务器域名
       version: string; // 程序版本
       major: number; // 大版本号
     };
@@ -27,7 +27,7 @@ export default {
       code: 0,
       data: {
         clientip: 'localhost',
-        serveip: '138.0.0.0',
+        servedomain: 'localhost',
         version: '0.2',
         major: 0,
       },

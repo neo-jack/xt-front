@@ -10,6 +10,7 @@ import { Dropdown, MenuProps, Space } from 'antd';
 import { FC, useState } from 'react';
 import HospitalInfo from './hospital';
 import Avatar from './Avatar';
+import LinkInfo from './link';
 import ChangeAvatarModal from './setavator';
 import QRCodeModal from './qrcode';
 import LockScreenModal from './lockscreen';
@@ -17,14 +18,17 @@ import SystemInfoModal from './system';
 import useExitAccount from './exitcount';
 
 const AllUserActions: FC = () => {
+  //登出用户
   const { userInfo } = useUser();
   const { isLoggingOut, handleLogout } = useExitAccount();
-
+  
+  //设置弹窗
   const [showChangeAvatar, setShowChangeAvatar] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [showLockScreen, setShowLockScreen] = useState(false);
   const [showSystemInfo, setShowSystemInfo] = useState(false);
 
+  //下拉框内容
   const items: MenuProps['items'] = [
     {
       key: 'changeAvatar',
@@ -62,6 +66,7 @@ const AllUserActions: FC = () => {
     },
   ];
 
+  //返回
   return (
     <>
       <Space size={8} style={{ alignItems: 'center' }}>
@@ -70,15 +75,21 @@ const AllUserActions: FC = () => {
         <div>
           <div style={{ width: 8 }} />
         </div>
-        {/* 用户信息 */}
+        {/* 链路信息 */}
+        <LinkInfo />
+        <div>
+          <div style={{ width: 8 }} />
+        </div>
+        {/* 下拉框 */}
         <Dropdown menu={{ items }} placement="bottomRight" arrow>
+           {/* 用户信息 */}
           <Space size={5} style={{ cursor: 'pointer' }}>
             <span style={{ color: '#000' }}>{userInfo?.USER_NAME || '用户'}</span>
             <Avatar size="small" />
           </Space>
         </Dropdown>
       </Space>
-      {/* 下拉框内容 */}
+      {/*  */}
       <ChangeAvatarModal
         open={showChangeAvatar}
         onCancel={() => setShowChangeAvatar(false)}

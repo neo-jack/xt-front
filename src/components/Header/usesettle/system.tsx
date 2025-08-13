@@ -18,6 +18,7 @@ const SystemInfoModal: FC<SystemInfoModalProps> = ({
       title="关于系统"
       open={open}
       onCancel={onCancel}
+      centered
       width={600}
       footer={[
         <Button key="close" onClick={onCancel}>
@@ -35,8 +36,8 @@ const SystemInfoModal: FC<SystemInfoModalProps> = ({
         <Descriptions.Item label="客户端IP">
           {getGlobalSystemInfo().clientip || '未知'}
         </Descriptions.Item>
-        <Descriptions.Item label="服务器IP">
-          {getGlobalSystemInfo().serveip || '未知'}
+        <Descriptions.Item label="服务器域名">
+          {getGlobalSystemInfo().servedomain || '未知'}
         </Descriptions.Item>
         <Descriptions.Item label="用户信息">
           {userInfo?.USER_NAME || '未登录用户'}
