@@ -1,6 +1,8 @@
+import { setGlobalSystemInfo } from '@/models/usesystem';
+import { getSystemInfo } from '@/services/system';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import PageTitle from './PageTitle';
 import Avatar from './usesettle/Avatar';
 
@@ -10,6 +12,23 @@ interface HeaderProps {
 }
 
 const Header: FC<HeaderProps> = ({ collapsed, onToggleCollapsed }) => {
+  useEffect(() => {
+    //-----/api/system/info-----
+    getSystemInfo()
+      .then((res) => {
+        // 获得的api保存到constant上面去
+        if (res.code === 0 && res.data) {
+          setGlobalSystemInfo(res.data);
+          console.log('系统信息已保存到全局存储:', res.data);
+        } else {
+          console.error('获取系统信息失败:', res.msg);
+        }
+      })
+      .catch((error) => {
+        console.error('获取系统信息异常:', error);
+      });
+  }, []);
+
   return (
     <div
       style={{

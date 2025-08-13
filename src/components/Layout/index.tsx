@@ -2,7 +2,7 @@
 
 import Header from '@/components/Header';
 import SideBar from '@/components/SideBar';
-import { getSystemInfo } from '@/services/system';
+
 import { withAuthorization } from '@/utils/auth';
 import { AppstoreOutlined } from '@ant-design/icons';
 import { Layout as AntdLayout } from 'antd';
@@ -19,11 +19,7 @@ const BaseLayout: FC = () => {
     setCollapsed(!collapsed);
   };
 
-  useEffect(() => {
-    getSystemInfo().then((res) => {
-      console.log(res);
-    });
-  }, []);
+  
 
   return (
     <AntdLayout style={{ height: '100vh', minHeight: '100vh' }}>

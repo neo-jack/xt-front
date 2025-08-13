@@ -32,7 +32,6 @@ const HospitalInfo: FC<HospitalInfoProps> = ({ style }) => {
         <div style={{ fontSize: 14, fontWeight: 400 }}>
           {userInfo?.HOSPITAL_CNAME || '医院'}
         </div>
-    
       </div>
     </Space>
   );

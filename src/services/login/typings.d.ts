@@ -53,7 +53,6 @@ export interface LogoutRequest {
   user_id: number;
 }
 
-// /api/user/logout响应
 export interface ApiResponse<T = any> {
   code: number;
   data: T | null;

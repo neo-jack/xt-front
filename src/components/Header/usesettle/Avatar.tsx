@@ -18,7 +18,7 @@ import {
 } from 'antd';
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import HospitalInfo from '../hospital';
+import HospitalInfo from './hospital';
 
 const Avatar: FC = () => {
   const navigate = useNavigate();

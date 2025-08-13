@@ -1,8 +1,3 @@
-//工作台状态
-
-/* 
-    工作模块接口定义 
-*/
 
 export interface SubModule {
   /** 主键 */
