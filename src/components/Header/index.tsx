@@ -4,7 +4,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { FC, useEffect } from 'react';
 import PageTitle from './PageTitle';
-import Avatar from './usesettle/Avatar';
+import UserAllActions from './usesettle/all';
 
 interface HeaderProps {
   collapsed: boolean;
@@ -56,8 +56,8 @@ const Header: FC<HeaderProps> = ({ collapsed, onToggleCollapsed }) => {
         <PageTitle />
       </div>
 
-      {/* 右侧：用户头像 */}
-      <Avatar />
+      {/* 右侧：用户头像与菜单 */}
+      <UserAllActions />
     </div>
   );
 };
