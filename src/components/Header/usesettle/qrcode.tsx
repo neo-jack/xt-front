@@ -38,7 +38,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ open, onCancel, userInfo }) => {
           size={200}
           style={{ marginBottom: 16 }}
         />
-        <p style={{ color: '#666', marginBottom: 8 }}>扫描二维码打开链接</p>
+        <p style={{ color: '#666', marginBottom: 8 }}>暂时不实现</p>
         <a href={qrValue} target="_blank" rel="noreferrer" style={{ wordBreak: 'break-all' }}>
           {qrValue}
         </a>
