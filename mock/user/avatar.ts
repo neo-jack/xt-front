@@ -101,17 +101,31 @@ export const createSampleAvatars = () => {
   ensureAvatarDir();
 
   // 创建一个简单的SVG默认头像
-  const defaultSvg = `
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="32" cy="32" r="32" fill="#f0f0f0"/>
-      <circle cx="32" cy="24" r="8" fill="#bbbbbb"/>
-      <ellipse cx="32" cy="48" rx="12" ry="8" fill="#bbbbbb"/>
-    </svg>
-  `;
+  const defaultSvg = `<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="32" cy="32" r="32" fill="#f0f0f0"/>
+  <circle cx="32" cy="24" r="8" fill="#bbbbbb"/>
+  <ellipse cx="32" cy="48" rx="12" ry="8" fill="#bbbbbb"/>
+</svg>`;
 
   const defaultPath = path.join(AVATAR_DIR, 'default.svg');
   if (!fs.existsSync(defaultPath)) {
     fs.writeFileSync(defaultPath, defaultSvg);
     console.log('Created default avatar: default.svg');
+  }
+};
+
+// 工具函数：获取头像目录中的所有文件
+export const getAvatarFiles = (): string[] => {
+  ensureAvatarDir();
+  
+  try {
+    const files = fs.readdirSync(AVATAR_DIR);
+    return files.filter(file => {
+      const ext = file.split('.').pop()?.toLowerCase();
+      return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '');
+    });
+  } catch (error) {
+    console.error('获取头像文件列表失败:', error);
+    return [];
   }
 };

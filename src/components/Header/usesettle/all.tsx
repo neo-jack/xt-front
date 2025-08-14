@@ -93,7 +93,6 @@ const AllUserActions: FC = () => {
       <ChangeAvatarModal
         open={showChangeAvatar}
         onCancel={() => setShowChangeAvatar(false)}
-        userInfo={userInfo}
         avatarSrc={userInfo?.USER_AVATAR}
       />
       <QRCodeModal

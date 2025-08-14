@@ -4,17 +4,19 @@ import ImgCrop from 'antd-img-crop';
 import { FC, useState } from 'react';
 
 interface ChangeAvatarModalProps {
+  //设置组件是否打开
   open: boolean;
+  //设置组件取消
   onCancel: () => void;
-  userInfo?: any;
+  //头像
   avatarSrc?: string;
+  //上传头像成功回调
   onOk?: (dataUrl: string) => void;
 }
 
 const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
   open,
   onCancel,
-  userInfo,
   avatarSrc,
   onOk,
 }) => {
@@ -107,10 +109,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
                 style={{
                   objectFit: 'cover',
                 }}
-                preview={{
-                  mask: '点击预览',
-                  maskClassName: 'custom-mask',
-                }}
+                preview={false}
               />
             ) : (
               <div style={{ color: '#ccc' }}>
