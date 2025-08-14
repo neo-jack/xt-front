@@ -26,23 +26,29 @@ interface MockHeadshotListResponse {
 
 // 获取可用的头像列表（模拟数据）
 const getAvailableHeadshots = (): HeadshotInfo[] => {
-    // 固定的头像列表，2.png是第一个
+    // 使用实际存在的头像文件
     const mockHeadshots: HeadshotInfo[] = [
         {
             id: 1,
-            name: '2.png',
-            url: '/user/avatar/2.png'
+            name: '02.png',
+            url: '/user/avatar/02.png'  // 当前用户头像，会被前端过滤掉
         },
         {
             id: 2,
-            name: '1.png',
-            url: '/user/avatar/1.png'
+            name: '03.png', 
+            url: '/user/avatar/03.png'
         },
         {
             id: 3,
-            name: '3.png',
-            url: '/user/avatar/3.png'
-        }
+            name: '01.png',
+            url: '/user/avatar/01.png'
+        },
+        {
+            id: 4,
+            name: '04.png',
+            url: '/user/avatar/04.png'
+        },
+        
     ];
 
     return mockHeadshots;

@@ -94,6 +94,11 @@ const AllUserActions: FC = () => {
         open={showChangeAvatar}
         onCancel={() => setShowChangeAvatar(false)}
         avatarSrc={userInfo?.USER_AVATAR}
+        userId={userInfo?.USER_ID ? String(userInfo.USER_ID) : ''}
+        onOk={(newAvatar) => {
+          // 这里可以添加头像更新的逻辑
+          setShowChangeAvatar(false);
+        }}
       />
       <QRCodeModal
         open={showQRCode}

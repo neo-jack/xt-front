@@ -1,7 +1,9 @@
 import { CameraOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Image, Modal, Upload, message } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
+import { getHeadshotList } from '@/services';
+import type { HeadshotInfo } from '@/services';
 
 interface ChangeAvatarModalProps {
   //设置组件是否打开
@@ -12,6 +14,8 @@ interface ChangeAvatarModalProps {
   avatarSrc?: string;
   //上传头像成功回调
   onOk?: (dataUrl: string) => void;
+  //用户ID
+  userId: string;
 }
 
 const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
@@ -19,19 +23,50 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
   onCancel,
   avatarSrc,
   onOk,
+  userId,
 }) => {
   const [imageSrc, setImageSrc] = useState<string | undefined>(avatarSrc);
+  const [headshotList, setHeadshotList] = useState<HeadshotInfo[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // 调用获取用户头像列表
+  const fetchHeadshotList = async () => {
+    if (!userId) return;
+    
+    setLoading(true);
+    try {
+      const response = await getHeadshotList({ id: userId });
+      
+      if (response.code === 200) {
+        // 过滤掉id为1的头像（当前头像），避免重复显示
+        const filteredList = response.data.filter((headshot: HeadshotInfo) => headshot.id !== 1);
+        setHeadshotList(filteredList);
+      } else {
+        message.error(response.msg || '获取头像列表失败');
+      }
+    } catch (error) {
+      message.error('获取头像列表失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open && userId) {
+      fetchHeadshotList();
+    }
+  }, [open, userId]);
 
   const handleUpload = (info: any) => {
-    if (info.file.status === 'done') {
+    const file = info.file.originFileObj || info.file;
+    
+    if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         setImageSrc(reader.result as string);
       };
-      reader.readAsDataURL(info.file.originFileObj);
-      message.success(`${info.file.name} 上传成功`);
-    } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} 上传失败`);
+      reader.readAsDataURL(file);
+      message.success(`${file.name} 选择成功`);
     }
   };
 
@@ -121,13 +156,40 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
           <div style={{ flex: 1 }}>
             <div style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>使用过的头像</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              <Avatar 
-                src={avatarSrc} 
-                icon={<UserOutlined />} 
-                size={60}
-                style={{ cursor: 'pointer' }}
-                onClick={() => avatarSrc && setImageSrc(avatarSrc)}
-              />
+              {/* 当前头像 */}
+              {avatarSrc && (
+                <Avatar 
+                  src={avatarSrc} 
+                  icon={<UserOutlined />} 
+                  size={60}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setImageSrc(avatarSrc)}
+                />
+              )}
+              
+              {/* 头像列表 */}
+              {headshotList.map((headshot) => (
+                <Avatar
+                  key={headshot.id}
+                  src={headshot.url}
+                  icon={<UserOutlined />}
+                  size={60}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setImageSrc(headshot.url)}
+                />
+              ))}
+              
+              {/* 加载状态 */}
+              {loading && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  fontSize: 12, 
+                  color: '#999' 
+                }}>
+                  加载中...
+                </div>
+              )}
             </div>
           </div>
         </div>
