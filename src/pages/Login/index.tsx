@@ -1,5 +1,5 @@
 // 登录页面
-import { login } from '@/services/login/LoginController';
+import { login } from '@/services/user/login';
 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, message } from 'antd';

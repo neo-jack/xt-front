@@ -1,6 +1,6 @@
 // 令牌管理工具类
 import { TOKEN_INFO } from '@/constants/token';
-import { refreshToken } from '@/services/login/LoginController';
+import { refreshToken } from '@/services/user/refresh';
 
 // 令牌存储键名常量
 const TOKEN_KEYS = {

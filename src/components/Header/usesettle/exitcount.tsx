@@ -1,6 +1,6 @@
 import { TokenManager } from '@/models/usetoken';
 import useUser from '@/models/useuser';
-import { logout } from '@/services/login/LoginController';
+import { logout } from '@/services/user/logout';
 import { message } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
