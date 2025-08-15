@@ -15,7 +15,7 @@ export const mockUsers: MockUser[] = [
   {
     USER_ID: 1,
     USER_NAME: '李银',
-    USER_AVATAR: '/datebash/acators/02.png', // 指向本地mock
+    USER_AVATAR: '/datebash/acators/user_1_1755300000000_avatar1.png', // 指向实际存在的文件
     USER_ROLE: 'root',
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,
@@ -25,7 +25,7 @@ export const mockUsers: MockUser[] = [
   {
     USER_ID: 2,
     USER_NAME: '张医生',
-    USER_AVATAR: '/datebash/acators/03.png', // 指向本地mock
+    USER_AVATAR: '/datebash/acators/user_2_1755239522548_enhv6h.png', // 指向实际存在的文件
     USER_ROLE: 'doctor',
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,

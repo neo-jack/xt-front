@@ -11,6 +11,7 @@ export interface AvatarUploadData {
   url: string;       // 上传成功后的头像URL
   id: number;        // 头像ID
   message: string;   // 消息
+  userId?: number;   // 可选：上传者用户ID
 }
 
 // /api/user/avatorupload响应

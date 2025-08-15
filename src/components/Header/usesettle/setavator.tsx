@@ -429,9 +429,17 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
       const response = await getHeadshotList({ id: userId });
       
       if (response.code === 200) {
-        // 过滤掉id为1的头像（当前头像），避免重复显示
-        const filteredList = response.data.filter((headshot: HeadshotInfo) => headshot.id !== 1);
-        setHeadshotList(filteredList);
+        // 过滤头像列表：显示用户自己上传的头像，按ID倒序排序
+        const currentUserId = parseInt(userId);
+        
+        // 获取用户的头像，按ID倒序排序（最新的在前）
+        const userAvatars = response.data
+          .filter((headshot: HeadshotInfo) => headshot.userId === currentUserId)
+          .sort((a: HeadshotInfo, b: HeadshotInfo) => b.id - a.id);
+        
+        setHeadshotList(userAvatars);
+        
+        console.log(`头像列表过滤结果: 当前用户ID=${currentUserId}, 显示${userAvatars.length}个头像`);
       } else {
         message.error(response.msg || '获取头像列表失败');
       }
@@ -506,7 +514,8 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
           
           console.log('更新用户信息:', {
             old: userInfo.USER_AVATAR,
-            new: response.data.url
+            new: response.data.url,
+            userId: response.data.userId || parseInt(userId)
           });
           
           // 使用setUserInfo更新，这会触发监控系统通知所有组件
@@ -516,6 +525,14 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
           setTimeout(() => {
             console.log('头像更新已传播到所有组件');
           }, 100);
+        }
+
+        // 刷新头像列表，显示新上传的头像
+        try {
+          await fetchHeadshotList();
+          console.log('头像列表已刷新，新头像应该已添加到列表中');
+        } catch (error) {
+          console.warn('刷新头像列表失败:', error);
         }
 
         // 调用父组件的回调
@@ -634,43 +651,36 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
           </div>
 
           <div style={{ flex: 1 }}>
-            <div style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>使用过的头像</div>
+            <div style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>我的头像</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {/* 当前头像 */}
-              {avatarSrc && (
-                <Avatar 
-                  src={avatarSrc} 
-                  icon={<UserOutlined />} 
-                  size={60}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleHistoryAvatarClick(avatarSrc)}
-                />
-              )}
-              
-              {/* 头像列表 */}
-              {headshotList.map((headshot) => (
+              {/* 头像列表 - 第一个是当前使用的头像（ID最大），其余按倒序排列 */}
+              {headshotList.map((headshot, index) => (
                 <Avatar
                   key={headshot.id}
                   src={headshot.url}
                   icon={<UserOutlined />}
                   size={60}
-                  style={{ cursor: 'pointer' }}
+                  style={{ 
+                    cursor: 'pointer',
+                    border: index === 0 ? '3px solid #52c41a' : '2px solid #1890ff', // 第一个用绿色边框
+                    borderRadius: '50%'
+                  }}
                   onClick={() => handleHistoryAvatarClick(headshot.url)}
                 />
               ))}
-              
-              {/* 加载状态 */}
-              {loading && (
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  fontSize: 12, 
-                  color: '#999' 
-                }}>
-                  加载中...
-                </div>
-              )}
             </div>
+              
+            {/* 加载状态 */}
+            {loading && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                fontSize: 12, 
+                color: '#999' 
+              }}>
+                加载中...
+              </div>
+            )}
           </div>
         </div>
       </div>

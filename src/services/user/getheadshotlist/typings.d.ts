@@ -10,6 +10,7 @@ export interface HeadshotInfo {
   id: number;
   name: string;
   url: string;
+  userId: number;  // 添加用户ID字段
 }
 
 // /api/user/getheadshotlist响应

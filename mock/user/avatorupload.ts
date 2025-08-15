@@ -25,6 +25,8 @@ interface MockAvatarUploadResponse {
         id: number;
         //消息
         message: string;
+        //上传者用户ID
+        userId: number;
     };
     msg: string;
 }
@@ -61,7 +63,7 @@ const generateFileName = (userId: string, imageType: string): string => {
 };
 
 // 更新头像列表的函数
-const updateAvatarList = (fileName: string): void => {
+const updateAvatarList = (fileName: string, userId: string): void => {
     try {
         // 生成新的头像ID（取当前列表最大ID + 1）
         const maxId = mockHeadshots.length > 0 ? Math.max(...mockHeadshots.map(h => h.id)) : 0;
@@ -71,7 +73,8 @@ const updateAvatarList = (fileName: string): void => {
         const newHeadshot: HeadshotInfo = {
             id: newId,
             name: fileName,
-            url: `/datebash/acators/${fileName}`
+            url: `/datebash/acators/${fileName}`,
+            userId: parseInt(userId)
         };
 
         // 添加到头像列表
@@ -117,7 +120,8 @@ export default {
                     data: {
                         url: '',
                         id: 0,
-                        message: '用户ID不能为空'
+                        message: '用户ID不能为空',
+                        userId: 0
                     },
                     msg: '参数错误'
                 };
@@ -130,7 +134,8 @@ export default {
                     data: {
                         url: '',
                         id: 0,
-                        message: '头像数据不能为空'
+                        message: '头像数据不能为空',
+                        userId: 0
                     },
                     msg: '参数错误'
                 };
@@ -167,14 +172,15 @@ export default {
             }
 
             // 将新头像添加到头像列表中
-            updateAvatarList(fileName);
+            updateAvatarList(fileName, id);
 
             const response: MockAvatarUploadResponse = {
                 code: 200,
                 data: {
                     url: avatarUrl,
                     id: avatarId,
-                    message: '头像上传成功'
+                    message: '头像上传成功',
+                    userId: parseInt(id)
                 },
                 msg: '上传成功'
             };
@@ -194,7 +200,8 @@ export default {
                 data: {
                     url: '',
                     id: 0,
-                    message: '服务器内部错误'
+                    message: '服务器内部错误',
+                    userId: 0
                 },
                 msg: '上传失败'
             };

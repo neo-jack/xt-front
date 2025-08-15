@@ -17,12 +17,15 @@ const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
   // 当头像URL改变时，重置错误状态并刷新头像
   useEffect(() => {
     const currentAvatar = userInfo?.USER_AVATAR || '';
+    const userId = userInfo?.USER_ID;
     
     // 检查头像是否真的发生了变化
     if (currentAvatar !== previousAvatarRef.current) {
       console.log('Avatar组件检测到头像变化:', {
+        userId: userId,
         previous: previousAvatarRef.current,
-        current: currentAvatar
+        current: currentAvatar,
+        userName: userInfo?.USER_NAME
       });
       
       // 重置错误状态
@@ -34,7 +37,7 @@ const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
       // 更新引用
       previousAvatarRef.current = currentAvatar;
     }
-  }, [userInfo?.USER_AVATAR]);
+  }, [userInfo?.USER_AVATAR, userInfo?.USER_ID, userInfo?.USER_NAME]);
 
   const handleAvatarError = (): boolean => {
     console.warn('头像加载失败:', userInfo?.USER_AVATAR);
