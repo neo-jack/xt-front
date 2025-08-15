@@ -7,4 +7,5 @@ export const { getUserInfo } = InfoController;
 // 导出类型定义
 export type {
   UserInfoResponse,
+  UserInfoData,
 } from './typings';

@@ -2,6 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { mockUsers } from './users';
 
 // Mock 头像上传请求接口类型定义
 interface MockAvatarUploadRequest {
@@ -117,6 +118,13 @@ export default {
             
             // 生成新的头像ID（这里简单使用时间戳）
             const avatarId = Date.now();
+
+            // 更新对应用户的头像信息
+            const user = mockUsers.find(u => u.USER_ID.toString() === id);
+            if (user) {
+                user.USER_AVATAR = avatarUrl;
+                console.log(`Mock: 已更新用户 ${id} 的头像为 ${avatarUrl}`);
+            }
 
             const response: MockAvatarUploadResponse = {
                 code: 200,

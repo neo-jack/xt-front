@@ -1,3 +1,5 @@
+import { mockUsers } from './users';
+
 // Mock 请求接口类型定义
 interface MockRequest {
   body: {
@@ -27,29 +29,7 @@ interface MockResponse {
   }) => void;
 }
 
-// 模拟数据
-const mockUsers = [
-  {
-    USER_ID: 1,
-    USER_NAME: '李银',
-    USER_AVATAR: '/user/avatar/02.png', // 指向本地mock
-    USER_ROLE: 'root',
-    HOSPITAL_CNAME: 'xxx省医院',
-    HOSPITAL_ID: 1,
-    username: 'root',
-    password: 'root',
-  },
-  {
-    USER_ID: 2,
-    USER_NAME: '张医生',
-    USER_AVATAR: '/user/avatar/03.png', // 指向本地mock
-    USER_ROLE: 'doctor',
-    HOSPITAL_CNAME: 'xxx省医院',
-    HOSPITAL_ID: 1,
-    username: 'doctor',
-    password: '123456',
-  },
-];
+
 
 // 生成模拟的 token
 const generateToken = (
