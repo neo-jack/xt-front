@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { mockUsers } from './users';
+import { mockUsers } from '../datebash/users';
 
 // Mock 头像上传请求接口类型定义
 interface MockAvatarUploadRequest {
@@ -29,7 +29,7 @@ interface MockAvatarUploadResponse {
 }
 
 // 头像文件存储目录
-const AVATAR_DIR = path.join(process.cwd(), 'mock/user/avatars');
+const AVATAR_DIR = path.join(process.cwd(), 'mock/datebash/acators');
 
 // 确保头像目录存在
 const ensureAvatarDir = () => {
@@ -114,7 +114,7 @@ export default {
             console.log(`Mock: 头像保存成功 ${fileName}`);
 
             // 生成访问URL
-            const avatarUrl = `/user/avatar/${fileName}`;
+            const avatarUrl = `/datebash/acators/${fileName}`;
             
             // 生成新的头像ID（这里简单使用时间戳）
             const avatarId = Date.now();

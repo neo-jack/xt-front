@@ -1,4 +1,4 @@
-import { mockUsers } from './users';
+import { mockUsers } from '../datebash/users';
 
 // Mock 请求接口类型定义
 interface MockRequest {

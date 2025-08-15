@@ -17,7 +17,7 @@ interface MockAvatarResponse {
 }
 
 // 头像文件存储目录（相对于项目根目录）
-const AVATAR_DIR = path.join(process.cwd(), 'mock/user/avatars');
+const AVATAR_DIR = path.join(process.cwd(), 'mock/datebash/acators');
 
 // 确保头像目录存在
 const ensureAvatarDir = () => {
@@ -49,7 +49,7 @@ const getMimeType = (filename: string): string => {
 
 // 实现基于文件系统的头像mock
 export default {
-  'GET /user/avatar/:filename': (
+  'GET /datebash/acators/:filename': (
     req: MockAvatarRequest,
     res: MockAvatarResponse,
   ) => {

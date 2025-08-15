@@ -1,6 +1,6 @@
 // 请求 GET请求 /api/user/info
 
-import { mockUsers } from './users';
+import { mockUsers } from '../datebash/users';
 
 // Mock 用户信息请求接口类型定义
 interface MockUserInfoRequest {
