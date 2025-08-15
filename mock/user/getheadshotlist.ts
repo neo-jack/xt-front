@@ -1,4 +1,5 @@
 // 请求 post请求 /api/user/getheadshotlist
+import { HeadshotInfo, mockHeadshots } from '../datebash/acators';
 
 // Mock 头像列表请求接口类型定义
 interface MockHeadshotListRequest {
@@ -6,13 +7,6 @@ interface MockHeadshotListRequest {
         //用户id
         id: string;
     };
-}
-
-// 头像信息接口
-interface HeadshotInfo {
-    name: string;
-    url: string;
-    id: number;
 }
 
 // Mock 响应接口类型定义
@@ -26,31 +20,6 @@ interface MockHeadshotListResponse {
 
 // 获取可用的头像列表（模拟数据）
 const getAvailableHeadshots = (): HeadshotInfo[] => {
-    // 使用实际存在的头像文件
-    const mockHeadshots: HeadshotInfo[] = [
-        {
-            id: 1,
-            name: '02.png',
-            url: '/datebash/acators/02.png'  // 当前用户头像，会被前端过滤掉
-        },
-        {
-            id: 2,
-            name: '03.png', 
-            url: '/datebash/acators/03.png'
-        },
-        {
-            id: 3,
-            name: '01.png',
-            url: '/datebash/acators/01.png'
-        },
-        {
-            id: 4,
-            name: '04.png',
-            url: '/datebash/acators/04.png'
-        },
-        
-    ];
-
     return mockHeadshots;
 };
 

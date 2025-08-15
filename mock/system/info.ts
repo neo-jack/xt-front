@@ -1,5 +1,7 @@
 // 请求 /api/system/info
 
+import { systemInfo } from '../datebash/system';
+
 // Mock 请求接口类型定义
 interface MockInfoRequest {
   // GET 请求，通常不需要参数
@@ -22,15 +24,10 @@ interface MockInfoResponse {
 // Mock 实现
 export default {
   'GET /api/system/info': (req: any, res: MockInfoResponse) => {
-    // 返回成功响应
+    // 返回成功响应，使用数据库中的数据
     res.json({
       code: 0,
-      data: {
-        clientip: 'localhost',
-        servedomain: 'localhost',
-        version: '0.2',
-        major: 0,
-      },
+      data: systemInfo,
       msg: null,
     });
   },
