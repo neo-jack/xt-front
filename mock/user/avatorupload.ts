@@ -3,6 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { mockUsers } from '../datebash/users';
+import { mockHeadshots, HeadshotInfo } from '../datebash/acators';
 
 // Mock 头像上传请求接口类型定义
 interface MockAvatarUploadRequest {
@@ -57,6 +58,45 @@ const generateFileName = (userId: string, imageType: string): string => {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(7);
     return `user_${userId}_${timestamp}_${random}.${imageType}`;
+};
+
+// 更新头像列表的函数
+const updateAvatarList = (fileName: string): void => {
+    try {
+        // 生成新的头像ID（取当前列表最大ID + 1）
+        const maxId = mockHeadshots.length > 0 ? Math.max(...mockHeadshots.map(h => h.id)) : 0;
+        const newId = maxId + 1;
+
+        // 创建新的头像信息
+        const newHeadshot: HeadshotInfo = {
+            id: newId,
+            name: fileName,
+            url: `/datebash/acators/${fileName}`
+        };
+
+        // 添加到头像列表
+        mockHeadshots.push(newHeadshot);
+
+        console.log(`Mock: 已将新头像添加到列表 - ID: ${newId}, 文件名: ${fileName}`);
+        
+        // 可选：将更新的列表写入文件（如果需要持久化）
+        const indexFilePath = path.join(process.cwd(), 'mock/datebash/acators/index.ts');
+        const updatedContent = `// 头像信息接口
+export interface HeadshotInfo {
+    name: string;
+    url: string;
+    id: number;
+}
+
+// 可用的头像列表数据
+export const mockHeadshots: HeadshotInfo[] = ${JSON.stringify(mockHeadshots, null, 4).replace(/"([^"]+)":/g, '$1:')};
+`;
+        fs.writeFileSync(indexFilePath, updatedContent, 'utf8');
+        console.log(`Mock: 已更新头像列表文件 ${indexFilePath}`);
+        
+    } catch (error) {
+        console.error('Mock: 更新头像列表失败:', error);
+    }
 };
 
 // 实现头像上传的mock API
@@ -125,6 +165,9 @@ export default {
                 user.USER_AVATAR = avatarUrl;
                 console.log(`Mock: 已更新用户 ${id} 的头像为 ${avatarUrl}`);
             }
+
+            // 将新头像添加到头像列表中
+            updateAvatarList(fileName);
 
             const response: MockAvatarUploadResponse = {
                 code: 200,

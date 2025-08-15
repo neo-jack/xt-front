@@ -9,22 +9,42 @@ export interface HeadshotInfo {
 export const mockHeadshots: HeadshotInfo[] = [
     {
         id: 1,
-        name: '02.png',
-        url: '/datebash/acators/02.png'  // 当前用户头像，会被前端过滤掉
+        name: "user_1_1755300000000_avatar1.png",
+        url: "/datebash/acators/user_1_1755300000000_avatar1.png"
     },
     {
         id: 2,
-        name: '03.png', 
-        url: '/datebash/acators/03.png'
+        name: "user_1_1755300000001_avatar2.png",
+        url: "/datebash/acators/user_1_1755300000001_avatar2.png"
     },
     {
         id: 3,
-        name: '01.png',
-        url: '/datebash/acators/01.png'
+        name: "user_1_1755300000002_avatar3.png",
+        url: "/datebash/acators/user_1_1755300000002_avatar3.png"
     },
     {
         id: 4,
-        name: '04.png',
-        url: '/datebash/acators/04.png'
+        name: "user_1_1755300000003_avatar4.png",
+        url: "/datebash/acators/user_1_1755300000003_avatar4.png"
+    },
+    {
+        id: 5,
+        name: "user_1_1755239430032_txzdzm.png",
+        url: "/datebash/acators/user_1_1755239430032_txzdzm.png"
+    },
+    {
+        id: 6,
+        name: "user_1_1755239458310_1wsifb7.png",
+        url: "/datebash/acators/user_1_1755239458310_1wsifb7.png"
+    },
+    {
+        id: 7,
+        name: "user_1_1755239467629_ewiir8.png",
+        url: "/datebash/acators/user_1_1755239467629_ewiir8.png"
+    },
+    {
+        id: 8,
+        name: "user_2_1755239522548_enhv6h.png",
+        url: "/datebash/acators/user_2_1755239522548_enhv6h.png"
     }
 ];
