@@ -2,8 +2,9 @@ import { CameraOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Image, Modal, Upload, message } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import { FC, useState, useEffect, useRef } from 'react';
-import { getHeadshotList } from '@/services';
+import { getHeadshotList, uploadAvatar } from '@/services';
 import type { HeadshotInfo } from '@/services';
+import useUser from '@/models/useuser';
 
 // 裁剪模态框组件
 interface CropModalProps {
@@ -314,6 +315,10 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
       cropCanvas.width = cropArea.width;
       cropCanvas.height = cropArea.height;
       
+      // 保持透明背景，不填充白色
+      // cropCtx.fillStyle = '#ffffff';
+      // cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+      
       // 计算在原图上的裁剪位置
       const scaleX = img.naturalWidth / (img.width * imageScale);
       const scaleY = img.naturalHeight / (img.height * imageScale);
@@ -328,7 +333,8 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
         0, 0, cropArea.width, cropArea.height
       );
       
-      const croppedImageSrc = cropCanvas.toDataURL('image/jpeg', 0.8);
+      // 使用PNG格式保持透明度
+      const croppedImageSrc = cropCanvas.toDataURL('image/png');
       onComplete(croppedImageSrc);
     }
   };
@@ -404,9 +410,11 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
   onOk,
   userId,
 }) => {
+  const { userInfo, setUserInfo } = useUser();
   const [imageSrc, setImageSrc] = useState<string | undefined>(avatarSrc);
   const [headshotList, setHeadshotList] = useState<HeadshotInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [cropModalVisible, setCropModalVisible] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string>('');
 
@@ -466,12 +474,50 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
     setCropModalVisible(false);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!imageSrc) {
       message.warning('请先选择一张图片');
       return;
     }
-    if (onOk) onOk(imageSrc);
+
+    if (!userId) {
+      message.error('用户ID不能为空');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // 调用头像上传服务
+      const response = await uploadAvatar({
+        id: userId,
+        avatar: imageSrc
+      });
+
+      if (response.code === 200) {
+        message.success('头像上传成功');
+        
+        // 更新用户信息中的头像
+        if (userInfo && setUserInfo) {
+          setUserInfo({
+            ...userInfo,
+            USER_AVATAR: response.data.url
+          });
+        }
+
+        // 调用父组件的回调
+        if (onOk) onOk(imageSrc);
+        
+        // 关闭模态框
+        onCancel();
+      } else {
+        message.error(response.msg || '头像上传失败');
+      }
+    } catch (error) {
+      console.error('头像上传失败:', error);
+      message.error('头像上传失败，请重试');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -483,8 +529,17 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
       centered
       width={720}
       footer={[
-        <Button key="submit" type="primary" onClick={handleConfirm}>
-          确定
+        <Button key="cancel" onClick={onCancel} disabled={uploading}>
+          取消
+        </Button>,
+        <Button 
+          key="submit" 
+          type="primary" 
+          onClick={handleConfirm}
+          loading={uploading}
+          disabled={!imageSrc}
+        >
+          {uploading ? '上传中...' : '确定'}
         </Button>,
       ]}
     >
@@ -538,7 +593,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
               width: 300,
               height: 300,
               border: '1px solid #e5e5e5',
-              background: '#fff',
+              background: 'transparent',
               position: 'relative',
               overflow: 'hidden',
               display: 'flex',

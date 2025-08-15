@@ -1,7 +1,8 @@
 import { USER_INFO } from '@/constants';
+import { useState, useCallback } from 'react';
 
 const useUser = () => {
-  // 直接从 localStorage 读取用户信息
+  // 从 localStorage 读取用户信息
   const getUserInfo = () => {
     const savedUserInfo = localStorage.getItem('userInfo');
     if (savedUserInfo) {
@@ -14,8 +15,18 @@ const useUser = () => {
     return USER_INFO;
   };
 
+  const [userInfo, setUserInfoState] = useState(getUserInfo());
+
+  // 更新用户信息
+  const setUserInfo = useCallback((newUserInfo: any) => {
+    setUserInfoState(newUserInfo);
+    // 同时保存到 localStorage
+    localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+  }, []);
+
   return {
-    userInfo: getUserInfo(),
+    userInfo,
+    setUserInfo,
   };
 };
 
