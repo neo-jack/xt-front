@@ -1,7 +1,7 @@
 import useUser from '@/models/useuser';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar as AntdAvatar } from 'antd';
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 
 interface AvatarProps {
   size?: 'small' | 'default' | 'large' | number;
@@ -11,13 +11,33 @@ interface AvatarProps {
 const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
   const { userInfo } = useUser();
   const [avatarError, setAvatarError] = useState(false);
+  const [avatarKey, setAvatarKey] = useState(0); // 用于强制刷新头像
+  const previousAvatarRef = useRef<string>('');
 
-  // 当头像URL改变时，重置错误状态
+  // 当头像URL改变时，重置错误状态并刷新头像
   useEffect(() => {
-    setAvatarError(false);
+    const currentAvatar = userInfo?.USER_AVATAR || '';
+    
+    // 检查头像是否真的发生了变化
+    if (currentAvatar !== previousAvatarRef.current) {
+      console.log('Avatar组件检测到头像变化:', {
+        previous: previousAvatarRef.current,
+        current: currentAvatar
+      });
+      
+      // 重置错误状态
+      setAvatarError(false);
+      
+      // 强制刷新头像（通过改变key值）
+      setAvatarKey(prev => prev + 1);
+      
+      // 更新引用
+      previousAvatarRef.current = currentAvatar;
+    }
   }, [userInfo?.USER_AVATAR]);
 
   const handleAvatarError = (): boolean => {
+    console.warn('头像加载失败:', userInfo?.USER_AVATAR);
     setAvatarError(true);
     return false;
   };
@@ -26,11 +46,16 @@ const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
     if (avatarError || !userInfo?.USER_AVATAR) {
       return undefined;
     }
-    return userInfo.USER_AVATAR;
+    
+    // 添加时间戳参数防止缓存
+    const avatarUrl = userInfo.USER_AVATAR;
+    const separator = avatarUrl.includes('?') ? '&' : '?';
+    return `${avatarUrl}${separator}_t=${avatarKey}_${Date.now()}`;
   };
 
   return (
     <AntdAvatar
+      key={`avatar-${avatarKey}`} // 强制重新渲染
       src={getAvatarSrc()}
       icon={<UserOutlined />}
       size={size}

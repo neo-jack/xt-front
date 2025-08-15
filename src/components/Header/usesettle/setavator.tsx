@@ -494,18 +494,32 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
       });
 
       if (response.code === 200) {
+        console.log('头像上传成功，响应数据:', response.data);
         message.success('头像上传成功');
         
         // 更新用户信息中的头像
         if (userInfo && setUserInfo) {
-          setUserInfo({
+          const updatedUserInfo = {
             ...userInfo,
             USER_AVATAR: response.data.url
+          };
+          
+          console.log('更新用户信息:', {
+            old: userInfo.USER_AVATAR,
+            new: response.data.url
           });
+          
+          // 使用setUserInfo更新，这会触发监控系统通知所有组件
+          setUserInfo(updatedUserInfo);
+          
+          // 给一点时间让状态更新传播
+          setTimeout(() => {
+            console.log('头像更新已传播到所有组件');
+          }, 100);
         }
 
         // 调用父组件的回调
-        if (onOk) onOk(imageSrc);
+        if (onOk) onOk(response.data.url); // 传递服务器返回的URL而不是本地imageSrc
         
         // 关闭模态框
         onCancel();
