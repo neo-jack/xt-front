@@ -5,6 +5,7 @@ import {
   LockOutlined,
   LogoutOutlined,
   QrcodeOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
 import { Dropdown, MenuProps, Space } from 'antd';
 import { FC, useState } from 'react';
@@ -12,6 +13,7 @@ import HospitalInfo from './hospital';
 import Avatar from './Avatar';
 import LinkInfo from './link';
 import ChangeAvatarModal from './setavator';
+import ChangePasswordModal from './setpassword';
 import QRCodeModal from './qrcode';
 import LockScreenModal from './lockscreen';
 import SystemInfoModal from './system';
@@ -24,6 +26,7 @@ const AllUserActions: FC = () => {
   
   //设置弹窗
   const [showChangeAvatar, setShowChangeAvatar] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [showLockScreen, setShowLockScreen] = useState(false);
   const [showSystemInfo, setShowSystemInfo] = useState(false);
@@ -35,6 +38,12 @@ const AllUserActions: FC = () => {
       label: '修改头像',
       icon: <CameraOutlined />,
       onClick: () => setShowChangeAvatar(true),
+    },
+    {
+      key: 'changePassword',
+      label: '修改密码',
+      icon: <KeyOutlined />,
+      onClick: () => setShowChangePassword(true),
     },
     {
       key: 'qrcode',
@@ -99,6 +108,10 @@ const AllUserActions: FC = () => {
           // 这里可以添加头像更新的逻辑
           setShowChangeAvatar(false);
         }}
+      />
+      <ChangePasswordModal
+        open={showChangePassword}
+        onCancel={() => setShowChangePassword(false)}
       />
       <QRCodeModal
         open={showQRCode}

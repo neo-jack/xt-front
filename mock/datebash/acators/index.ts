@@ -133,5 +133,23 @@ export const mockHeadshots: HeadshotInfo[] = [
         name: "user_1_1755241392700_zetrddt.jpeg",
         url: "/datebash/acators/user_1_1755241392700_zetrddt.jpeg",
         userId: 1
+    },
+    {
+        id: 22,
+        name: "user_1_1755241595397_fqu69p.jpeg",
+        url: "/datebash/acators/user_1_1755241595397_fqu69p.jpeg",
+        userId: 1
+    },
+    {
+        id: 23,
+        name: "user_1_1755241606976_vtxml.png",
+        url: "/datebash/acators/user_1_1755241606976_vtxml.png",
+        userId: 1
+    },
+    {
+        id: 24,
+        name: "user_1_1755241616842_cyhut.png",
+        url: "/datebash/acators/user_1_1755241616842_cyhut.png",
+        userId: 1
     }
 ];

@@ -89,6 +89,7 @@ export interface HeadshotInfo {
     name: string;
     url: string;
     id: number;
+    userId: number;
 }
 
 // 可用的头像列表数据
