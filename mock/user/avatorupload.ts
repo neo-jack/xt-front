@@ -176,7 +176,7 @@ export default {
             updateAvatarList(fileName, id);
 
             const response: MockAvatarUploadResponse = {
-                code: 200,
+                code: 0,
                 data: {
                     url: avatarUrl,
                     id: avatarId,

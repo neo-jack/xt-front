@@ -501,7 +501,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
         avatar: imageSrc
       });
 
-      if (response.code === 200) {
+      if (response.code === 0) {
         console.log('头像上传成功，响应数据:', response.data);
         message.success('头像上传成功');
         

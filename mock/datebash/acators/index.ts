@@ -43,5 +43,35 @@ export const mockHeadshots: HeadshotInfo[] = [
         name: "user_1_1755300000000_avatar6.jpg",
         url: "/datebash/acators/user_1_1755300000000_avatar6.jpg",
         userId: 1
+    },
+    {
+        id: 7,
+        name: "user_1_1755499718428_awjb7c.jpeg",
+        url: "/datebash/acators/user_1_1755499718428_awjb7c.jpeg",
+        userId: 1
+    },
+    {
+        id: 8,
+        name: "user_1_1755499742117_hbal2o.jpeg",
+        url: "/datebash/acators/user_1_1755499742117_hbal2o.jpeg",
+        userId: 1
+    },
+    {
+        id: 9,
+        name: "user_1_1755499758330_6xpad.jpeg",
+        url: "/datebash/acators/user_1_1755499758330_6xpad.jpeg",
+        userId: 1
+    },
+    {
+        id: 10,
+        name: "user_1_1755499783478_o1ww0d.jpeg",
+        url: "/datebash/acators/user_1_1755499783478_o1ww0d.jpeg",
+        userId: 1
+    },
+    {
+        id: 11,
+        name: "user_1_1755499888579_qe6j.jpeg",
+        url: "/datebash/acators/user_1_1755499888579_qe6j.jpeg",
+        userId: 1
     }
 ];
