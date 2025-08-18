@@ -20,12 +20,12 @@ export const mockUsers: MockUser[] = [
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,
     username: 'root',
-    password: 'e5d9dee0892c9f474a174d3bfffb7810',
+    password: '63a9f0ea7bb98050796b649e85481845',
   },
   {
     USER_ID: 2,
     USER_NAME: '张医生',
-    USER_AVATAR: '/datebash/acators/user_2_1755239522548_enhv6h.png', // 指向实际存在的文件
+    USER_AVATAR: '/datebash/acators/user_1_1755300000001_avatar2.png', // 指向实际存在的文件
     USER_ROLE: 'doctor',
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,
