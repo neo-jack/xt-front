@@ -103,6 +103,43 @@ export const mockHeadshots: HeadshotInfo[] = ${JSON.stringify(mockHeadshots, nul
     }
 };
 
+// 更新用户信息的函数
+const updateUserList = (userId: string, avatarUrl: string): void => {
+    try {
+        // 更新对应用户的头像信息
+        const user = mockUsers.find(u => u.USER_ID.toString() === userId);
+        if (user) {
+            user.USER_AVATAR = avatarUrl;
+            console.log(`Mock: 已更新用户 ${userId} 的头像为 ${avatarUrl}`);
+            
+            // 将更新的用户数据写入文件
+            const userFilePath = path.join(process.cwd(), 'mock/datebash/users/index.ts');
+            const updatedUserContent = `// 用户数据定义
+export interface MockUser {
+  USER_ID: number;
+  USER_NAME: string;
+  USER_AVATAR: string;
+  USER_ROLE: string;
+  HOSPITAL_CNAME: string;
+  HOSPITAL_ID: number;
+  username: string;
+  password: string;
+}
+
+// 模拟用户数据
+export const mockUsers: MockUser[] = ${JSON.stringify(mockUsers, null, 2).replace(/"([^"]+)":/g, '$1:')};
+`;
+            fs.writeFileSync(userFilePath, updatedUserContent, 'utf8');
+            console.log(`Mock: 已更新用户列表文件 ${userFilePath}`);
+        } else {
+            console.warn(`Mock: 未找到用户ID为 ${userId} 的用户`);
+        }
+        
+    } catch (error) {
+        console.error('Mock: 更新用户信息失败:', error);
+    }
+};
+
 // 实现头像上传的mock API
 export default {
     'POST /api/user/avatorupload': (
@@ -165,12 +202,8 @@ export default {
             // 生成新的头像ID（这里简单使用时间戳）
             const avatarId = Date.now();
 
-            // 更新对应用户的头像信息
-            const user = mockUsers.find(u => u.USER_ID.toString() === id);
-            if (user) {
-                user.USER_AVATAR = avatarUrl;
-                console.log(`Mock: 已更新用户 ${id} 的头像为 ${avatarUrl}`);
-            }
+            // 更新用户头像信息并持久化到文件
+            updateUserList(id, avatarUrl);
 
             // 将新头像添加到头像列表中
             updateAvatarList(fileName, id);
