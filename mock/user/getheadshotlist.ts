@@ -38,7 +38,7 @@ export default {
             const headshots = getAvailableHeadshots();
 
             const response: MockHeadshotListResponse = {
-                code: 200,
+                code: 0,
                 data: headshots,
                 msg: '获取头像列表成功'
             };
