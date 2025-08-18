@@ -1,5 +1,4 @@
 // 运行时配置
-import { RequestConfig } from '@umijs/max';
 import { message } from 'antd';
 import { TokenManager } from '@/models/usetoken';
 
@@ -13,7 +12,7 @@ export async function getInitialState(): Promise<{ name: string }> {
 //----------------
 
 // 配置request拦截器
-export const request: RequestConfig = {
+export const request = {
   // 请求拦截器
   requestInterceptors: [
     (config: any) => {
