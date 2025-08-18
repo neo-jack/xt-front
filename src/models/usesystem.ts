@@ -1,6 +1,5 @@
 import { DEFAULT_SYSTEM_INFO } from '@/constants/system';
-import { getSystemInfo } from '@/services/system';
-import type { SystemInfo } from '@/services/system/typings';
+import { getSystemInfo, type SystemInfo } from '@/services';
 import { useEffect, useState } from 'react';
 
 /**

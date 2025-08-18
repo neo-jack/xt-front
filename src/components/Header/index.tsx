@@ -1,5 +1,5 @@
 import { setGlobalSystemInfo } from '@/models/usesystem';
-import { getSystemInfo } from '@/services/system';
+import { getSystemInfo, type SystemInfoResponse } from '@/services';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { FC, useEffect } from 'react';
@@ -15,7 +15,7 @@ const Header: FC<HeaderProps> = ({ collapsed, onToggleCollapsed }) => {
   useEffect(() => {
     //-----/api/system/info-----
     getSystemInfo()
-      .then((res) => {
+      .then((res: SystemInfoResponse) => {
         // 获得的api保存到constant上面去
         if (res.code === 0 && res.data) {
           setGlobalSystemInfo(res.data);
@@ -24,7 +24,7 @@ const Header: FC<HeaderProps> = ({ collapsed, onToggleCollapsed }) => {
           console.error('获取系统信息失败:', res.msg);
         }
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         console.error('获取系统信息异常:', error);
       });
   }, []);
