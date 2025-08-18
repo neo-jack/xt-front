@@ -1,5 +1,4 @@
 import { request } from '@umijs/max';
-import { TokenManager } from '@/models/usetoken';
 import CryptoJS from 'crypto-js';
 import type {
   SetPasswordRequest,
@@ -20,25 +19,11 @@ export async function setPassword(params: SetPasswordRequest): Promise<SetPasswo
   console.log('[SetPassword Service] 旧密码MD5:', params.OLD_PWD ? params.OLD_PWD.substring(0, 8) + '...' : 'null');
   console.log('[SetPassword Service] 新密码MD5:', params.NEW_PWD ? params.NEW_PWD.substring(0, 8) + '...' : 'null');
   
-  // 获取访问令牌
-  const accessToken = TokenManager.getAccessToken();
-  console.log('[SetPassword Service] 访问令牌:', accessToken ? 'Bearer ' + accessToken.substring(0, 20) + '...' : 'null');
-  
-  // 构建请求头
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  
-  // 如果存在访问令牌，则添加到请求头
-  if (accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`;
-  }
-  
-  console.log('[SetPassword Service] 发送修改密码请求');
+  // 注意：Token现在由全局拦截器自动添加，无需手动处理
+  console.log('[SetPassword Service] 发送修改密码请求（Token由拦截器自动添加）');
   
   return request<SetPasswordResponse>('/api/user/setpassword', {
     method: 'POST',
-    headers,
     data: params,
   });
 }

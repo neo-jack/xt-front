@@ -20,7 +20,7 @@ export const mockUsers: MockUser[] = [
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,
     username: 'root',
-    password: '63a9f0ea7bb98050796b649e85481845',
+    password: 'e5d9dee0892c9f474a174d3bfffb7810',
   },
   {
     USER_ID: 2,
