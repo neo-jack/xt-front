@@ -63,7 +63,9 @@ function withAuthorization(WrappedComponent: FC) {
             height: '100vh',
           }}
         >
-          <Spin size="large" tip="验证登录状态..." />
+          <Spin size="large" tip="验证登录状态...">
+            <div style={{ width: 50, height: 50 }} />
+          </Spin>
         </div>
       );
     }
