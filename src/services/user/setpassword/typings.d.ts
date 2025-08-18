@@ -13,7 +13,7 @@ export interface SetPasswordResponse {
   msg: string | null; // 响应消息
 }
 
-// 密码验证结果
+// 密码验证结果 
 export interface PasswordValidation {
   isValid: boolean;
   message?: string;

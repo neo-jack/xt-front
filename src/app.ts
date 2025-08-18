@@ -1,3 +1,16 @@
+//-----------------------------------------------
+// 拦截器配置token信息+token刷新+控制台信息调试
+// 
+// 待优化:
+// 1.拦截器信息调试信息优化
+//-----------------------------------------------
+
+
+
+
+
+
+
 // 运行时配置
 import { message } from 'antd';
 import { TokenManager } from '@/models/usetoken';
@@ -9,7 +22,7 @@ export async function getInitialState(): Promise<{ name: string }> {
 }
 
 //----------------
-// 在拦截器中，加入检查token管理
+// 在拦截器中，加入检查token管理 
 //----------------
 
 // 检查token是否即将过期（使用TokenManager的方法）
@@ -204,6 +217,8 @@ export const request = {
     },
   ],
 
+  
+  
   // 错误处理
   errorConfig: {
     errorHandler: (error: any) => {
@@ -214,10 +229,8 @@ export const request = {
         hasRequest: !!error.request
       });
       
-      // 🔍 区分不同类型的错误进行处理
-      
       // 1️⃣ 业务逻辑错误（响应拦截器抛出的，有自定义code）
-      if (error.code !== undefined && !error.response) {
+      if (error.code !== undefined) {
         console.error('[Error Handler] 🚫 业务逻辑错误，code:', error.code);
         
         // 401错误已经在响应拦截器中处理了，这里不再重复处理
@@ -228,55 +241,17 @@ export const request = {
         throw error;
       }
       
-      // 2️⃣ HTTP状态码错误（error.response存在）
-      if (error.response) {
-        const { status, data } = error.response;
-        console.error('[Error Handler] 🌐 HTTP状态码错误:', status);
-        
-        switch (status) {
-          case 401:
-            message.error('未授权，请重新登录');
-            TokenManager.clearTokens();
-            if (window.location.pathname !== '/login') {
-              window.location.href = '/login';
-            }
-            break;
-          case 403:
-            message.error('权限不足');
-            break;
-          case 404:
-            message.error('请求的资源不存在');
-            break;
-          case 500:
-            message.error('服务器内部错误');
-            break;
-          default:
-            message.error(data?.msg || `请求错误: ${status}`);
-        }
-        
-        throw error;
-      }
-      
-      // 3️⃣ 网络错误（error.request存在但error.response不存在）
+      // 2️⃣ 网络错误
       if (error.request) {
         console.error('[Error Handler] 📡 网络错误');
         message.error('网络错误，请检查网络连接');
         throw error;
       }
       
-      // 4️⃣ 其他错误（通常是代码错误或配置错误）
+      // 3️⃣ 其他错误（通常是代码错误或配置错误）
       console.error('[Error Handler] ❓ 其他错误');
       message.error(error.message || '请求发生未知错误');
       throw error;
     },
   },
 };
-
-// export const layout = () => {
-//   return {
-//     logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
-//     menu: {
-//       locale: false,
-//     },
-//   };
-// };
