@@ -175,22 +175,31 @@ export const request = {
       
       // 处理统一的响应格式
       if (data?.code !== undefined) {
-        // 登录过期或无权限 - 由后端兜底处理
+        // ✅ 成功响应：code === 0
+        if (data.code === 0) {
+          console.log('[Response Interceptor] ✅ 响应成功，code: 0');
+          return response;
+        }
+        
+        // ❌ 错误响应：code !== 0
+        console.log('[Response Interceptor] ❌ 响应错误，code:', data.code, 'msg:', data.msg);
+        
+        // 🔐 特殊处理：401 登录过期（后端兜底）
         if (data.code === 401) {
-          console.log('[Response Interceptor] 检测到401，token已过期');
-          
-          // 后端兜底：直接处理token过期（前端检查的补充）
+          console.log('[Response Interceptor] 🔐 检测到401，token已过期，执行兜底处理');
           handleTokenExpired();
           return Promise.reject(new Error(data.msg || '登录已过期'));
         }
         
-        // 其他错误码处理
-        if (data.code !== 0) {
-          console.log('[Response Interceptor] 检测到错误响应:', data);
-          // 可以在这里统一处理其他错误码
-        }
+        // 🚫 其他错误码：统一抛出错误
+        const error = new Error(data.msg || `请求失败，错误码: ${data.code}`);
+        (error as any).code = data.code;
+        (error as any).data = data.data;
+        return Promise.reject(error);
       }
       
+      // 📝 没有标准code字段的响应，直接返回
+      console.log('[Response Interceptor] 📝 非标准响应格式，直接返回');
       return response;
     },
   ],
@@ -198,10 +207,31 @@ export const request = {
   // 错误处理
   errorConfig: {
     errorHandler: (error: any) => {
-      console.error('[Request Error Handler] 请求错误:', error);
+      console.error('[Request Error Handler] 捕获错误:', {
+        message: error.message,
+        code: error.code,
+        hasResponse: !!error.response,
+        hasRequest: !!error.request
+      });
       
+      // 🔍 区分不同类型的错误进行处理
+      
+      // 1️⃣ 业务逻辑错误（响应拦截器抛出的，有自定义code）
+      if (error.code !== undefined && !error.response) {
+        console.error('[Error Handler] 🚫 业务逻辑错误，code:', error.code);
+        
+        // 401错误已经在响应拦截器中处理了，这里不再重复处理
+        if (error.code !== 401) {
+          message.error(error.message || `操作失败，错误码: ${error.code}`);
+        }
+        
+        throw error;
+      }
+      
+      // 2️⃣ HTTP状态码错误（error.response存在）
       if (error.response) {
         const { status, data } = error.response;
+        console.error('[Error Handler] 🌐 HTTP状态码错误:', status);
         
         switch (status) {
           case 401:
@@ -223,12 +253,20 @@ export const request = {
           default:
             message.error(data?.msg || `请求错误: ${status}`);
         }
-      } else if (error.request) {
-        message.error('网络错误，请检查网络连接');
-      } else {
-        message.error(error.message || '请求发生未知错误');
+        
+        throw error;
       }
       
+      // 3️⃣ 网络错误（error.request存在但error.response不存在）
+      if (error.request) {
+        console.error('[Error Handler] 📡 网络错误');
+        message.error('网络错误，请检查网络连接');
+        throw error;
+      }
+      
+      // 4️⃣ 其他错误（通常是代码错误或配置错误）
+      console.error('[Error Handler] ❓ 其他错误');
+      message.error(error.message || '请求发生未知错误');
       throw error;
     },
   },
