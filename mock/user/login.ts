@@ -62,10 +62,19 @@ export default {
       });
     }
 
-    // 查找用户
+    // 打印当前用户数据库状态
+    console.log(`[Login] 当前用户数据库状态:`);
+    mockUsers.forEach(u => {
+      console.log(`[Login] 用户: ${u.username}, 密码: ${u.password}`);
+    });
+    
+    // 查找用户 - 恢复简单直接的匹配
     const user = mockUsers.find(
       (u) => u.username === username && u.password === password,
     );
+
+    console.log(`[Login] 尝试登录: ${username}/${password}`);
+    console.log(`[Login] 登录结果: ${user ? '成功' : '失败'}`);
 
     if (!user) {
       return res.json({

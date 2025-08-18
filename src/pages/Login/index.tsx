@@ -64,7 +64,7 @@ const Login: FC = () => {
             name="username"
             rules={[{ required: true, message: '请输入用户名!' }]}
           >
-            <Input prefix={<UserOutlined />} placeholder="用户名 (admin)" />
+            <Input prefix={<UserOutlined />} placeholder="用户名 (root)" />
           </Form.Item>
 
           <Form.Item
@@ -73,7 +73,7 @@ const Login: FC = () => {
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder="密码 (123456)"
+              placeholder="密码 (root)"
             />
           </Form.Item>
 
@@ -85,8 +85,8 @@ const Login: FC = () => {
         </Form>
 
         <div className={styles.tips}>
-          <p>测试账号：admin</p>
-          <p>测试密码：123456</p>
+          <p>测试账号：root</p>
+          <p>测试密码：root</p>
         </div>
       </Card>
     </div>

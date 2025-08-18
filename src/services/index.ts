@@ -7,6 +7,7 @@ export * from './user/info';
 export * from './user/refresh';
 export * from './user/getheadshotlist';
 export * from './user/avatorupload';
+export * from './user/setpassword';
 
 // 系统相关服务
 export * from './system/info';
@@ -24,4 +25,5 @@ export { getUserInfo } from './user/info';
 export { refreshToken } from './user/refresh';
 export { getSystemInfo } from './system/info';
 export { uploadAvatar } from './user/avatorupload';
+export { setPassword } from './user/setpassword';
 
