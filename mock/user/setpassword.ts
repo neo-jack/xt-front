@@ -2,6 +2,7 @@ import { mockUsers } from '../datebash/users';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { parseTokenUserId } from '../utils/tokenid';
 
 // Mock 请求接口类型定义
 interface MockRequest {
@@ -27,49 +28,6 @@ interface MockResponse {
 // MD5密码加密函数
 const md5Hash = (password: string): string => {
   return crypto.createHash('md5').update(password).digest('hex');
-};
-
-// 从token解析用户ID（使用与refresh.ts相同的逻辑）
-const parseTokenUserId = (token: string): number | null => {
-  console.log('[parseTokenUserId] 开始解析token');
-  
-  try {
-    // 检查token是否存在且格式正确
-    if (!token) {
-      console.log('[parseTokenUserId] token为空');
-      return null;
-    }
-    
-    if (!token.startsWith('Bearer ')) {
-      console.log('[parseTokenUserId] token格式错误，缺少Bearer前缀:', token.substring(0, 20) + '...');
-      return null;
-    }
-    
-    const tokenPart = token.replace('Bearer ', '');
-    console.log('[parseTokenUserId] 提取token部分:', tokenPart.substring(0, 20) + '...');
-    
-    const parts = tokenPart.split('.');
-    console.log('[parseTokenUserId] token分段数量:', parts.length);
-    
-    if (parts.length !== 3) {
-      console.log('[parseTokenUserId] JWT格式错误，应该有3个部分，实际:', parts.length);
-      return null;
-    }
-    
-    // 解析payload部分（与refresh.ts保持一致）
-    console.log('[parseTokenUserId] 开始解析payload部分');
-    const payload = JSON.parse(atob(parts[1]));
-    console.log('[parseTokenUserId] payload解析成功:', JSON.stringify(payload, null, 2));
-    
-    const userId = payload.userId || null;
-    console.log('[parseTokenUserId] 提取到的用户ID:', userId);
-    
-    return userId;
-  } catch (error) {
-    console.error('[parseTokenUserId] 解析token时发生错误:', error);
-    console.error('[parseTokenUserId] 错误堆栈:', error instanceof Error ? error.stack : 'Unknown error');
-    return null;
-  }
 };
 
 // 验证当前密码（MD5比对）

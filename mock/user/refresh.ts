@@ -1,3 +1,5 @@
+import { parseTokenPayload, isValidTokenFormat } from '../utils/tokenid';
+
 //Mock 请求接口类型定义
 interface MockRequest {
   body: {
@@ -35,24 +37,29 @@ const generateToken = (
   )}.mock_signature_${tokenType}`;
 };
 
-// 解析模拟的 token，提取用户ID
-const parseToken = (
+// 解析refresh token，提取用户ID和时间戳（使用统一的工具函数）
+const parseRefreshToken = (
   token: string,
 ): { userId: number; timestamp: number } | null => {
   try {
-    // 分割 JWT token
-    const parts = token.split('.');
-    if (parts.length !== 3) {
+    console.log('[parseRefreshToken] 开始解析refresh token');
+    
+    // 使用统一的payload解析函数（注意：这里不需要Bearer前缀）
+    const bearerToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    const payload = parseTokenPayload(bearerToken);
+    
+    if (!payload || !payload.userId || !payload.timestamp) {
+      console.log('[parseRefreshToken] payload缺少必要字段');
       return null;
     }
 
-    // 解码 payload
-    const payload = JSON.parse(atob(parts[1]));
+    console.log('[parseRefreshToken] 解析成功，用户ID:', payload.userId);
     return {
       userId: payload.userId,
       timestamp: payload.timestamp,
     };
   } catch (error) {
+    console.error('[parseRefreshToken] 解析refresh token失败:', error);
     return null;
   }
 };
@@ -77,8 +84,8 @@ export default {
       });
     }
 
-    // 解析刷新令牌
-    const tokenData = parseToken(refreshToken);
+    // 解析刷新令牌（使用统一的工具函数）
+    const tokenData = parseRefreshToken(refreshToken);
     if (!tokenData) {
       return res.json({
         code: 1,
