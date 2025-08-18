@@ -6,7 +6,8 @@ export const {
   setPassword, 
   validatePasswordStrength, 
   hashPassword, 
-  validatePasswordMatch 
+  validatePasswordMatch,
+  isMD5Format
 } = SetPasswordController;
 
 // 导出类型定义

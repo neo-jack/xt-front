@@ -1,4 +1,5 @@
 import { mockUsers } from '../datebash/users';
+import * as crypto from 'crypto';
 
 // Mock 请求接口类型定义
 interface MockRequest {
@@ -30,6 +31,11 @@ interface MockResponse {
 }
 
 
+
+// MD5密码加密函数
+const md5Hash = (password: string): string => {
+  return crypto.createHash('md5').update(password).digest('hex');
+};
 
 // 生成模拟的 token
 const generateToken = (
@@ -65,15 +71,33 @@ export default {
     // 打印当前用户数据库状态
     console.log(`[Login] 当前用户数据库状态:`);
     mockUsers.forEach(u => {
-      console.log(`[Login] 用户: ${u.username}, 密码: ${u.password}`);
+      console.log(`[Login] 用户: ${u.username}, 密码: ${u.password.substring(0, 8)}...`);
     });
     
-    // 查找用户 - 恢复简单直接的匹配
+    // 前端已经发送MD5加密的密码，后端直接比对
+    console.log(`[Login] 接收到的密码（前端已MD5加密）: ${password}`);
+    
+    // 检测密码格式
+    const isMD5Format = /^[a-f0-9]{32}$/i.test(password);
+    console.log(`[Login] 密码格式检测: ${isMD5Format ? 'MD5格式' : '可能是明文'}`);
+    
+    let finalPassword = password;
+    
+    // 如果不是MD5格式，进行MD5加密（兼容明文密码）
+    if (!isMD5Format) {
+      finalPassword = md5Hash(password);
+      console.log(`[Login] 明文密码转MD5: ${password} -> ${finalPassword}`);
+    } else {
+      console.log(`[Login] 直接使用前端发送的MD5密码: ${finalPassword}`);
+    }
+    
+    // 查找用户 - 直接使用前端发送的MD5密码进行匹配
     const user = mockUsers.find(
-      (u) => u.username === username && u.password === password,
+      (u) => u.username === username && u.password === finalPassword,
     );
 
-    console.log(`[Login] 尝试登录: ${username}/${password}`);
+    console.log(`[Login] 尝试登录: ${username}/${password.substring(0, 10)}...`);
+    console.log(`[Login] MD5比较: 输入${finalPassword} vs 存储${mockUsers.find(u => u.username === username)?.password || '用户不存在'}`);
     console.log(`[Login] 登录结果: ${user ? '成功' : '失败'}`);
 
     if (!user) {

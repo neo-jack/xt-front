@@ -41,11 +41,19 @@ const ChangePasswordModal: FC<ChangePasswordModalProps> = ({
         return;
       }
       
-      // 密码哈希处理
+      // 密码哈希处理（MD5加密）
+      console.log('[ChangePassword] 开始进行密码MD5加密');
+      console.log('[ChangePassword] 当前密码长度:', currentPassword.length);
+      console.log('[ChangePassword] 新密码长度:', newPassword.length);
+      
       const hashedOldPassword = hashPassword(currentPassword);
       const hashedNewPassword = hashPassword(newPassword);
       
+      console.log('[ChangePassword] 当前密码MD5:', hashedOldPassword);
+      console.log('[ChangePassword] 新密码MD5:', hashedNewPassword);
+      
       // 调用API
+      console.log('[ChangePassword] 调用修改密码API');
       const response: SetPasswordResponse = await setPassword({
         OLD_PWD: hashedOldPassword,
         NEW_PWD: hashedNewPassword,

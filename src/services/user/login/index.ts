@@ -2,7 +2,7 @@
 
 import * as LoginController from './LoginController';
 
-export const { login } = LoginController;
+export const { login, hashPasswordMD5, processPassword, isMD5Format } = LoginController;
 
 // 导出类型定义
 export type {

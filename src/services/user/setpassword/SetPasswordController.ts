@@ -1,5 +1,6 @@
 import { request } from '@umijs/max';
 import { TokenManager } from '@/models/usetoken';
+import CryptoJS from 'crypto-js';
 import type {
   SetPasswordRequest,
   SetPasswordResponse,
@@ -11,12 +12,17 @@ import type {
 
 /**
  * 修改用户密码
- * @param params 包含旧密码和新密码哈希值的请求参数
+ * @param params 包含旧密码和新密码MD5哈希值的请求参数
  * @returns Promise<SetPasswordResponse> 修改密码的响应结果
  */
 export async function setPassword(params: SetPasswordRequest): Promise<SetPasswordResponse> {
+  console.log('[SetPassword Service] 开始修改密码请求');
+  console.log('[SetPassword Service] 旧密码MD5:', params.OLD_PWD ? params.OLD_PWD.substring(0, 8) + '...' : 'null');
+  console.log('[SetPassword Service] 新密码MD5:', params.NEW_PWD ? params.NEW_PWD.substring(0, 8) + '...' : 'null');
+  
   // 获取访问令牌
   const accessToken = TokenManager.getAccessToken();
+  console.log('[SetPassword Service] 访问令牌:', accessToken ? 'Bearer ' + accessToken.substring(0, 20) + '...' : 'null');
   
   // 构建请求头
   const headers: Record<string, string> = {
@@ -27,6 +33,8 @@ export async function setPassword(params: SetPasswordRequest): Promise<SetPasswo
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }
+  
+  console.log('[SetPassword Service] 发送修改密码请求');
   
   return request<SetPasswordResponse>('/api/user/setpassword', {
     method: 'POST',
@@ -50,19 +58,27 @@ export function validatePasswordStrength(password: string): boolean {
 }
 
 /**
- * 简单的密码哈希处理（实际项目中应使用更安全的加密算法）
+ * 检测字符串是否为MD5格式
+ * @param str 待检测字符串
+ * @returns boolean 是否为MD5格式
+ */
+export function isMD5Format(str: string): boolean {
+  return /^[a-f0-9]{32}$/i.test(str);
+}
+
+/**
+ * MD5密码加密函数
  * @param password 明文密码
- * @returns string 哈希后的密码
+ * @returns string MD5哈希值
  */
 export function hashPassword(password: string): string {
-  // 这里应该使用实际的加密算法，比如bcrypt、scrypt等
-  // 当前只是示例，实际使用时需要替换为真正的加密方法
-  try {
-    const timestamp = Date.now().toString();
-    const combined = password + timestamp;
-    return btoa(combined).replace(/[^a-zA-Z0-9]/g, '').substring(0, 128);
-  } catch (error) {
-    throw new Error('密码加密失败');
+  // 智能处理：如果已经是MD5格式，直接返回；否则进行MD5加密
+  if (isMD5Format(password)) {
+    console.log('[SetPassword Service] 检测到MD5格式，直接使用');
+    return password;
+  } else {
+    console.log('[SetPassword Service] 检测到明文格式，进行MD5加密');
+    return CryptoJS.MD5(password).toString();
   }
 }
 

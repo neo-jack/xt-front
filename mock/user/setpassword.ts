@@ -1,6 +1,7 @@
 import { mockUsers } from '../datebash/users';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 
 // Mock 请求接口类型定义
 interface MockRequest {
@@ -22,6 +23,11 @@ interface MockResponse {
     msg: string | null; //响应消息
   }) => void;
 }
+
+// MD5密码加密函数
+const md5Hash = (password: string): string => {
+  return crypto.createHash('md5').update(password).digest('hex');
+};
 
 // 从token解析用户ID（使用与refresh.ts相同的逻辑）
 const parseTokenUserId = (token: string): number | null => {
@@ -66,46 +72,32 @@ const parseTokenUserId = (token: string): number | null => {
   }
 };
 
-// 验证当前密码（简化版本 - 检查哈希格式）
-const verifyCurrentPassword = (inputHash: string, storedPassword: string): boolean => {
+// 验证当前密码（MD5比对）
+const verifyCurrentPassword = (inputMD5: string, storedMD5: string): boolean => {
   console.log('[verifyCurrentPassword] 开始验证当前密码');
-  console.log('[verifyCurrentPassword] 输入哈希:', inputHash ? inputHash.substring(0, 10) + '...' : 'null');
-  console.log('[verifyCurrentPassword] 存储密码:', storedPassword ? storedPassword.substring(0, 10) + '...' : 'null');
+  console.log('[verifyCurrentPassword] 输入MD5:', inputMD5 ? inputMD5.substring(0, 10) + '...' : 'null');
+  console.log('[verifyCurrentPassword] 存储MD5:', storedMD5 ? storedMD5.substring(0, 10) + '...' : 'null');
   
-  // 简化验证：如果输入的是哈希值（长度大于10），认为验证通过
-  // 实际项目中应该将storedPassword进行相同的哈希算法处理后比较
-  const isValid = !!(inputHash && inputHash.length > 10);
+  // MD5直接比对
+  const isValid = inputMD5 === storedMD5;
   console.log('[verifyCurrentPassword] 验证结果:', isValid);
   
   return isValid;
 };
 
-// 解密新密码（真正的解密逻辑）
-const decryptNewPassword = (hashedPassword: string): string => {
-  console.log('[decryptNewPassword] 开始解密新密码');
-  console.log('[decryptNewPassword] 输入密码:', hashedPassword ? hashedPassword.substring(0, 15) + '...' : 'null');
+// 处理新密码（MD5系统中直接使用MD5值）
+const processNewPassword = (md5Password: string): string => {
+  console.log('[processNewPassword] 开始处理新密码');
+  console.log('[processNewPassword] 输入MD5:', md5Password ? md5Password.substring(0, 15) + '...' : 'null');
   
-  try {
-    // 如果是以 pwd_ 开头的哈希密码，进行 Base64 解码
-    if (hashedPassword.startsWith('pwd_')) {
-      console.log('[decryptNewPassword] 检测到pwd_前缀，开始Base64解码');
-      const base64Part = hashedPassword.substring(4); // 去掉 pwd_ 前缀
-      console.log('[decryptNewPassword] Base64部分:', base64Part.substring(0, 10) + '...');
-      
-      const decoded = Buffer.from(base64Part, 'base64').toString('utf8');
-      console.log('[decryptNewPassword] 解码成功，明文密码:', decoded ? decoded.substring(0, 5) + '...' : 'null');
-      return decoded;
-    }
-    
-    // 如果不是哈希格式，直接返回
-    console.log('[decryptNewPassword] 非pwd_格式，直接返回原值');
-    return hashedPassword;
-  } catch (error) {
-    console.error('[decryptNewPassword] 密码解密失败:', error);
-    console.error('[decryptNewPassword] 错误堆栈:', error instanceof Error ? error.stack : 'Unknown error');
-    // 解密失败时返回原始哈希值
-    return hashedPassword;
+  // 验证MD5格式（32位十六进制）
+  if (!/^[a-f0-9]{32}$/i.test(md5Password)) {
+    console.error('[processNewPassword] 无效的MD5格式');
+    throw new Error('无效的MD5密码格式');
   }
+  
+  console.log('[processNewPassword] MD5格式验证通过，直接使用');
+  return md5Password;
 };
 
 // 修改源文件中的密码
@@ -233,7 +225,7 @@ export default {
     const user = mockUsers[userIndex];
     console.log('[SetPassword API] 找到用户:', user.USER_NAME, '(ID:', userId, ')');
 
-    // 验证当前密码
+    // 验证当前密码（MD5比对）
     if (!verifyCurrentPassword(OLD_PWD, user.password)) {
       console.log('[SetPassword API] 当前密码验证失败');
       return res.json({
@@ -245,21 +237,21 @@ export default {
 
     console.log('[SetPassword API] 当前密码验证成功');
 
-    // 验证新密码哈希格式
-    if (!NEW_PWD || NEW_PWD.length < 10) {
-      console.log('[SetPassword API] 新密码格式验证失败，长度:', NEW_PWD ? NEW_PWD.length : 0);
+    // 验证新密码MD5格式
+    if (!NEW_PWD || !/^[a-f0-9]{32}$/i.test(NEW_PWD)) {
+      console.log('[SetPassword API] 新密码格式验证失败，不是有效的MD5格式');
       return res.json({
         code: 400,
         data: null,
-        msg: '新密码格式错误',
+        msg: '新密码格式错误，必须是MD5格式',
       });
     }
 
-    // 解密新密码
-    const newPlainPassword = decryptNewPassword(NEW_PWD);
+    // 处理新密码（验证MD5格式）
+    const newMD5Password = processNewPassword(NEW_PWD);
 
     // 检查新密码是否与当前密码相同
-    if (newPlainPassword === user.password) {
+    if (newMD5Password === user.password) {
       console.log('[SetPassword API] 新密码与当前密码相同');
       return res.json({
         code: 400,
@@ -270,20 +262,20 @@ export default {
 
     console.log('[SetPassword API] 新密码验证通过，开始更新密码');
 
-    // 直接修改用户数据库中的密码
+    // 直接修改用户数据库中的密码（存储MD5值）
     const oldPassword = mockUsers[userIndex].password;
-    mockUsers[userIndex].password = newPlainPassword;
+    mockUsers[userIndex].password = newMD5Password;
 
     console.log('[SetPassword API] 内存数据库密码已更新');
 
     // 同时修改源文件中的密码
-    updatePasswordInSourceFile(userId, newPlainPassword);
+    updatePasswordInSourceFile(userId, newMD5Password);
 
     // 打印调试信息
     console.log(`[SetPassword API] ===== 密码修改完成 =====`);
     console.log(`[SetPassword API] 用户: ${user.USER_NAME} (ID: ${userId})`);
-    console.log(`[SetPassword API] 旧密码: ${oldPassword ? oldPassword.substring(0, 8) + '...' : 'null'}`);
-    console.log(`[SetPassword API] 新密码: ${newPlainPassword ? newPlainPassword.substring(0, 8) + '...' : 'null'}`);
+    console.log(`[SetPassword API] 旧MD5: ${oldPassword ? oldPassword.substring(0, 8) + '...' : 'null'}`);
+    console.log(`[SetPassword API] 新MD5: ${newMD5Password ? newMD5Password.substring(0, 8) + '...' : 'null'}`);
     console.log(`[SetPassword API] 内存数据库已更新`);
 
     // 返回成功响应

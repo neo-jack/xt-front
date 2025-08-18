@@ -20,7 +20,7 @@ export const mockUsers: MockUser[] = [
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,
     username: 'root',
-    password: 'MTIzNDUxNzU1NDgwMDI0MDA0',
+    password: 'e5d9dee0892c9f474a174d3bfffb7810',
   },
   {
     USER_ID: 2,
@@ -30,6 +30,6 @@ export const mockUsers: MockUser[] = [
     HOSPITAL_CNAME: 'xxx省医院',
     HOSPITAL_ID: 1,
     username: 'doctor',
-    password: '123456',
+    password: 'e10adc3949ba59abbe56e057f20f883e', // MD5: 123456
   },
 ];

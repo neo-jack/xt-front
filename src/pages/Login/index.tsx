@@ -1,5 +1,5 @@
 // 登录页面
-import { login } from '@/services/user/login';
+import { login, hashPasswordMD5 } from '@/services/user/login';
 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, message } from 'antd';
@@ -24,11 +24,15 @@ const Login: FC = () => {
   }, [navigate]);
 
   const onFinish = async (values: LoginForm) => {
-    console.log('登录信息:', values);
+    console.log('[Login Page] 开始登录流程');
+    console.log('[Login Page] 用户名:', values.username);
+    console.log('[Login Page] 原始密码长度:', values.password.length);
     setLoading(true);
 
     try {
-      // 调用后端登录API
+      // 注意：login函数内部已经会进行MD5加密
+      // 这里直接传入明文密码，由login函数负责加密
+      console.log('[Login Page] 调用登录API');
       const response = await login(values);
 
       if (response.code === 0 && response.data) {
