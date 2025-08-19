@@ -2,7 +2,6 @@
 
 // /api/user/avatorupload请求
 export interface AvatarUploadRequest {
-  id: string;        // 用户ID
   avatar: string;    // 头像数据 (base64格式)
 }
 

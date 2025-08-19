@@ -4,12 +4,14 @@ import fs from 'fs';
 import path from 'path';
 import { mockUsers } from '../datebash/users';
 import { mockHeadshots, HeadshotInfo } from '../datebash/acators';
+import { parseTokenUserId } from '../utils/tokenid';
 
 // Mock 头像上传请求接口类型定义
 interface MockAvatarUploadRequest {
+    headers: {
+        authorization?: string; // Bearer token
+    };
     body: {
-        //用户id
-        id: string;
         //头像数据 (base64格式)
         avatar: string;
     };
@@ -146,25 +148,30 @@ export default {
         req: MockAvatarUploadRequest,
         res: any
     ) => {
-        const { id, avatar } = req.body;
+        const { avatar } = req.body;
+        const authHeader = req.headers.authorization;
         
-        console.log(`Mock: 用户 ${id} 上传头像`);
+        console.log(`Mock: 收到头像上传请求`);
 
         try {
-            // 参数验证
-            if (!id) {
+            // 从token解析用户ID
+            const userId = parseTokenUserId(authHeader || '');
+            
+            if (!userId) {
                 const errorResponse: MockAvatarUploadResponse = {
-                    code: 400,
+                    code: 401,
                     data: {
                         url: '',
                         id: 0,
-                        message: '用户ID不能为空',
+                        message: '无效的token或用户ID',
                         userId: 0
                     },
-                    msg: '参数错误'
+                    msg: '认证失败'
                 };
-                return res.status(400).json(errorResponse);
+                return res.status(401).json(errorResponse);
             }
+
+            console.log(`Mock: 用户 ${userId} 上传头像`);
 
             if (!avatar) {
                 const errorResponse: MockAvatarUploadResponse = {
@@ -187,7 +194,7 @@ export default {
             const { type, data } = parseBase64Image(avatar);
             
             // 生成文件名
-            const fileName = generateFileName(id, type);
+            const fileName = generateFileName(userId.toString(), type);
             const filePath = path.join(AVATAR_DIR, fileName);
             
             // 将base64数据写入文件
@@ -203,10 +210,10 @@ export default {
             const avatarId = Date.now();
 
             // 更新用户头像信息并持久化到文件
-            updateUserList(id, avatarUrl);
+            updateUserList(userId.toString(), avatarUrl);
 
             // 将新头像添加到头像列表中
-            updateAvatarList(fileName, id);
+            updateAvatarList(fileName, userId.toString());
 
             const response: MockAvatarUploadResponse = {
                 code: 0,
@@ -214,7 +221,7 @@ export default {
                     url: avatarUrl,
                     id: avatarId,
                     message: '头像上传成功',
-                    userId: parseInt(id)
+                    userId: userId
                 },
                 msg: '上传成功'
             };

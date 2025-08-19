@@ -15,12 +15,12 @@ export const mockUsers: MockUser[] = [
   {
     USER_ID: 1,
     USER_NAME: "李银",
-    USER_AVATAR: "/datebash/acators/user_1_1755501483566_4aolv.png",
+    USER_AVATAR: "/datebash/acators/user_1_1755591217894_0hdpn4.png",
     USER_ROLE: "root",
     HOSPITAL_CNAME: "001省医院",
     HOSPITAL_ID: 1,
     username: "root",
-    password: '63a9f0ea7bb98050796b649e85481845',
+    password: "63a9f0ea7bb98050796b649e85481845"
   },
   {
     USER_ID: 2,
@@ -30,6 +30,6 @@ export const mockUsers: MockUser[] = [
     HOSPITAL_CNAME: "002省医院",
     HOSPITAL_ID: 1,
     username: "doctor",
-    password: '81dc9bdb52d04dc20036dbd8313ed055',
+    password: "81dc9bdb52d04dc20036dbd8313ed055"
   }
 ];

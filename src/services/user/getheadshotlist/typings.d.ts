@@ -2,7 +2,7 @@
 
 // /api/user/getheadshotlist请求
 export interface GetHeadshotListRequest {
-  id: string; // 用户ID
+  // 不再需要id字段，从token中解析用户ID
 }
 
 

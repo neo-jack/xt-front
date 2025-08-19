@@ -426,7 +426,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
     
     setLoading(true);
     try {
-      const response = await getHeadshotList({ id: userId });
+      const response = await getHeadshotList({});
       
       if (response.code === 0) {
         // 过滤头像列表：显示用户自己上传的头像，按ID倒序排序
@@ -497,7 +497,6 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
     try {
       // 调用头像上传服务
       const response = await uploadAvatar({
-        id: userId,
         avatar: imageSrc
       });
 

@@ -1,11 +1,14 @@
 // 请求 post请求 /api/user/getheadshotlist
 import { HeadshotInfo, mockHeadshots } from '../datebash/acators';
+import { parseTokenUserId } from '../utils/tokenid';
 
 // Mock 头像列表请求接口类型定义
 interface MockHeadshotListRequest {
+    headers: {
+        authorization?: string; // Bearer token
+    };
     body: {
-        //用户id
-        id: string;
+        // 不再需要id字段，从token中解析
     };
 }
 
@@ -29,11 +32,25 @@ export default {
         req: MockHeadshotListRequest,
         res: any
     ) => {
-        const { id } = req.body;
+        const authHeader = req.headers.authorization;
         
-        console.log(`Mock: 获取用户 ${id} 的头像列表`);
+        console.log(`Mock: 收到获取头像列表请求`);
 
         try {
+            // 从token解析用户ID
+            const userId = parseTokenUserId(authHeader || '');
+            
+            if (!userId) {
+                const errorResponse: MockHeadshotListResponse = {
+                    code: 401,
+                    data: [],
+                    msg: '无效的token或用户ID'
+                };
+                return res.status(401).json(errorResponse);
+            }
+
+            console.log(`Mock: 获取用户 ${userId} 的头像列表`);
+
             // 获取可用的头像列表
             const headshots = getAvailableHeadshots();
 
