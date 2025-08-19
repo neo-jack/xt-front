@@ -26,9 +26,7 @@ const useExitAccount = (): UseExitAccountResult => {
         return;
       }
 
-      const response = await logout({
-        user_id: userInfo.USER_ID,
-      });
+      const response = await logout({});
 
       if (response.code === 0) {
         message.success(response.msg || '退出登录成功');

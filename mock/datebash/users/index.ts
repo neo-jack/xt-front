@@ -21,6 +21,7 @@ export const mockUsers: MockUser[] = [
     HOSPITAL_ID: 1,
     username: "root",
     password: "63a9f0ea7bb98050796b649e85481845"
+    
   },
   {
     USER_ID: 2,

@@ -2,7 +2,7 @@
 
 // /api/user/logout请求
 export interface LogoutRequest {
-  user_id: number;
+  // 不再需要user_id字段，从token中解析用户ID
 }
 
 // /api/user/logout响应
