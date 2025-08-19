@@ -1,11 +1,7 @@
-// Token解析工具函数
-// 提供统一的JWT token解析功能
-
-/**
- * 从token解析用户ID
- * @param token Bearer token字符串
- * @returns 解析出的用户ID，解析失败返回null
- */
+//-----------------------------------------------
+// tokenid解析器
+// 
+//-----------------------------------------------
 export const parseTokenUserId = (token: string): number | null => {
   console.log('[parseTokenUserId] 开始解析token');
   
