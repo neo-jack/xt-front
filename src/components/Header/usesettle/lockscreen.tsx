@@ -1,221 +1,207 @@
-import { Button, Modal, message } from 'antd';
-import { FC, useState } from 'react';
-import { 
-  FiMonitor, 
-  FiClock, 
-  FiX, 
-  FiChevronUp, 
-  FiChevronDown, 
-  FiPlus, 
-  FiMinus 
-} from 'react-icons/fi';
-import './lockscreen.less';
-
-interface LockScreenConfig {
-  timeRanges: Array<{
-    id: string;
-    startTime: string;
-    endTime: string;
-    timeoutMinutes: number;
-  }>;
-  defaultTimeout: number;
-}
+import { Switch, InputNumber, Input, Button, Modal, message, Form } from 'antd';
+import { FC, useState, useEffect } from 'react';
+import { LockOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import useLockScreen from '../../../models/uselockscreen';
 
 interface LockScreenModalProps {
   open: boolean;
   onCancel: () => void;
 }
 
+// 组件内联样式
+const styles = {
+  form: {
+    marginTop: '20px',
+  } as React.CSSProperties,
+  
+  formLabel: {
+    fontWeight: 500,
+  } as React.CSSProperties,
+  
+  inputNumber: {
+    width: '100%',
+  } as React.CSSProperties,
+  
+  switch: {
+    backgroundColor: '#d1d5db',
+  } as React.CSSProperties,
+  
+  switchChecked: {
+    backgroundColor: '#1890ff',
+  } as React.CSSProperties,
+  
+  description: {
+    background: '#f6f8fa',
+    padding: '12px',
+    borderRadius: '6px',
+    fontSize: '14px',
+    color: '#666',
+    lineHeight: '1.5',
+    marginTop: '16px',
+  } as React.CSSProperties,
+  
+  descriptionTitle: {
+    fontWeight: 500,
+    marginBottom: '4px',
+  } as React.CSSProperties,
+  
+  descriptionItem: {
+    marginBottom: '2px',
+  } as React.CSSProperties,
+};
+
 const LockScreenModal: FC<LockScreenModalProps> = ({ open, onCancel }) => {
-  const [config, setConfig] = useState<LockScreenConfig>({
-    timeRanges: [
-      {
-        id: '1',
-        startTime: '17:00:00',
-        endTime: '19:00:00',
-        timeoutMinutes: 3
+  const { config, setConfig, resetConfig } = useLockScreen();
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  // 初始化表单值
+  useEffect(() => {
+    if (open) {
+      form.setFieldsValue({
+        isEnabled: config.isEnabled,
+        password: config.password,
+        timeoutMinutes: config.timeoutMinutes,
+        autoLockEnabled: config.autoLockEnabled,
+      });
+    }
+  }, [open, config, form]);
+
+  // 保存设置
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const values = await form.validateFields();
+      
+      const result = setConfig(values);
+      
+      if (result.success) {
+        message.success(result.message || '设置已保存');
+        onCancel();
+      } else {
+        message.error(result.message || '保存失败');
       }
-    ],
-    defaultTimeout: 60
-  });
-
-  // 更新时间范围
-  const updateTimeRange = (id: string, field: string, value: string | number) => {
-    setConfig(prev => ({
-      ...prev,
-      timeRanges: prev.timeRanges.map(range => 
-        range.id === id ? { ...range, [field]: value } : range
-      )
-    }));
-  };
-
-  // 调整超时时间
-  const adjustTimeout = (id: string, delta: number) => {
-    setConfig(prev => ({
-      ...prev,
-      timeRanges: prev.timeRanges.map(range => 
-        range.id === id 
-          ? { ...range, timeoutMinutes: Math.max(1, Math.min(999, range.timeoutMinutes + delta)) }
-          : range
-      )
-    }));
-  };
-
-  // 添加时间范围
-  const addTimeRange = () => {
-    const newId = String(Date.now());
-    setConfig(prev => ({
-      ...prev,
-      timeRanges: [...prev.timeRanges, {
-        id: newId,
-        startTime: '17:00:00',
-        endTime: '19:00:00',
-        timeoutMinutes: 3
-      }]
-    }));
-  };
-
-  // 删除时间范围
-  const removeTimeRange = (id: string) => {
-    if (config.timeRanges.length <= 1) return;
-    
-    setConfig(prev => ({
-      ...prev,
-      timeRanges: prev.timeRanges.filter(range => range.id !== id)
-    }));
+    } catch (error) {
+      console.error('保存锁屏设置失败:', error);
+      message.error('保存设置失败，请检查输入');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 重置设置
   const handleReset = () => {
-    setConfig({
-      timeRanges: [
-        {
-          id: '1',
-          startTime: '17:00:00',
-          endTime: '19:00:00',
-          timeoutMinutes: 3
+    Modal.confirm({
+      title: '确认重置',
+      content: '确定要重置所有锁屏设置吗？此操作不可撤销。',
+      okText: '确定重置',
+      cancelText: '取消',
+      onOk: () => {
+        const result = resetConfig();
+        if (result.success) {
+          message.success(result.message || '设置已重置');
+          form.resetFields();
+        } else {
+          message.error(result.message || '重置失败');
         }
-      ],
-      defaultTimeout: 60
+      },
     });
-    message.info('设置已重置');
   };
-
-  // 保存设置
-  const handleSave = () => {
-    // 这里可以调用API保存设置
-    console.log('保存锁屏设置:', config);
-    message.success('设置已保存');
-    onCancel();
-  };
-
-  if (!open) return null;
 
   return (
-    <div className="lockscreen-modal-overlay">
-      <div className="lockscreen-modal">
-        {/* 标题栏 */}
-        <div className="lockscreen-modal-header">
-          <div className="header-title">
-            <FiMonitor className="title-icon" />
-            <span className="title-text">终端锁屏设置</span>
-          </div>
-          <button className="close-button" onClick={onCancel}>
-            <FiX />
-          </button>
+    <Modal
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <LockOutlined />
+          <span>锁屏设置</span>
         </div>
+      }
+      open={open}
+      onCancel={onCancel}
+      footer={[
+        <Button key="reset" onClick={handleReset}>
+          重置
+        </Button>,
+        <Button key="cancel" onClick={onCancel}>
+          取消
+        </Button>,
+        <Button key="save" type="primary" loading={loading} onClick={handleSave}>
+          保存
+        </Button>,
+      ]}
+      width={500}
+      destroyOnClose
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        style={styles.form}
+      >
+        {/* 启用锁屏功能 */}
+        <Form.Item
+          label="启用锁屏功能"
+          name="isEnabled"
+          valuePropName="checked"
+        >
+          <Switch />
+        </Form.Item>
 
-        {/* 默认锁屏时长提示栏 */}
-        <div className="default-timeout-bar">
-          默认锁屏时长: {config.defaultTimeout}分钟
+        {/* 锁屏密码 */}
+        <Form.Item
+          label="锁屏密码"
+          name="password"
+          rules={[
+            { required: true, message: '请设置锁屏密码' },
+            { min: 4, message: '密码至少需要4位' },
+            { max: 20, message: '密码不能超过20位' },
+          ]}
+        >
+          <Input.Password
+            placeholder="请输入锁屏密码"
+            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+            maxLength={20}
+          />
+        </Form.Item>
+
+        {/* 启用自动锁屏 */}
+        <Form.Item
+          label="启用自动锁屏"
+          name="autoLockEnabled"
+          valuePropName="checked"
+          tooltip="开启后，系统会在指定时间内无操作时自动锁屏"
+        >
+          <Switch />
+        </Form.Item>
+
+        {/* 超时时间 */}
+        <Form.Item
+          label="超时时间（分钟）"
+          name="timeoutMinutes"
+          rules={[
+            { required: true, message: '请设置超时时间' },
+            { type: 'number', min: 1, message: '超时时间至少为1分钟' },
+            { type: 'number', max: 1440, message: '超时时间不能超过1440分钟（24小时）' },
+          ]}
+        >
+          <InputNumber
+            placeholder="请输入超时时间"
+            min={1}
+            max={1440}
+            style={styles.inputNumber}
+            addonAfter="分钟"
+          />
+        </Form.Item>
+
+        {/* 功能说明 */}
+        <div style={styles.description}>
+          <div style={styles.descriptionTitle}>功能说明：</div>
+          <div style={styles.descriptionItem}>• 启用锁屏功能后，可以手动或自动锁屏</div>
+          <div style={styles.descriptionItem}>• 设置密码用于解锁屏幕</div>
+          <div style={styles.descriptionItem}>• 自动锁屏：是否启用超时自动锁屏</div>
+          <div style={styles.descriptionItem}>• 超时时间：无操作后自动锁屏的时间</div>
         </div>
-
-        {/* 锁屏设置区域 */}
-        <div className="lockscreen-settings">
-          {config.timeRanges.map((range, index) => (
-            <div key={range.id} className="time-range-item">
-              {/* 锁屏时间段选择 */}
-              <div className="time-range-section">
-                <label className="section-label">锁屏时间段</label>
-                <div className="time-inputs">
-                  <input
-                    type="time"
-                    value={range.startTime}
-                    onChange={(e) => updateTimeRange(range.id, 'startTime', e.target.value)}
-                    className="time-input"
-                  />
-                  <span className="time-separator">→</span>
-                  <input
-                    type="time"
-                    value={range.endTime}
-                    onChange={(e) => updateTimeRange(range.id, 'endTime', e.target.value)}
-                    className="time-input"
-                  />
-                  <FiClock className="clock-icon" />
-                </div>
-              </div>
-
-              {/* 超时锁屏时间设置 */}
-              <div className="timeout-section">
-                <label className="section-label">超时多少时间锁屏</label>
-                <div className="timeout-inputs">
-                  <div className="number-input-group">
-                    <input
-                      type="number"
-                      value={range.timeoutMinutes}
-                      onChange={(e) => updateTimeRange(range.id, 'timeoutMinutes', parseInt(e.target.value) || 1)}
-                      className="number-input"
-                      min="1"
-                      max="999"
-                    />
-                    <div className="stepper-buttons">
-                      <button 
-                        className="stepper-button"
-                        onClick={() => adjustTimeout(range.id, 1)}
-                      >
-                        <FiChevronUp />
-                      </button>
-                      <button 
-                        className="stepper-button"
-                        onClick={() => adjustTimeout(range.id, -1)}
-                      >
-                        <FiChevronDown />
-                      </button>
-                    </div>
-                  </div>
-                  <span className="unit-text">分钟</span>
-                  <div className="action-buttons">
-                    <button 
-                      className="action-button"
-                      onClick={addTimeRange}
-                    >
-                      <FiPlus />
-                    </button>
-                    <button 
-                      className="action-button"
-                      onClick={() => removeTimeRange(range.id)}
-                      disabled={config.timeRanges.length <= 1}
-                    >
-                      <FiMinus />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 操作按钮区域 */}
-        <div className="lockscreen-modal-footer">
-          <button className="reset-button" onClick={handleReset}>
-            重置
-          </button>
-          <button className="confirm-button" onClick={handleSave}>
-            确定
-          </button>
-        </div>
-      </div>
-    </div>
+      </Form>
+    </Modal>
   );
 };
 

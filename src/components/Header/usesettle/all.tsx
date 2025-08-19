@@ -2,10 +2,10 @@ import useUser from '@/models/useuser';
 import {
   CameraOutlined,
   InfoCircleOutlined,
-  LockOutlined,
   LogoutOutlined,
   QrcodeOutlined,
   KeyOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { Dropdown, MenuProps, Space } from 'antd';
 import { FC, useState } from 'react';
@@ -18,6 +18,7 @@ import QRCodeModal from './qrcode';
 import LockScreenModal from './lockscreen';
 import SystemInfoModal from './system';
 import useExitAccount from './exitcount';
+import LockStart from './lockstart';
 
 const AllUserActions: FC = () => {
   //登出用户
@@ -53,8 +54,8 @@ const AllUserActions: FC = () => {
     },
     {
       key: 'lockScreen',
-      label: '锁屏设计',
-      icon: <LockOutlined />,
+      label: '锁屏设置',
+      icon: <SettingOutlined />,
       onClick: () => setShowLockScreen(true),
     },
     {
@@ -79,6 +80,20 @@ const AllUserActions: FC = () => {
   return (
     <>
       <Space size={8} style={{ alignItems: 'center' }}>
+        {/* 锁屏按钮 */}
+        <LockStart 
+          type="text" 
+          size="small"
+          style={{ 
+            color: '#666',
+            fontSize: '14px',
+            height: '32px',
+            padding: '4px 8px'
+          }}
+        />
+        <div>
+          <div style={{ width: 8 }} />
+        </div>
         {/* 医院信息 */}
         <HospitalInfo />
         <div>

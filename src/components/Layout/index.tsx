@@ -2,6 +2,7 @@
 
 import Header from '@/components/Header';
 import SideBar from '@/components/SideBar';
+import LockScreenContainer from '@/components/LockScreen';
 
 import { withAuthorization } from '@/utils/auth';
 import { AppstoreOutlined } from '@ant-design/icons';
@@ -22,69 +23,74 @@ const BaseLayout: FC = () => {
 
   //组装组件
   return (
-    <AntdLayout style={{ height: '100vh', minHeight: '100vh' }}>
-      {/* 侧边栏 */}
-      <Sider
-        width={250}
-        collapsible
-        collapsed={collapsed}
-        trigger={null}
-        style={{
-          background: '#001529',
-          height: '100vh',
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
+    <>
+      <AntdLayout style={{ height: '100vh', minHeight: '100vh' }}>
+        {/* 侧边栏 */}
+        <Sider
+          width={250}
+          collapsible
+          collapsed={collapsed}
+          trigger={null}
           style={{
-            height: 32,
-            margin: 16,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: '#A5EAFF',
-            fontWeight: 'bold',
-            fontSize: collapsed ? '12px' : '14px',
-          }}
-        >
-          <AppstoreOutlined style={{ fontSize: '18px' }} />
-          {!collapsed && <span>XT</span>}
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <SideBar />
-        </div>
-      </Sider>
-
-      {/* 主内容区域 */}
-      <AntdLayout>
-        {/* 头部 */}
-        <Header collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
-
-        {/* 内容区域 */}
-        <Content
-          style={{
-            margin: 0,
-            padding: 0,
-            background: '#fff',
-            minHeight: 'calc(100vh - 80px)', // 减去头部高度并减少底部距离
+            background: '#001529',
+            height: '100vh',
+            minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
           }}
         >
           <div
             style={{
-              background: '#fff',
-              flex: 1,
+              height: 32,
+              margin: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              color: '#A5EAFF',
+              fontWeight: 'bold',
+              fontSize: collapsed ? '12px' : '14px',
             }}
           >
-            <Outlet />
+            <AppstoreOutlined style={{ fontSize: '18px' }} />
+            {!collapsed && <span>XT</span>}
           </div>
-        </Content>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <SideBar />
+          </div>
+        </Sider>
+
+        {/* 主内容区域 */}
+        <AntdLayout>
+          {/* 头部 */}
+          <Header collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
+
+          {/* 内容区域 */}
+          <Content
+            style={{
+              margin: 0,
+              padding: 0,
+              background: '#fff',
+              minHeight: 'calc(100vh - 80px)', // 减去头部高度并减少底部距离
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                flex: 1,
+              }}
+            >
+              <Outlet />
+            </div>
+          </Content>
+        </AntdLayout>
       </AntdLayout>
-    </AntdLayout>
+      
+      {/* 锁屏组件 - 全局覆盖 */}
+      <LockScreenContainer />
+    </>
   );
 };
 
