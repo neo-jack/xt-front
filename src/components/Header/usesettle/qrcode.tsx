@@ -56,9 +56,6 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ open, onCancel, userInfo, logoUrl }
           }}
         />
         <p style={{ color: '#666', marginBottom: 8 }}>扫描二维码查看个人信息</p>
-        <a href={qrValue} target="_blank" rel="noreferrer" style={{ wordBreak: 'break-all' }}>
-          {qrValue}
-        </a>
       </div>
     </Modal>
   );

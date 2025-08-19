@@ -5,6 +5,7 @@ import SideBar from '@/components/SideBar';
 import LockScreenContainer from '@/components/LockScreen';
 
 import { withAuthorization } from '@/utils/auth';
+import { LockScreenUtils } from '@/utils/lock';
 import { AppstoreOutlined } from '@ant-design/icons';
 import { Layout as AntdLayout } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -20,6 +21,16 @@ const BaseLayout: FC = () => {
     // 添加这个函数
     setCollapsed(!collapsed);
   };
+
+  // 初始化锁屏功能
+  useEffect(() => {
+    try {
+      LockScreenUtils.init();
+      console.log('[LockScreen] 锁屏功能已在Layout中初始化');
+    } catch (error) {
+      console.error('[LockScreen] 锁屏功能初始化失败:', error);
+    }
+  }, []); // 空依赖数组，确保只在组件挂载时执行一次
 
   //组装组件
   return (
