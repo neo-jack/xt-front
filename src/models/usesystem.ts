@@ -1,6 +1,6 @@
 import { DEFAULT_SYSTEM_INFO } from '@/constants/system';
-import { getSystemInfo, type SystemInfo } from '@/services';
-import { useEffect, useState } from 'react';
+import { type SystemInfo } from '@/services';
+import { useCallback, useEffect, useState } from 'react';
 
 /**
  * 全局系统信息管理器
@@ -27,48 +27,6 @@ export class SystemManager {
   }
 
   /**
-   * 获取客户端IP
-   */
-  static getClientIp(): string {
-    return this.systemInfo.clientip;
-  }
-
-  /**
-   * 获取服务器IP
-   */
-  static getServerIp(): string {
-    return (this.systemInfo as any).servedomain;
-  }
-
-  /**
-   * 获取版本信息
-   */
-  static getVersion(): string {
-    return this.systemInfo.version;
-  }
-
-  /**
-   * 获取主版本号
-   */
-  static getMajorVersion(): number {
-    return this.systemInfo.major;
-  }
-
-  /**
-   * 检查系统信息是否已初始化
-   */
-  static isInitialized(): boolean {
-    return this.systemInfo.version !== '' && this.systemInfo.clientip !== '';
-  }
-
-  /**
-   * 重置系统信息
-   */
-  static reset(): void {
-    this.setSystemInfo(DEFAULT_SYSTEM_INFO);
-  }
-
-  /**
    * 添加监听器（用于React Hook同步状态）
    */
   static addListener(listener: (info: SystemInfo) => void): void {
@@ -81,30 +39,6 @@ export class SystemManager {
   static removeListener(listener: (info: SystemInfo) => void): void {
     this.listeners.delete(listener);
   }
-
-  /**
-   * 异步获取并设置系统信息
-   */
-  static async fetchSystemInfo(): Promise<{
-    success: boolean;
-    error?: string;
-  }> {
-    try {
-      const response = await getSystemInfo();
-      if (response.code === 0 && response.data) {
-        this.setSystemInfo(response.data);
-        return { success: true };
-      } else {
-        const error = response.msg || '获取系统信息失败';
-        console.error('获取系统信息失败:', error);
-        return { success: false, error };
-      }
-    } catch (err) {
-      const error = '获取系统信息异常';
-      console.error('获取系统信息异常:', err);
-      return { success: false, error };
-    }
-  }
 }
 
 /**
@@ -112,57 +46,34 @@ export class SystemManager {
  * 与SystemManager同步状态
  */
 const useSystem = () => {
-  const [systemInfo, setSystemInfo] = useState<SystemInfo>(
+  const [systemInfo, setSystemInfoState] = useState<SystemInfo>(
     SystemManager.getSystemInfo(),
   );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // 监听SystemManager的状态变化
   useEffect(() => {
     const listener = (info: SystemInfo) => {
-      setSystemInfo(info);
+      setSystemInfoState(info);
     };
 
     SystemManager.addListener(listener);
 
     // 同步当前状态
-    setSystemInfo(SystemManager.getSystemInfo());
+    setSystemInfoState(SystemManager.getSystemInfo());
 
     return () => {
       SystemManager.removeListener(listener);
     };
   }, []);
 
-  // 获取系统信息
-  const fetchSystemInfo = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await SystemManager.fetchSystemInfo();
-      if (!result.success) {
-        setError(result.error || '获取系统信息失败');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 重置系统信息
-  const resetSystemInfo = () => {
-    SystemManager.reset();
-    setError(null);
-  };
+  // 设置系统信息
+  const setSystemInfo = useCallback((newSystemInfo: SystemInfo) => {
+    SystemManager.setSystemInfo(newSystemInfo);
+  }, []);
 
   return {
     systemInfo,
-    loading,
-    error,
-    fetchSystemInfo,
-    resetSystemInfo,
-    // 导出静态方法便于直接访问
-    SystemManager,
+    setSystemInfo,
   };
 };
 
@@ -170,6 +81,5 @@ const useSystem = () => {
 export const getGlobalSystemInfo = () => SystemManager.getSystemInfo();
 export const setGlobalSystemInfo = (info: SystemInfo) =>
   SystemManager.setSystemInfo(info);
-export const isSystemInfoInitialized = () => SystemManager.isInitialized();
 
 export default useSystem;
