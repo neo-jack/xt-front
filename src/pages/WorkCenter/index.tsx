@@ -1,3 +1,13 @@
+//-----------------------------------------------
+// 工作中台
+//选择菜单栏+读取收藏列表+读取模块列表
+//
+// 待优化:
+// 1.拦截器信息调试信息优化
+//-----------------------------------------------
+
+
+
 import ModuleCard from '@/components/Card';
 import { SubModule, WORK_CENTER_MENUS } from '@/constants/workboard';
 import favoriteService from '@/services/favorite';

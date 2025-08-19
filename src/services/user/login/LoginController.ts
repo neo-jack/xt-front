@@ -9,11 +9,6 @@ import type {
  * ------------|| /api/user/login ------------||
  */
 
-/**
- * 检测字符串是否为MD5格式
- * @param str 待检测字符串
- * @returns boolean 是否为MD5格式
- */
 export function isMD5Format(str: string): boolean {
   return /^[a-f0-9]{32}$/i.test(str);
 }

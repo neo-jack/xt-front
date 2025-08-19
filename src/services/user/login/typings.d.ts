@@ -6,6 +6,23 @@ export interface LoginRequest {
   password: string;
 }
 
+// /api/user/login响应
+export interface LoginResponse {
+  code: number;
+  data: LoginData | null;
+  msg: string | null;
+}
+
+
+// 登录数据
+export interface LoginData {
+  AccessToken: string;
+  RefreshToken: string;
+  ExpiresIn: number;
+  USER: UserInfo;
+}
+
+
 // 用户信息
 export interface UserInfo {
   USER_ID: number;
@@ -16,17 +33,4 @@ export interface UserInfo {
   HOSPITAL_ID: number;
 }
 
-// 登录数据
-export interface LoginData {
-  AccessToken: string;
-  RefreshToken: string;
-  ExpiresIn: number;
-  USER: UserInfo;
-}
 
-// /api/user/login响应
-export interface LoginResponse {
-  code: number;
-  data: LoginData | null;
-  msg: string | null;
-}

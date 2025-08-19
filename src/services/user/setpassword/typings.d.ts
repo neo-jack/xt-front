@@ -1,4 +1,4 @@
-// 用户修改密码服务类型定义
+// 用户修改密码服务api定义
 
 // /api/user/setpassword请求
 export interface SetPasswordRequest {
@@ -13,15 +13,10 @@ export interface SetPasswordResponse {
   msg: string | null; // 响应消息
 }
 
+//用户修改密码服务函数定义
+
 // 密码验证结果 
 export interface PasswordValidation {
   isValid: boolean;
   message?: string;
-}
-
-// 哈希密码处理接口
-export interface HashPasswordHandler {
-  encrypt: (password: string) => string;
-  decrypt: (hash: string) => string;
-  verify: (password: string, hash: string) => boolean;
 }

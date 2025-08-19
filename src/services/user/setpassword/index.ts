@@ -15,5 +15,5 @@ export type {
   SetPasswordRequest,
   SetPasswordResponse,
   PasswordValidation,
-  HashPasswordHandler,
+ 
 } from './typings';
