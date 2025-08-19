@@ -1,4 +1,8 @@
-// 空布局组件 - 用于登录页等不需要任何布局的页面
+//-----------------------------------------------
+// 空布局组件 - 用于权限控制
+//
+// 
+//-----------------------------------------------
 import { FC } from 'react';
 import { Outlet } from 'react-router-dom';
 import withAuthorization from '@/utils/auth/withAuthorization';

@@ -12,6 +12,7 @@ import { Outlet } from 'react-router-dom';
 const { Header: AntdHeader, Sider, Content } = AntdLayout;
 
 const BaseLayout: FC = () => {
+  //组件联动
   const [collapsed, setCollapsed] = useState(false); // 添加这一行
 
   const toggleCollapsed = () => {
@@ -19,8 +20,7 @@ const BaseLayout: FC = () => {
     setCollapsed(!collapsed);
   };
 
-  
-
+  //组装组件
   return (
     <AntdLayout style={{ height: '100vh', minHeight: '100vh' }}>
       {/* 侧边栏 */}
