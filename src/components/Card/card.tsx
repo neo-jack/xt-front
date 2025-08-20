@@ -145,7 +145,6 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       style={{
         width: 200,
         height: 180,
-        margin: '8px',
         borderRadius: '12px',
         border: 'none',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -153,6 +152,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         transition: 'all 0.3s ease',
         overflow: 'hidden',
         cursor: 'pointer',
+        flexShrink: 0, // 防止在 flex 容器中收缩
         ...style,
       }}
       styles={{

@@ -174,13 +174,10 @@ const WorkCenter: React.FC = () => {
           backgroundColor: '#FAFBFF',
           padding: '20px',
           overflow: 'auto',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '16px',
-          alignContent: 'flex-start',
+          position: 'relative',
         }}
       >
-        <Spin spinning={loading.modules} tip="加载模块中..." style={{ width: '100%' }}>
+        <Spin spinning={loading.modules} tip="加载模块中...">
           {error.modules ? (
             <div
               style={{
@@ -229,14 +226,24 @@ const WorkCenter: React.FC = () => {
               />
             </div>
           ) : (
-            displayModules.map((module) => (
-              <ModuleCard
-                key={module.id}
-                module={module}
-                showFavorite={true}
-                onFavoriteToggle={handleFavoriteToggle}
-              />
-            ))
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '16px',
+                alignContent: 'flex-start',
+                justifyContent: 'flex-start',
+              }}
+            >
+              {displayModules.map((module) => (
+                <ModuleCard
+                  key={module.id}
+                  module={module}
+                  showFavorite={true}
+                  onFavoriteToggle={handleFavoriteToggle}
+                />
+              ))}
+            </div>
           )}
         </Spin>
       </div>
