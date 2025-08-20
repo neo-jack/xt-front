@@ -9,10 +9,9 @@
 // 4. 响应式布局和状态管理
 //-----------------------------------------------
 
-import ModuleCard from '@/components/Card';
+import { FavoriteModuleCard } from '@/components/Card';
 import type { SubModule } from '@/constants/workboard';
 import useWorkBoard from '@/models/useworkboard';
-import favoriteService from '@/services/favorite';
 import { Empty, message, Spin, Alert } from 'antd';
 import React, { useEffect, useState } from 'react';
 import WorkCenterSidebar from './components/Sidebar';
@@ -63,47 +62,18 @@ const WorkCenter: React.FC = () => {
     loadModules(categoryName);
   };
 
-  // 处理收藏切换
-  const handleFavoriteToggle = async (module: SubModule) => {
+  // 处理收藏状态变化
+  const handleFavoriteChange = async (module: SubModule, isFavorite: boolean) => {
     try {
-      if (module.isFavorite) {
-        // 移除收藏
-        await removeFromFavorites(module.id);
-        
-        // 调用原有的收藏服务 API
-        const result = await favoriteService.FavoriteController.removeFavorite({
-          moduleId: module.id,
-        });
-        
-        if (result.success) {
-          message.success('已取消收藏');
-        } else {
-          message.error(result.errorMessage || '取消收藏失败');
-        }
-      } else {
-        // 添加收藏
+      if (isFavorite) {
+        // 添加到本地状态
         await addToFavorites(module);
-        
-        // 调用原有的收藏服务 API
-        const result = await favoriteService.FavoriteController.addFavorite({
-          moduleId: module.id,
-          moduleName: module.name,
-          description: module.description,
-          icon: module.icon,
-          port: module.port,
-          projectPath: module.projectPath,
-          categoryName: selectedCategoryName,
-        });
-        
-        if (result.success) {
-          message.success('已添加到收藏');
-        } else {
-          message.error(result.errorMessage || '添加收藏失败');
-        }
+      } else {
+        // 从本地状态移除
+        await removeFromFavorites(module.id);
       }
     } catch (error) {
-      console.error('收藏操作失败:', error);
-      message.error(`操作失败: ${error}`);
+      console.error('更新本地收藏状态失败:', error);
     }
   };
 
@@ -236,11 +206,11 @@ const WorkCenter: React.FC = () => {
               }}
             >
               {displayModules.map((module) => (
-                <ModuleCard
+                <FavoriteModuleCard
                   key={module.id}
                   module={module}
                   showFavorite={true}
-                  onFavoriteToggle={handleFavoriteToggle}
+                  onFavoriteChange={handleFavoriteChange}
                 />
               ))}
             </div>

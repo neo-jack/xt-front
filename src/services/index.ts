@@ -13,11 +13,14 @@ export { setPassword, hashPassword } from './user/setpassword';
 // 系统相关服务
 export * from './system/info';
 
-// 收藏相关服务
-export { queryFavoriteList, type QueryFavoriteListRequest, type QueryFavoriteListResponse, type PageInfo } from './favorite/list';
-export { addFavorite, type AddFavoriteRequest, type AddFavoriteResponse } from './favorite/add';
-export { checkFavorite, type CheckFavoriteRequest, type CheckFavoriteResponse } from './favorite/check';
-export type { FavoriteModule } from './favorite/list';
+// 收藏相关服务（新的API结构）
+export { getFavoriteList, type FavoriteItem, type GetFavoriteListResult } from './favorite/get';
+export { addFavorite, type AddFavoriteResult } from './favorite/add';
+export { removeFavorite, type RemoveFavoriteResult } from './favorite/remove';
+
+// 为了向后兼容，保留一些旧的导出（如果其他地方还在使用）
+// 这些可以在确认没有其他地方使用后移除
+export type { FavoriteItem as FavoriteModule } from './favorite/get';
 
 // 为了保持向后兼容，提供一些别名导出
 export { login } from './user/login';

@@ -1,24 +1,27 @@
 import ModuleCard from '@/components/Card';
-import favoriteService from '@/services/favorite';
+import { getFavoriteList, type FavoriteItem } from '@/services/favorite/get';
+import { removeFavorite } from '@/services/favorite/remove';
+import type { SubModule } from '@/constants/workboard';
 import { StarOutlined } from '@ant-design/icons';
 import { Card, Empty, message, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 
 /**
- * 收藏模块接口定义
- * 基于FavoriteAPI.FavoriteModule，添加工作看板特定的属性
+ * 将FavoriteItem转换为SubModule格式
+ * @param favoriteItem - 收藏项数据
+ * @returns SubModule - 模块数据
  */
-interface FavoriteModule {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-  port?: number;
-  projectPath?: string;
-  categoryName?: string;
-  isFavorite?: boolean;
-  addedAt?: string;
-}
+const convertFavoriteToModule = (favoriteItem: FavoriteItem): SubModule => {
+  return {
+    id: favoriteItem.id,
+    name: favoriteItem.name,
+    description: favoriteItem.description,
+    icon: favoriteItem.icon,
+    port: favoriteItem.port,
+    projectPath: favoriteItem.url, // 使用url作为projectPath
+    isFavorite: true, // 收藏列表中的项目都是已收藏的
+  };
+};
 
 /**
  * 工作看板页面组件
@@ -30,7 +33,7 @@ interface FavoriteModule {
  */
 const WorkBoard: FC = () => {
   // 状态管理
-  const [favoriteModules, setFavoriteModules] = useState<FavoriteModule[]>([]);
+  const [favoriteModules, setFavoriteModules] = useState<SubModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,31 +46,20 @@ const WorkBoard: FC = () => {
       setLoading(true);
       setError(null);
 
-      const result = await favoriteService.FavoriteController.queryFavoriteList(
-        {},
-      );
+      console.log('[WorkBoard] 开始获取收藏列表');
+      const result = await getFavoriteList();
 
-      if (result.success && result.data?.list) {
+      if (result.success && result.data) {
         // 转换API数据格式为组件需要的格式
-        const modules: FavoriteModule[] = result.data.list
-          .filter((item) => item.id) // 过滤掉没有id的项
-          .map((item) => ({
-            id: item.id!,
-            name: item.name || '',
-            description: item.description,
-            icon: item.icon,
-            port: item.port,
-            projectPath: item.projectPath,
-            categoryName: item.categoryName,
-            isFavorite: item.isFavorite,
-            addedAt: item.addedAt,
-          }));
+        const modules: SubModule[] = result.data.map(convertFavoriteToModule);
         setFavoriteModules(modules);
+        console.log('[WorkBoard] 成功获取收藏列表，共', modules.length, '项');
       } else {
-        setError(result.errorMessage || '获取收藏列表失败');
+        setError(result.message || '获取收藏列表失败');
+        console.error('[WorkBoard] 获取收藏列表失败:', result.message);
       }
     } catch (err) {
-      console.error('获取收藏列表错误:', err);
+      console.error('[WorkBoard] 获取收藏列表错误:', err);
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
@@ -78,24 +70,25 @@ const WorkBoard: FC = () => {
    * 处理取消收藏
    * @param module - 要取消收藏的模块
    */
-  const handleRemoveFavorite = async (module: FavoriteModule) => {
+  const handleRemoveFavorite = async (module: SubModule) => {
     try {
-      const result = await favoriteService.FavoriteController.removeFavorite({
-        moduleId: module.id,
-      });
+      console.log('[WorkBoard] 开始取消收藏:', module.id);
+      const result = await removeFavorite({ modulesid: module.id });
 
       if (result.success) {
         // 从本地状态中移除该模块
         setFavoriteModules((prev) =>
           prev.filter((item) => item.id !== module.id),
         );
-        message.success('已取消收藏');
+        message.success(result.message || '已取消收藏');
+        console.log('[WorkBoard] 取消收藏成功:', module.id);
       } else {
-        message.error(result.errorMessage || '取消收藏失败');
+        message.error(result.message || '取消收藏失败');
+        console.error('[WorkBoard] 取消收藏失败:', result.message);
       }
     } catch (error) {
-      console.error('取消收藏错误:', error);
-      message.error(`取消收藏时发生错误: ${error}`);
+      console.error('[WorkBoard] 取消收藏错误:', error);
+      message.error('取消收藏时发生错误，请稍后重试');
     }
   };
 
@@ -159,7 +152,7 @@ const WorkBoard: FC = () => {
         {favoriteModules.map((module) => (
           <ModuleCard
             key={module.id}
-            id={module.id}
+            module={module}
             showFavorite={false}
             showRemove={true}
             onRemove={() => handleRemoveFavorite(module)}

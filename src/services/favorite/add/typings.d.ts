@@ -1,32 +1,19 @@
 // 添加收藏服务类型定义
 
-// 收藏模块信息
-export interface FavoriteModule {
-  id?: string;
-  name?: string;
-  description?: string;
-  icon?: string;
-  port?: string;
-  projectPath?: string;
-  categoryName?: string;
-  isFavorite?: boolean;
-  addedAt?: string;
-}
-
-// /api/v1/favorite请求参数
+// 添加收藏请求参数（与mock API保持一致）
 export interface AddFavoriteRequest {
-  moduleId?: string;
-  moduleName?: string;
-  description?: string;
-  icon?: string;
-  port?: string;
-  projectPath?: string;
-  categoryName?: string;
+  modulesid: string; // 模块ID
 }
 
-// /api/v1/favorite响应
+// 添加收藏响应（与mock API保持一致）
 export interface AddFavoriteResponse {
+  code: number; // 成功返回0 失败返回其他
+  data: null;
+  msg: string;
+}
+
+// 服务层统一结果类型
+export interface AddFavoriteResult {
   success: boolean;
-  data?: FavoriteModule;
-  errorMessage?: string;
+  message: string;
 }

@@ -1,12 +1,8 @@
-// 该文件为添加收藏模块导出文件
+// 添加收藏服务统一导出
 
-import * as AddController from './AddController';
-
-export const { addFavorite } = AddController;
-
-// 导出类型定义
+export * from './AddController';
 export type {
   AddFavoriteRequest,
   AddFavoriteResponse,
-  FavoriteModule,
+  AddFavoriteResult,
 } from './typings';

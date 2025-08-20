@@ -1,91 +1,52 @@
+import { request } from '@umijs/max';
 import type {
   AddFavoriteRequest,
   AddFavoriteResponse,
-  FavoriteModule,
+  AddFavoriteResult,
 } from './typings';
 
-// 模拟数据存储
-const STORAGE_KEY = 'user_favorites';
-
-// 模拟网络延迟
-const simulateNetworkDelay = (ms: number = 300) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-// 获取localStorage中的收藏数据
-const getFavoritesFromStorage = (): FavoriteModule[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error('获取收藏数据失败:', error);
-    return [];
-  }
-};
-
-// 保存收藏数据到localStorage
-const saveFavoritesToStorage = (favorites: FavoriteModule[]): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-  } catch (error) {
-    console.error('保存收藏数据失败:', error);
-  }
-};
-
-/*
- * ------------|| POST /api/v1/favorite ------------||
+/**
+ * 添加收藏
+ * 调用 POST /api/favorite/add 接口
+ * @param params 添加收藏参数
+ * @returns Promise<AddFavoriteResult> 添加结果
  */
-export async function addFavorite(
-  body?: AddFavoriteRequest,
-): Promise<AddFavoriteResponse> {
-  // 模拟网络延迟
-  await simulateNetworkDelay();
-
+export async function addFavorite(params: AddFavoriteRequest): Promise<AddFavoriteResult> {
+  console.log('[Add Favorite Service] 开始添加收藏请求');
+  console.log('[Add Favorite Service] 模块ID:', params.modulesid);
+  
   try {
-    if (!body?.moduleId) {
+    const response = await request<AddFavoriteResponse>('/api/favorite/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        modulesid: params.modulesid,
+      },
+    });
+
+    console.log('[Add Favorite Service] API响应:', response);
+
+    // 根据mock API的响应格式处理结果
+    if (response.code === 0) {
+      console.log('[Add Favorite Service] 添加收藏成功');
+      return {
+        success: true,
+        message: response.msg || '添加收藏成功',
+      };
+    } else {
+      console.log('[Add Favorite Service] 添加收藏失败:', response.msg);
       return {
         success: false,
-        errorMessage: '模块ID不能为空',
+        message: response.msg || '添加收藏失败',
       };
     }
-
-    const favorites = getFavoritesFromStorage();
-
-    // 检查是否已存在
-    const existingIndex = favorites.findIndex(
-      (fav) => fav.id === body.moduleId,
-    );
-    if (existingIndex !== -1) {
-      return {
-        success: false,
-        errorMessage: '该模块已经在收藏列表中',
-      };
-    }
-
-    // 创建新的收藏项
-    const newFavorite: FavoriteModule = {
-      id: body.moduleId,
-      name: body.moduleName,
-      description: body.description,
-      icon: body.icon,
-      port: body.port,
-      projectPath: body.projectPath,
-      categoryName: body.categoryName,
-      isFavorite: true,
-      addedAt: new Date().toISOString(),
-    };
-
-    favorites.push(newFavorite);
-    saveFavoritesToStorage(favorites);
-
-    return {
-      success: true,
-      data: newFavorite,
-    };
   } catch (error) {
+    console.error('[Add Favorite Service] 添加收藏请求异常:', error);
     return {
       success: false,
-      errorMessage: `添加收藏失败: ${error}`,
+      message: '网络错误，请稍后重试',
     };
   }
 }

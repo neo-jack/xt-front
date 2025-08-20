@@ -20,7 +20,7 @@ export const SYSTEM_CODE = {
 
 
 // 导出相关常量
-export { WORK_CENTER_MENUS } from './workboard';
+export { WorkCenterMenus } from './workboard';
 
 export { USER_INFO } from './user';
 
