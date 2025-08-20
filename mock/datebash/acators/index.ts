@@ -91,5 +91,11 @@ export const mockHeadshots: HeadshotInfo[] = [
         name: "user_1_1755591217894_0hdpn4.png",
         url: "/datebash/acators/user_1_1755591217894_0hdpn4.png",
         userId: 1
+    },
+    {
+        id: 15,
+        name: "user_1_1755681867797_xy7ywd.png",
+        url: "/datebash/acators/user_1_1755681867797_xy7ywd.png",
+        userId: 1
     }
 ];

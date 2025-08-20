@@ -1,8 +1,10 @@
 // 请求 post请求 /api/favorite/remove
+import fs from 'fs';
+import path from 'path';
 import { parseTokenUserId } from '../utils/tokenid';
 import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
+import { userFavorites } from '../datebash/favorite/index';
 import type { FavoriteItem } from '../datebash/favorite/index';
-import { getPersistentFavorites, savePersistentFavorites } from '../datebash/favorite/storage';
 
 // MOCK_CONFIG 配置
 const REMOVE_FAVORITE_MOCK_CONFIG = {
@@ -30,12 +32,51 @@ interface MockRemoveFavoriteResponse {
 }
 
 /**
+ * 更新收藏数据文件
+ * @param updatedUserFavorites 更新后的用户收藏数据
+ */
+const updateFavoriteFile = (updatedUserFavorites: any[]): void => {
+    try {
+        const filePath = path.join(process.cwd(), 'mock/datebash/favorite/index.ts');
+        
+        // 生成新的文件内容
+        const fileContent = `// 收藏项目类型定义
+export interface FavoriteItem {
+  id: string;
+  /** 名称 */
+  name: string;
+  /** 描述 */
+  description: string;
+  /** 图标 */
+  icon: string;
+  /** 端口 */
+  port: number;
+  /** url */
+  url: string;
+}
+
+// 用户收藏数据类型定义
+export interface UserFavoriteData {
+  userId: number;
+  favorites: FavoriteItem[];
+}
+
+// 用户收藏数据
+export const userFavorites: UserFavoriteData[] = ${JSON.stringify(updatedUserFavorites, null, 2)};
+
+`;
+
+        fs.writeFileSync(filePath, fileContent, 'utf-8');
+        console.log(`[removeFavorite] 收藏数据文件已更新: ${filePath}`);
+    } catch (error) {
+        console.error(`[removeFavorite] 更新收藏数据文件失败:`, error);
+    }
+};
+
+/**
  * 从用户收藏中移除模块（更新模拟数据库）
  */
 const removeModuleFromFavorites = (userId: number, moduleId: string): boolean => {
-    // 获取持久化的收藏数据
-    const userFavorites = getPersistentFavorites();
-    
     // 查找用户收藏列表
     const userFavoriteData = userFavorites.find(user => user.userId === userId);
     
@@ -56,14 +97,9 @@ const removeModuleFromFavorites = (userId: number, moduleId: string): boolean =>
     userFavoriteData.favorites.splice(moduleIndex, 1);
     console.log(`[removeFavorite] 成功从用户 ${userId} 的收藏中移除模块 ${moduleId}`);
     
-    // 保存到持久化存储
-    try {
-        savePersistentFavorites(userFavorites);
-        console.log(`[removeFavorite] 模拟数据库已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
-    } catch (error) {
-        console.error(`[removeFavorite] 更新持久化存储失败:`, error);
-        // 即使持久化失败，内存中的数据仍然有效，所以不影响当前请求的响应
-    }
+    // 更新文件数据
+    updateFavoriteFile(userFavorites);
+    console.log(`[removeFavorite] 模拟数据库文件已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
     
     return true;
 };
