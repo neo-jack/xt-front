@@ -1,8 +1,8 @@
 // 请求 post请求 /api/favorite/add
 import { parseTokenUserId } from '../utils/tokenid';
 import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
-import { userFavorites } from '../datebash/favorite/index';
 import type { FavoriteItem } from '../datebash/favorite/index';
+import { getPersistentFavorites, savePersistentFavorites } from '../datebash/favorite/storage';
 
 // MOCK_CONFIG 配置
 const ADD_FAVORITE_MOCK_CONFIG = {
@@ -55,6 +55,9 @@ const findModuleById = (moduleId: string): FavoriteItem | null => {
  * 添加模块到用户收藏（更新模拟数据库）
  */
 const addModuleToFavorites = (userId: number, module: FavoriteItem): boolean => {
+    // 获取持久化的收藏数据
+    const userFavorites = getPersistentFavorites();
+    
     // 查找用户是否已存在收藏列表
     let userFavoriteData = userFavorites.find(user => user.userId === userId);
     
@@ -78,8 +81,14 @@ const addModuleToFavorites = (userId: number, module: FavoriteItem): boolean => 
     userFavoriteData.favorites.push(module);
     console.log(`[addFavorite] 成功添加模块 ${module.id} 到用户 ${userId} 的收藏中`);
     
-    // 更新模拟数据库（mock/datebash/favorite/index.ts 中的数据）
-    console.log(`[addFavorite] 模拟数据库已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
+    // 保存到持久化存储
+    try {
+        savePersistentFavorites(userFavorites);
+        console.log(`[addFavorite] 模拟数据库已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
+    } catch (error) {
+        console.error(`[addFavorite] 更新持久化存储失败:`, error);
+        // 即使持久化失败，内存中的数据仍然有效，所以不影响当前请求的响应
+    }
     
     return true;
 };

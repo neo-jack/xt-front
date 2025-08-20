@@ -1,7 +1,7 @@
 // 请求 post请求 /api/favorite/get
 import { parseTokenUserId } from '../utils/tokenid';
-import { userFavorites } from '../datebash/favorite/index';
 import type { FavoriteItem } from '../datebash/favorite/index';
+import { getPersistentFavorites } from '../datebash/favorite/storage';
 
 // MOCK_CONFIG 配置
 const GET_FAVORITE_MOCK_CONFIG = {
@@ -29,6 +29,9 @@ interface MockGetFavoriteResponse {
  * 获取用户收藏列表
  */
 const getUserFavorites = (userId: number): FavoriteItem[] => {
+    // 获取持久化的收藏数据
+    const userFavorites = getPersistentFavorites();
+    
     // 查找用户收藏数据
     const userFavoriteData = userFavorites.find(user => user.userId === userId);
     

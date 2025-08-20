@@ -1,8 +1,8 @@
 // 请求 post请求 /api/favorite/remove
 import { parseTokenUserId } from '../utils/tokenid';
 import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
-import { userFavorites } from '../datebash/favorite/index';
 import type { FavoriteItem } from '../datebash/favorite/index';
+import { getPersistentFavorites, savePersistentFavorites } from '../datebash/favorite/storage';
 
 // MOCK_CONFIG 配置
 const REMOVE_FAVORITE_MOCK_CONFIG = {
@@ -33,6 +33,9 @@ interface MockRemoveFavoriteResponse {
  * 从用户收藏中移除模块（更新模拟数据库）
  */
 const removeModuleFromFavorites = (userId: number, moduleId: string): boolean => {
+    // 获取持久化的收藏数据
+    const userFavorites = getPersistentFavorites();
+    
     // 查找用户收藏列表
     const userFavoriteData = userFavorites.find(user => user.userId === userId);
     
@@ -53,8 +56,14 @@ const removeModuleFromFavorites = (userId: number, moduleId: string): boolean =>
     userFavoriteData.favorites.splice(moduleIndex, 1);
     console.log(`[removeFavorite] 成功从用户 ${userId} 的收藏中移除模块 ${moduleId}`);
     
-    // 更新模拟数据库（mock/datebash/favorite/index.ts 中的数据）
-    console.log(`[removeFavorite] 模拟数据库已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
+    // 保存到持久化存储
+    try {
+        savePersistentFavorites(userFavorites);
+        console.log(`[removeFavorite] 模拟数据库已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
+    } catch (error) {
+        console.error(`[removeFavorite] 更新持久化存储失败:`, error);
+        // 即使持久化失败，内存中的数据仍然有效，所以不影响当前请求的响应
+    }
     
     return true;
 };
