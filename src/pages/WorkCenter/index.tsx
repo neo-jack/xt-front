@@ -1,96 +1,90 @@
 //-----------------------------------------------
 // 工作中台
-//选择菜单栏+读取收藏列表+读取模块列表
+// 使用 API 获取菜单栏、收藏列表、模块列表
 //
-// 待优化:
-// 1.拦截器信息调试信息优化
+// 功能:
+// 1. 动态加载分类菜单
+// 2. 根据选择的分类加载模块列表
+// 3. 收藏功能管理
+// 4. 响应式布局和状态管理
 //-----------------------------------------------
 
-
-
 import ModuleCard from '@/components/Card';
-import { SubModule, WORK_CENTER_MENUS } from '@/constants/workboard';
+import type { SubModule } from '@/constants/workboard';
+import useWorkBoard from '@/models/useworkboard';
 import favoriteService from '@/services/favorite';
-import { Empty, message } from 'antd';
+import { Empty, message, Spin, Alert } from 'antd';
 import React, { useEffect, useState } from 'react';
 import WorkCenterSidebar from './components/Sidebar';
 
 const WorkCenter: React.FC = () => {
-  const [selectedCategoryKey, setSelectedCategoryKey] = useState('master');
-  const [favoriteModuleIds, setFavoriteModuleIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
+  
+  // 使用 WorkBoard Hook 获取数据和操作方法
+  const {
+    categories,
+    currentModules,
+    selectedCategory,
+    loading,
+    error,
+    loadCategories,
+    loadModules,
+    addToFavorites,
+    removeFromFavorites,
+  } = useWorkBoard();
 
-  // 初始化收藏状态
+  // 初始化数据加载
   useEffect(() => {
-    const loadFavorites = async () => {
+    const initializeData = async () => {
       try {
-        const result =
-          await favoriteService.FavoriteController.queryFavoriteList({});
-        if (result.success && result.data?.list) {
-          const validIds = result.data.list
-            .filter((fav) => fav.id)
-            .map((fav) => fav.id!);
-          setFavoriteModuleIds(new Set(validIds));
-        }
+        // 加载分类列表
+        await loadCategories();
       } catch (error) {
-        console.error('加载收藏列表失败:', error);
+        console.error('初始化工作中心数据失败:', error);
+        message.error('加载数据失败，请刷新页面重试');
       }
     };
-    loadFavorites();
-  }, []);
+    
+    initializeData();
+  }, [loadCategories]);
 
-  // 获取当前选中分类的模块
-  const getCurrentModules = () => {
-    const category = WORK_CENTER_MENUS.find(
-      (cat) => cat.key === selectedCategoryKey,
-    );
-    if (!category) return [];
-
-    return category.subModules.map((module) => ({
-      ...module,
-      isFavorite: favoriteModuleIds.has(module.id),
-    }));
-  };
-
-  // 获取当前分类名称
-  const getCurrentCategoryName = () => {
-    const category = WORK_CENTER_MENUS.find(
-      (cat) => cat.key === selectedCategoryKey,
-    );
-    return category?.name || '';
-  };
+  // 当分类列表加载完成后，自动选择第一个分类
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      const firstCategory = categories[0];
+      setSelectedCategoryName(firstCategory.name);
+      loadModules(firstCategory.name);
+    }
+  }, [categories, selectedCategory, loadModules]);
 
   // 处理菜单选择
-  const handleMenuSelect = (key: string) => {
-    setSelectedCategoryKey(key);
+  const handleMenuSelect = (categoryName: string) => {
+    setSelectedCategoryName(categoryName);
+    loadModules(categoryName);
   };
 
   // 处理收藏切换
-  const handleFavoriteToggle = async (
-    module: SubModule,
-    categoryName: string,
-  ) => {
+  const handleFavoriteToggle = async (module: SubModule) => {
     try {
-      const isFavorited = favoriteModuleIds.has(module.id);
-
-      if (isFavorited) {
+      if (module.isFavorite) {
         // 移除收藏
+        await removeFromFavorites(module.id);
+        
+        // 调用原有的收藏服务 API
         const result = await favoriteService.FavoriteController.removeFavorite({
           moduleId: module.id,
         });
+        
         if (result.success) {
-          setFavoriteModuleIds((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(module.id);
-            return newSet;
-          });
           message.success('已取消收藏');
         } else {
           message.error(result.errorMessage || '取消收藏失败');
         }
       } else {
         // 添加收藏
+        await addToFavorites(module);
+        
+        // 调用原有的收藏服务 API
         const result = await favoriteService.FavoriteController.addFavorite({
           moduleId: module.id,
           moduleName: module.name,
@@ -98,25 +92,61 @@ const WorkCenter: React.FC = () => {
           icon: module.icon,
           port: module.port,
           projectPath: module.projectPath,
-          categoryName,
+          categoryName: selectedCategoryName,
         });
+        
         if (result.success) {
-          setFavoriteModuleIds((prev) => {
-            const newSet = new Set(prev);
-            newSet.add(module.id);
-            return newSet;
-          });
           message.success('已添加到收藏');
         } else {
           message.error(result.errorMessage || '添加收藏失败');
         }
       }
     } catch (error) {
+      console.error('收藏操作失败:', error);
       message.error(`操作失败: ${error}`);
     }
   };
 
-  const modules = getCurrentModules();
+  // 获取当前显示的模块列表
+  const displayModules = currentModules;
+
+  // 错误状态渲染
+  if (error.categories) {
+    return (
+      <div
+        style={{
+          height: 'calc(100vh - 88px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#F6F9FF',
+        }}
+      >
+        <Alert
+          message="加载失败"
+          description={error.categories}
+          type="error"
+          showIcon
+          action={
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                marginLeft: '12px',
+                padding: '4px 16px',
+                border: '1px solid #ff4d4f',
+                borderRadius: '4px',
+                backgroundColor: 'transparent',
+                color: '#ff4d4f',
+                cursor: 'pointer',
+              }}
+            >
+              重新加载
+            </button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -128,10 +158,13 @@ const WorkCenter: React.FC = () => {
     >
       {/* 左侧菜单栏 */}
       <div style={{ width: '280px', backgroundColor: '#fff', height: '100%' }}>
-        <WorkCenterSidebar
-          selectedKey={selectedCategoryKey}
-          onSelect={handleMenuSelect}
-        />
+        <Spin spinning={loading.categories} tip="加载分类中...">
+          <WorkCenterSidebar
+            categories={categories}
+            selectedCategoryName={selectedCategoryName}
+            onSelect={handleMenuSelect}
+          />
+        </Spin>
       </div>
 
       {/* 右侧内容区 */}
@@ -147,31 +180,65 @@ const WorkCenter: React.FC = () => {
           alignContent: 'flex-start',
         }}
       >
-        {modules.length === 0 ? (
-          <div
-            style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '300px',
-            }}
-          >
-            <Empty description="暂无模块" />
-          </div>
-        ) : (
-          modules.map((module) => (
-            <ModuleCard
-              key={module.id}
-              id={module.id}
-              showFavorite={true}
-              isFavorite={module.isFavorite}
-              onFavoriteToggle={() =>
-                handleFavoriteToggle(module, getCurrentCategoryName())
-              }
-            />
-          ))
-        )}
+        <Spin spinning={loading.modules} tip="加载模块中..." style={{ width: '100%' }}>
+          {error.modules ? (
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '300px',
+              }}
+            >
+              <Alert
+                message="加载模块失败"
+                description={error.modules}
+                type="error"
+                showIcon
+                action={
+                  <button
+                    onClick={() => selectedCategoryName && loadModules(selectedCategoryName)}
+                    style={{
+                      marginLeft: '12px',
+                      padding: '4px 16px',
+                      border: '1px solid #ff4d4f',
+                      borderRadius: '4px',
+                      backgroundColor: 'transparent',
+                      color: '#ff4d4f',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    重试
+                  </button>
+                }
+              />
+            </div>
+          ) : displayModules.length === 0 ? (
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '300px',
+              }}
+            >
+              <Empty 
+                description={selectedCategoryName ? `${selectedCategoryName} 分类下暂无模块` : "请选择分类查看模块"} 
+              />
+            </div>
+          ) : (
+            displayModules.map((module) => (
+              <ModuleCard
+                key={module.id}
+                module={module}
+                showFavorite={true}
+                onFavoriteToggle={handleFavoriteToggle}
+              />
+            ))
+          )}
+        </Spin>
       </div>
     </div>
   );
