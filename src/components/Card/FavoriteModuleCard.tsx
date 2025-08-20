@@ -47,6 +47,11 @@ const FavoriteModuleCard: React.FC<FavoriteModuleCardProps> = ({
   const [loading, setLoading] = useState(false);
   const [currentModule, setCurrentModule] = useState<SubModule>(module);
 
+  // 当外部传入的 module 发生变化时，同步更新内部状态
+  React.useEffect(() => {
+    setCurrentModule(module);
+  }, [module]);
+
   /**
    * 处理收藏状态切换
    * 根据当前收藏状态调用相应的API

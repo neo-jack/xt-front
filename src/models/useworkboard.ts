@@ -184,7 +184,7 @@ export class WorkBoardManager {
           icon: item.icon,
           port: item.port,
           projectPath: item.url,
-          isFavorite: this.isModuleFavorite(item.id),
+          isFavorite: item.isFavorite, // 使用 API 返回的收藏状态
         }));
 
         this.updateState({

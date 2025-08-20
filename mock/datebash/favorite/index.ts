@@ -71,6 +71,14 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "DatabaseOutlined",
         "port": 3012,
         "url": "http://localhost:3012"
+      },
+      {
+        "id": "H82",
+        "name": "风险评估数据",
+        "description": "风险评估数据管理",
+        "icon": "DatabaseOutlined",
+        "port": 4202,
+        "url": "http://localhost:4202"
       }
     ]
   },

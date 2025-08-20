@@ -25,4 +25,6 @@ export interface ModuleItem {
   port: number;
   /** url */
   url: string;
+  /** 是否收藏 */
+  isFavorite: boolean;
 }
