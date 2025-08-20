@@ -15,23 +15,23 @@ export const userFavorites: UserFavoriteData[] = [
   {
     userId: 1,
     favorites: [
-      { id: "0_ReportQuery", name: "报告查询" },
-      { id: "2_DealerSettle", name: "经销商结算" },
-      { id: "4_TransCenter", name: "转运中心" },
-      { id: "8_RoutineTestWS", name: "常规检验工作站" },
-      { id: "10_SpecTestWS", name: "特检工作站" },
-      { id: "11_SampleMgmtWS", name: "样本管理工作站" }
+      { id: "H01", name: "报告查询" },
+      { id: "H03", name: "经销商结算" },
+      { id: "H05", name: "转运中心" },
+      { id: "H09", name: "常规检验工作站" },
+      { id: "H11", name: "特检工作站" },
+      { id: "H12", name: "样本管理工作站" }
     ]
   },
   {
     userId: 2,
     favorites: [
-      { id: "0_ReportQuery", name: "报告查询" },
-      { id: "2_DealerSettle", name: "经销商结算" },
-      { id: "4_TransCenter", name: "转运中心" },
-      { id: "8_RoutineTestWS", name: "常规检验工作站" },
-      { id: "10_SpecTestWS", name: "特检工作站" },
-      { id: "11_SampleMgmtWS", name: "样本管理工作站" }
+      { id: "H01", name: "报告查询" },
+      { id: "H03", name: "经销商结算" },
+      { id: "H05", name: "转运中心" },
+      { id: "H09", name: "常规检验工作站" },
+      { id: "H11", name: "特检工作站" },
+      { id: "H12", name: "样本管理工作站" }
     ]
   }
 ];
