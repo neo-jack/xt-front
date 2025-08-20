@@ -171,7 +171,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           name: '输血管理',
           description: '输血管理系统',
           port: 3016,
-          icon: '#icon-chanpinbeijing1',
+          icon: 'MedicineBoxOutlined',
         },
       ],
     },
