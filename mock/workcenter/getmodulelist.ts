@@ -1,5 +1,7 @@
 //请求 post请求 /api/workcenter/getmodulelist
 import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
+import { userFavorites } from '../datebash/favorite/index';
+import { parseTokenUserId } from '../utils/tokenid';
 
 //MOCK_CONFIG 配置
 const GETMODULELIST_MOCK_CONFIG = {
@@ -17,6 +19,17 @@ const GETMODULELIST_MOCK_CONFIG = {
 
 const generateModuleUrl = (port: number): string => {
     return `http://localhost:${port}`;
+};
+
+/**
+ * 检查模块是否被用户收藏
+ */
+const isModuleFavorited = (userId: number, moduleId: string): boolean => {
+    const userFavoriteData = userFavorites.find(user => user.userId === userId);
+    if (!userFavoriteData) {
+        return false;
+    }
+    return userFavoriteData.favorites.some(fav => fav.id === moduleId);
 };
 
 // Mock 请求定义
@@ -48,6 +61,8 @@ export interface ModuleItem {
     port: number;
     /** url */
     url: string;
+    /** 是否收藏 */
+    isFavorite: boolean;
 }
 /**
  * 获取延迟时间
@@ -100,6 +115,10 @@ export default {
                         msg: '请提供菜单名参数'
                     });
                 }
+
+                // 解析用户ID
+                const userId = parseTokenUserId(req.headers.authorization || '');
+                console.log(`[getmodulelist] 解析到用户ID: ${userId}`);
                 
                 // 检查是否应该返回错误
                 if (shouldReturnError()) {
@@ -130,7 +149,8 @@ export default {
                     description: module.description,
                     icon: module.icon || 'AppstoreOutlined',
                     port: module.port || 3000,
-                    url: generateModuleUrl(module.port || 3000)
+                    url: generateModuleUrl(module.port || 3000),
+                    isFavorite: userId && userId > 0 ? isModuleFavorited(userId, module.id) : false
                 }));
                 
                 console.log(`[getmodulelist] 找到分类"${name}"，返回${moduleItems.length}个模块`);

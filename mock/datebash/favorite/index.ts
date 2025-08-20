@@ -71,14 +71,6 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "DatabaseOutlined",
         "port": 3012,
         "url": "http://localhost:3012"
-      },
-      {
-        "id": "H10",
-        "name": "ELISA管理",
-        "description": "ELISA检测管理系统",
-        "icon": "RadarChartOutlined",
-        "port": 3010,
-        "url": "http://localhost:3010"
       }
     ]
   },

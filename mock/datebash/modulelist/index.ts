@@ -67,6 +67,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '医疗报告查询和管理系统',
           port: 3001,
           icon: 'FileSearchOutlined',
+          isFavorite: false,
         },
         {
           id: 'H02',
@@ -74,6 +75,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '医疗费用结算管理系统',
           port: 3002,
           icon: 'DollarOutlined',
+          isFavorite: false,
         },
         {
           id: 'H03',
@@ -81,6 +83,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '经销商费用结算系统',
           port: 3003,
           icon: 'ShopOutlined',
+          isFavorite: false,
         },
         {
           id: 'H04',
@@ -88,6 +91,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '核酸检测移动端管理',
           port: 3004,
           icon: 'MobileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H05',
@@ -95,6 +99,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '样本转运中心管理',
           port: 3005,
           icon: 'SendOutlined',
+          isFavorite: false,
         },
         {
           id: 'H06',
@@ -102,6 +107,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '移动端转运管理系统',
           port: 3006,
           icon: 'CarOutlined',
+          isFavorite: false,
         },
         {
           id: 'H07',
@@ -109,6 +115,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '样本预处理工作站',
           port: 3007,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H08',
@@ -116,6 +123,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '特殊样本预处理工作站',
           port: 3008,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H09',
@@ -123,6 +131,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '常规检验工作站管理',
           port: 3009,
           icon: 'MedicineBoxOutlined',
+          isFavorite: false,
         },
         {
           id: 'H10',
@@ -130,6 +139,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'ELISA检测管理系统',
           port: 3010,
           icon: 'RadarChartOutlined',
+          isFavorite: false,
         },
         {
           id: 'H11',
@@ -137,6 +147,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '特殊检验工作站',
           port: 3011,
           icon: 'BugOutlined',
+          isFavorite: false,
         },
         {
           id: 'H12',
@@ -144,6 +155,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '样本管理工作站系统',
           port: 3012,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
         {
           id: 'H13',
@@ -151,6 +163,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '环境卫生监测管理',
           port: 3013,
           icon: 'EnvironmentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H14',
@@ -158,6 +171,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '微生物检验工作站',
           port: 3014,
           icon: 'BugOutlined',
+          isFavorite: false,
         },
         {
           id: 'H15',
@@ -165,6 +179,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '微生物检验规则管理',
           port: 3015,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H16',
@@ -172,6 +187,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '输血管理系统',
           port: 3016,
           icon: 'MedicineBoxOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -187,6 +203,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'P3级别样本管理系统',
           port: 3101,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -202,6 +219,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '设备性能验证管理',
           port: 3201,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H19',
@@ -209,6 +227,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '智能质控管理系统',
           port: 3202,
           icon: 'RadarChartOutlined',
+          isFavorite: false,
         },
         {
           id: 'H20',
@@ -216,6 +235,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '移动平均PBRT质控系统',
           port: 3203,
           icon: 'MobileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H21',
@@ -223,6 +243,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '室间质评工作站',
           port: 3204,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H22',
@@ -230,6 +251,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '检验结果比对工作站',
           port: 3205,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H23',
@@ -237,6 +259,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '血糖检测比对工作站',
           port: 3206,
           icon: 'MedicineBoxOutlined',
+          isFavorite: false,
         },
         {
           id: 'H24',
@@ -244,6 +267,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '血气分析比对管理',
           port: 3207,
           icon: 'MedicineBoxOutlined',
+          isFavorite: false,
         },
         {
           id: 'H25',
@@ -251,6 +275,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '常规样本检测比对管理',
           port: 3208,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
         {
           id: 'H26',
@@ -258,6 +283,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'POCT设备管理中心',
           port: 3209,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -273,6 +299,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '数据清洗和预处理管理',
           port: 3301,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
         {
           id: 'H28',
@@ -280,6 +307,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '智能文档生成和管理',
           port: 3302,
           icon: 'FileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H29',
@@ -287,6 +315,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '智能报告生成平台',
           port: 3303,
           icon: 'BarChartOutlined',
+          isFavorite: false,
         },
         {
           id: 'H30',
@@ -294,6 +323,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室报告管理中心',
           port: 3304,
           icon: 'FileSearchOutlined',
+          isFavorite: false,
         },
         {
           id: 'H31',
@@ -301,6 +331,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '运营控制大屏展示',
           port: 3305,
           icon: 'MonitorOutlined',
+          isFavorite: false,
         },
         {
           id: 'H32',
@@ -308,6 +339,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'ISO15189标准报告平台',
           port: 3306,
           icon: 'SafetyCertificateOutlined',
+          isFavorite: false,
         },
         {
           id: 'H33',
@@ -315,6 +347,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '商业智能数据分析',
           port: 3307,
           icon: 'BarChartOutlined',
+          isFavorite: false,
         },
         {
           id: 'H34',
@@ -322,6 +355,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '自动化指导系统',
           port: 3308,
           icon: 'RobotOutlined',
+          isFavorite: false,
         },
         {
           id: 'H35',
@@ -329,6 +363,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '质量指标管理工作站',
           port: 3309,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H36',
@@ -336,6 +371,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '质量指标统计报告归档系统',
           port: 3310,
           icon: 'FileOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -351,6 +387,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室人员管理系统',
           port: 3401,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H38',
@@ -358,6 +395,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室设备管理系统',
           port: 3402,
           icon: 'ToolOutlined',
+          isFavorite: false,
         },
         {
           id: 'H39',
@@ -365,6 +403,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室智能排班系统',
           port: 3403,
           icon: 'CalendarOutlined',
+          isFavorite: false,
         },
         {
           id: 'H40',
@@ -372,6 +411,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '人员考试管理系统1',
           port: 3404,
           icon: 'FileTextOutlined',
+          isFavorite: false,
         },
         {
           id: 'H41',
@@ -379,6 +419,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '人员考试管理系统2',
           port: 3405,
           icon: 'FileTextOutlined',
+          isFavorite: false,
         },
         {
           id: 'H42',
@@ -386,6 +427,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '考试阅卷管理系统',
           port: 3406,
           icon: 'EditOutlined',
+          isFavorite: false,
         },
         {
           id: 'H43',
@@ -393,6 +435,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '考试错题管理系统',
           port: 3407,
           icon: 'ExclamationCircleOutlined',
+          isFavorite: false,
         },
         {
           id: 'H44',
@@ -400,6 +443,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室档案管理中心',
           port: 3408,
           icon: 'FileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H45',
@@ -407,6 +451,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室事务管理系统',
           port: 3409,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H46',
@@ -414,6 +459,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '岗位事务管理系统',
           port: 3410,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H47',
@@ -421,6 +467,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室事务归档系统',
           port: 3411,
           icon: 'FileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H48',
@@ -428,6 +475,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '事务历史记录管理',
           port: 3412,
           icon: 'HistoryOutlined',
+          isFavorite: false,
         },
         {
           id: 'H49',
@@ -435,6 +483,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室不良事件管理',
           port: 3413,
           icon: 'ExclamationCircleOutlined',
+          isFavorite: false,
         },
         {
           id: 'H50',
@@ -442,6 +491,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室温湿度监控管理',
           port: 3414,
           icon: 'DashboardOutlined',
+          isFavorite: false,
         },
         {
           id: 'H51',
@@ -449,6 +499,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室物料管理系统',
           port: 3415,
           icon: 'InboxOutlined',
+          isFavorite: false,
         },
         {
           id: 'H52',
@@ -456,6 +507,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '移动端物料管理系统',
           port: 3416,
           icon: 'MobileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H53',
@@ -463,6 +515,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室文档管理系统',
           port: 3417,
           icon: 'FileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H54',
@@ -470,6 +523,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室供应商管理系统',
           port: 3418,
           icon: 'ShopOutlined',
+          isFavorite: false,
         },
         {
           id: 'H55',
@@ -477,6 +531,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室环境管理系统',
           port: 3419,
           icon: 'EnvironmentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H56',
@@ -484,6 +539,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室检查管理系统',
           port: 3420,
           icon: 'AuditOutlined',
+          isFavorite: false,
         },
         {
           id: 'H57',
@@ -491,6 +547,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室检查管理系统',
           port: 3421,
           icon: 'AuditOutlined',
+          isFavorite: false,
         },
         {
           id: 'H58',
@@ -498,6 +555,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室风险管理系统',
           port: 3422,
           icon: 'SafetyOutlined',
+          isFavorite: false,
         },
         {
           id: 'H59',
@@ -505,6 +563,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室会议管理系统1',
           port: 3423,
           icon: 'TeamOutlined',
+          isFavorite: false,
         },
         {
           id: 'H60',
@@ -512,6 +571,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室会议管理系统2',
           port: 3424,
           icon: 'TeamOutlined',
+          isFavorite: false,
         },
         {
           id: 'H61',
@@ -519,6 +579,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室会议管理系统3',
           port: 3425,
           icon: 'TeamOutlined',
+          isFavorite: false,
         },
         {
           id: 'H62',
@@ -526,6 +587,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室人员评估管理',
           port: 3426,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H63',
@@ -533,6 +595,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室人员自我评估',
           port: 3427,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H64',
@@ -540,6 +603,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室专家评估系统',
           port: 3428,
           icon: 'CrownOutlined',
+          isFavorite: false,
         },
         {
           id: 'H65',
@@ -547,6 +611,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室环境综合管理系统',
           port: 3429,
           icon: 'EnvironmentOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -562,6 +627,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '医学检验知识库系统',
           port: 3601,
           icon: 'BookOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -577,6 +643,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '科研样本访问工作站',
           port: 3701,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -592,6 +659,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验医生工作站',
           port: 3801,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H69',
@@ -599,6 +667,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验护士工作站',
           port: 3802,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H70',
@@ -606,6 +675,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '移动实验护士工作站',
           port: 3803,
           icon: 'MobileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H71',
@@ -613,6 +683,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '样本采集工作站',
           port: 3804,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H72',
@@ -620,6 +691,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '样本采集预约系统',
           port: 3805,
           icon: 'CalendarOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -635,6 +707,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '第三方接口测试模块',
           port: 3901,
           icon: 'ApiOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -650,6 +723,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '系统维护管理平台',
           port: 4001,
           icon: 'ToolOutlined',
+          isFavorite: false,
         },
         {
           id: 'H75',
@@ -657,6 +731,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '系统数据管理平台',
           port: 4002,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
         {
           id: 'H76',
@@ -664,6 +739,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '系统数据管理平台2',
           port: 4003,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
         {
           id: 'H77',
@@ -671,6 +747,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '智能审核自动审核系统',
           port: 4004,
           icon: 'RobotOutlined',
+          isFavorite: false,
         },
         {
           id: 'H78',
@@ -678,6 +755,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '临床评分量表管理系统',
           port: 4005,
           icon: 'FileTextOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -693,6 +771,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '事务处理管理平台',
           port: 4101,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H80',
@@ -700,6 +779,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '文档设计器工具',
           port: 4102,
           icon: 'DesktopOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -715,6 +795,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全风险评估系统',
           port: 4201,
           icon: 'SafetyOutlined',
+          isFavorite: false,
         },
         {
           id: 'H82',
@@ -722,6 +803,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '风险评估数据管理',
           port: 4202,
           icon: 'DatabaseOutlined',
+          isFavorite: false,
         },
         {
           id: 'H83',
@@ -729,6 +811,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全人员管理',
           port: 4203,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H84',
@@ -736,6 +819,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全设备管理',
           port: 4204,
           icon: 'ToolOutlined',
+          isFavorite: false,
         },
         {
           id: 'H85',
@@ -743,6 +827,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全考试管理',
           port: 4205,
           icon: 'FileTextOutlined',
+          isFavorite: false,
         },
         {
           id: 'H86',
@@ -750,6 +835,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全事务管理',
           port: 4206,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H87',
@@ -757,6 +843,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全文档管理',
           port: 4207,
           icon: 'FileOutlined',
+          isFavorite: false,
         },
         {
           id: 'H88',
@@ -764,6 +851,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全检查管理',
           port: 4208,
           icon: 'AuditOutlined',
+          isFavorite: false,
         },
         {
           id: 'H89',
@@ -771,6 +859,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全管理指南',
           port: 4209,
           icon: 'BookOutlined',
+          isFavorite: false,
         },
         {
           id: 'H90',
@@ -778,6 +867,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物样本全流程管理',
           port: 4210,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H91',
@@ -785,6 +875,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '病原微生物样本管理',
           port: 4211,
           icon: 'BugOutlined',
+          isFavorite: false,
         },
         {
           id: 'H92',
@@ -792,6 +883,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '实验室备案管理',
           port: 4212,
           icon: 'ExperimentOutlined',
+          isFavorite: false,
         },
         {
           id: 'H93',
@@ -799,6 +891,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '生物安全人员评估',
           port: 4213,
           icon: 'UserOutlined',
+          isFavorite: false,
         },
         {
           id: 'H94',
@@ -806,6 +899,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '病原微生物实验室生物安全评估系统',
           port: 4214,
           icon: 'SafetyOutlined',
+          isFavorite: false,
         },
         {
           id: 'H95',
@@ -813,6 +907,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '病原微生物实验室生物安全备案系统',
           port: 4215,
           icon: 'SafetyCertificateOutlined',
+          isFavorite: false,
         },
         {
           id: 'H96',
@@ -820,6 +915,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: '病原微生物实验室生物安全监管系统',
           port: 4216,
           icon: 'MonitorOutlined',
+          isFavorite: false,
         },
       ],
     },
@@ -835,6 +931,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'POCT管理委员会系统',
           port: 4301,
           icon: 'TeamOutlined',
+          isFavorite: false,
         },
         {
           id: 'H98',
@@ -842,6 +939,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'POCT项目管理系统',
           port: 4302,
           icon: 'SettingOutlined',
+          isFavorite: false,
         },
         {
           id: 'H99',
@@ -849,6 +947,7 @@ export const WORK_CENTER_MENUS: MenuCategory[] = [
           description: 'POCT质控总览系统',
           port: 4303,
           icon: 'MonitorOutlined',
+          isFavorite: false,
         },
       ],
     },
