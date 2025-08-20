@@ -15,7 +15,7 @@ const { Header: AntdHeader, Sider, Content } = AntdLayout;
 
 const BaseLayout: FC = () => {
   //组件联动
-  const [collapsed, setCollapsed] = useState(false); // 添加这一行
+  const [collapsed, setCollapsed] = useState(false); 
 
   const toggleCollapsed = () => {
     // 添加这个函数

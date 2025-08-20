@@ -33,42 +33,6 @@ export interface MenuCategory {
   subModules: SubModule[];
 }
 
-export interface FavoriteModule extends SubModule {
-  /** 所属分类名称，用于标识模块来源 */
-  categoryName: string;
-
-  /** 收藏添加时间，ISO格式字符串 */
-  addedAt: string;
-}
-
-export interface WorkCenterState {
-  /** 当前选中的菜单分类键值 */
-  selectedCategoryKey: string;
-
-  /** 用户收藏的模块列表 */
-  favoriteModules: FavoriteModule[];
-
-  /** 正在运行的模块ID列表，用于状态标识和管理 */
-  runningModules: string[];
-}
-
-export interface ModuleStartConfig {
-  /** 要启动的模块ID */
-  moduleId: string;
-
-  /** 模块名称，用于日志和通知 */
-  moduleName: string;
-
-  /** 启动端口号 */
-  port: number;
-
-  /** 启动命令，用于执行模块启动 */
-  command: string;
-
-  /** 项目路径，指向模块的完整文件系统路径 */
-  projectPath: string;
-}
-
 export const WORK_CENTER_MENUS: MenuCategory[] = [
   {
     id: '1xt-master',
