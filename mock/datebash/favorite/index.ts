@@ -27,30 +27,30 @@ export const userFavorites: UserFavoriteData[] = [
     "userId": 1,
     "favorites": [
       {
-        "id": "H59",
-        "name": "会议管理1",
-        "description": "实验室会议管理系统1",
-        "icon": "TeamOutlined",
-        "port": 3423,
-        "url": "http://localhost:3423",
-        "sort": 1
-      },
-      {
-        "id": "H56",
-        "name": "检查管理",
-        "description": "实验室检查管理系统",
-        "icon": "AuditOutlined",
-        "port": 3420,
-        "url": "http://localhost:3420",
-        "sort": 2
-      },
-      {
         "id": "H54",
         "name": "供应商管理",
         "description": "实验室供应商管理系统",
         "icon": "ShopOutlined",
         "port": 3418,
         "url": "http://localhost:3418",
+        "sort": 1
+      },
+      {
+        "id": "H38",
+        "name": "设备管理",
+        "description": "实验室设备管理系统",
+        "icon": "ToolOutlined",
+        "port": 3402,
+        "url": "http://localhost:3402",
+        "sort": 2
+      },
+      {
+        "id": "H37",
+        "name": "人员管理",
+        "description": "实验室人员管理系统",
+        "icon": "UserOutlined",
+        "port": 3401,
+        "url": "http://localhost:3401",
         "sort": 3
       },
       {
@@ -63,12 +63,12 @@ export const userFavorites: UserFavoriteData[] = [
         "sort": 4
       },
       {
-        "id": "H49",
-        "name": "不良事件管理",
-        "description": "实验室不良事件管理",
-        "icon": "ExclamationCircleOutlined",
-        "port": 3413,
-        "url": "http://localhost:3413",
+        "id": "H45",
+        "name": "事务管理",
+        "description": "实验室事务管理系统",
+        "icon": "SettingOutlined",
+        "port": 3409,
+        "url": "http://localhost:3409",
         "sort": 5
       },
       {
@@ -81,40 +81,121 @@ export const userFavorites: UserFavoriteData[] = [
         "sort": 6
       },
       {
-        "id": "H38",
-        "name": "设备管理",
-        "description": "实验室设备管理系统",
-        "icon": "ToolOutlined",
-        "port": 3402,
-        "url": "http://localhost:3402",
+        "id": "H44",
+        "name": "档案中心",
+        "description": "实验室档案管理中心",
+        "icon": "FileOutlined",
+        "port": 3408,
+        "url": "http://localhost:3408",
         "sort": 7
       },
       {
-        "id": "H14",
-        "name": "微生物检验工作站",
-        "description": "微生物检验工作站",
-        "icon": "BugOutlined",
-        "port": 3014,
-        "url": "http://localhost:3014",
+        "id": "H59",
+        "name": "会议管理1",
+        "description": "实验室会议管理系统1",
+        "icon": "TeamOutlined",
+        "port": 3423,
+        "url": "http://localhost:3423",
         "sort": 8
       },
       {
-        "id": "H12",
-        "name": "样本管理工作站",
-        "description": "样本管理工作站系统",
-        "icon": "DatabaseOutlined",
-        "port": 3012,
-        "url": "http://localhost:3012",
+        "id": "H62",
+        "name": "人员评估管理",
+        "description": "实验室人员评估管理",
+        "icon": "UserOutlined",
+        "port": 3426,
+        "url": "http://localhost:3426",
         "sort": 9
       },
       {
-        "id": "H37",
-        "name": "人员管理",
-        "description": "实验室人员管理系统",
-        "icon": "UserOutlined",
-        "port": 3401,
-        "url": "http://localhost:3401",
+        "id": "H50",
+        "name": "温湿度管理",
+        "description": "实验室温湿度监控管理",
+        "icon": "DashboardOutlined",
+        "port": 3414,
+        "url": "http://localhost:3414",
         "sort": 10
+      },
+      {
+        "id": "H56",
+        "name": "检查管理",
+        "description": "实验室检查管理系统",
+        "icon": "AuditOutlined",
+        "port": 3420,
+        "url": "http://localhost:3420",
+        "sort": 11
+      },
+      {
+        "id": "H39",
+        "name": "智能排班",
+        "description": "实验室智能排班系统",
+        "icon": "CalendarOutlined",
+        "port": 3403,
+        "url": "http://localhost:3403",
+        "sort": 12
+      },
+      {
+        "id": "H75",
+        "name": "系统数据管理",
+        "description": "系统数据管理平台",
+        "icon": "DatabaseOutlined",
+        "port": 4002,
+        "url": "http://localhost:4002",
+        "sort": 13
+      },
+      {
+        "id": "H74",
+        "name": "系统维护管理",
+        "description": "系统维护管理平台",
+        "icon": "ToolOutlined",
+        "port": 4001,
+        "url": "http://localhost:4001",
+        "sort": 14
+      },
+      {
+        "id": "H77",
+        "name": "智能审核自动审核",
+        "description": "智能审核自动审核系统",
+        "icon": "RobotOutlined",
+        "port": 4004,
+        "url": "http://localhost:4004",
+        "sort": 15
+      },
+      {
+        "id": "H51",
+        "name": "物料管理",
+        "description": "实验室物料管理系统",
+        "icon": "InboxOutlined",
+        "port": 3415,
+        "url": "http://localhost:3415",
+        "sort": 16
+      },
+      {
+        "id": "H29",
+        "name": "智能报告平台",
+        "description": "智能报告生成平台",
+        "icon": "BarChartOutlined",
+        "port": 3303,
+        "url": "http://localhost:3303",
+        "sort": 17
+      },
+      {
+        "id": "H49",
+        "name": "不良事件管理",
+        "description": "实验室不良事件管理",
+        "icon": "ExclamationCircleOutlined",
+        "port": 3413,
+        "url": "http://localhost:3413",
+        "sort": 18
+      },
+      {
+        "id": "H19",
+        "name": "智能质控管理",
+        "description": "智能质控管理系统",
+        "icon": "RadarChartOutlined",
+        "port": 3202,
+        "url": "http://localhost:3202",
+        "sort": 19
       }
     ]
   },
