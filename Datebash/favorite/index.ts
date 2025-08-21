@@ -27,13 +27,22 @@ export const userFavorites: UserFavoriteData[] = [
     "userId": 1,
     "favorites": [
       {
+        "id": "H01",
+        "name": "报告查询",
+        "description": "医疗报告查询和管理系统",
+        "icon": "FileSearchOutlined",
+        "port": 3001,
+        "url": "http://localhost:3001",
+        "sort": 1
+      },
+      {
         "id": "H54",
         "name": "供应商管理",
         "description": "实验室供应商管理系统",
         "icon": "ShopOutlined",
         "port": 3418,
         "url": "http://localhost:3418",
-        "sort": 1
+        "sort": 2
       },
       {
         "id": "H38",
@@ -42,7 +51,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "ToolOutlined",
         "port": 3402,
         "url": "http://localhost:3402",
-        "sort": 2
+        "sort": 3
       },
       {
         "id": "H37",
@@ -51,7 +60,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "UserOutlined",
         "port": 3401,
         "url": "http://localhost:3401",
-        "sort": 3
+        "sort": 4
       },
       {
         "id": "H53",
@@ -60,7 +69,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "FileOutlined",
         "port": 3417,
         "url": "http://localhost:3417",
-        "sort": 4
+        "sort": 5
       },
       {
         "id": "H45",
@@ -69,7 +78,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "SettingOutlined",
         "port": 3409,
         "url": "http://localhost:3409",
-        "sort": 5
+        "sort": 6
       },
       {
         "id": "H40",
@@ -78,7 +87,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "FileTextOutlined",
         "port": 3404,
         "url": "http://localhost:3404",
-        "sort": 6
+        "sort": 7
       },
       {
         "id": "H44",
@@ -87,7 +96,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "FileOutlined",
         "port": 3408,
         "url": "http://localhost:3408",
-        "sort": 7
+        "sort": 8
       },
       {
         "id": "H59",
@@ -96,7 +105,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "TeamOutlined",
         "port": 3423,
         "url": "http://localhost:3423",
-        "sort": 8
+        "sort": 9
       },
       {
         "id": "H62",
@@ -105,7 +114,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "UserOutlined",
         "port": 3426,
         "url": "http://localhost:3426",
-        "sort": 9
+        "sort": 10
       },
       {
         "id": "H50",
@@ -114,7 +123,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "DashboardOutlined",
         "port": 3414,
         "url": "http://localhost:3414",
-        "sort": 10
+        "sort": 11
       },
       {
         "id": "H56",
@@ -123,7 +132,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "AuditOutlined",
         "port": 3420,
         "url": "http://localhost:3420",
-        "sort": 11
+        "sort": 12
       },
       {
         "id": "H39",
@@ -132,7 +141,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "CalendarOutlined",
         "port": 3403,
         "url": "http://localhost:3403",
-        "sort": 12
+        "sort": 13
       },
       {
         "id": "H75",
@@ -141,7 +150,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "DatabaseOutlined",
         "port": 4002,
         "url": "http://localhost:4002",
-        "sort": 13
+        "sort": 14
       },
       {
         "id": "H74",
@@ -150,7 +159,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "ToolOutlined",
         "port": 4001,
         "url": "http://localhost:4001",
-        "sort": 14
+        "sort": 15
       },
       {
         "id": "H77",
@@ -159,7 +168,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "RobotOutlined",
         "port": 4004,
         "url": "http://localhost:4004",
-        "sort": 15
+        "sort": 16
       },
       {
         "id": "H51",
@@ -168,7 +177,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "InboxOutlined",
         "port": 3415,
         "url": "http://localhost:3415",
-        "sort": 16
+        "sort": 17
       },
       {
         "id": "H29",
@@ -177,7 +186,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "BarChartOutlined",
         "port": 3303,
         "url": "http://localhost:3303",
-        "sort": 17
+        "sort": 18
       },
       {
         "id": "H49",
@@ -186,7 +195,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "ExclamationCircleOutlined",
         "port": 3413,
         "url": "http://localhost:3413",
-        "sort": 18
+        "sort": 19
       },
       {
         "id": "H19",
@@ -195,7 +204,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "RadarChartOutlined",
         "port": 3202,
         "url": "http://localhost:3202",
-        "sort": 19
+        "sort": 20
       }
     ]
   },
