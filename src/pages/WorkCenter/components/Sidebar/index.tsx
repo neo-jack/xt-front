@@ -5,7 +5,6 @@
  */
 import type { MenuCategory } from '@/constants/workboard';
 import { getIconComponent } from '@/components/Card/iconMap';
-import { AppstoreOutlined } from '@ant-design/icons';
 import { Menu, Empty } from 'antd';
 import React from 'react';
 
@@ -33,23 +32,14 @@ const WorkCenterSidebar: React.FC<WorkCenterSidebarProps> = ({
   selectedCategoryName,
   onSelect,
 }) => {
-  /**
-   * 根据分类数据生成菜单项
-   * 使用统一的图标映射函数动态渲染图标
-   */
-  const menuItems = categories.map((category) => {
-    // 使用统一的图标组件函数
-    const icon = getIconComponent(category.icon || 'AppstoreOutlined', {
+  const menuItems = categories.map((category) => ({
+    key: category.name,
+    icon: getIconComponent(category.icon || 'AppstoreOutlined', {
       fontSize: 16,
       color: 'inherit',
-    });
-
-    return {
-      key: category.name, // 使用分类名称作为菜单项唯一标识
-      icon, // 图标组件
-      label: category.name, // 菜单项显示名称
-    };
-  });
+    }),
+    label: category.name,
+  }));
 
   const handleMenuClick = ({ key }: { key: string }) => {
     onSelect(key);

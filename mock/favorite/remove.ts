@@ -53,6 +53,8 @@ export interface FavoriteItem {
   port: number;
   /** url */
   url: string;
+  /** 排序 */
+  sort?: number;
 }
 
 // 用户收藏数据类型定义
@@ -71,6 +73,22 @@ export const userFavorites: UserFavoriteData[] = ${JSON.stringify(updatedUserFav
     } catch (error) {
         console.error(`[removeFavorite] 更新收藏数据文件失败:`, error);
     }
+};
+
+/**
+ * 重新整理收藏排序（移除后连续排序）
+ * @param userFavoriteData 用户收藏数据
+ */
+const reorderFavoritesSort = (userFavoriteData: any): void => {
+    // 按当前排序排列
+    userFavoriteData.favorites.sort((a: any, b: any) => (a.sort || 0) - (b.sort || 0));
+    
+    // 重新分配连续的排序号
+    userFavoriteData.favorites.forEach((favorite: any, index: number) => {
+        favorite.sort = index + 1;
+    });
+    
+    console.log(`[removeFavorite] 已重新整理排序，新排序: ${userFavoriteData.favorites.map((fav: any) => `${fav.id}(${fav.sort})`).join(', ')}`);
 };
 
 /**
@@ -93,9 +111,16 @@ const removeModuleFromFavorites = (userId: number, moduleId: string): boolean =>
         return false;
     }
     
+    // 获取被移除模块的排序信息（用于日志）
+    const removedModule = userFavoriteData.favorites[moduleIndex];
+    const removedSort = removedModule.sort || 0;
+    
     // 从收藏列表中移除模块
     userFavoriteData.favorites.splice(moduleIndex, 1);
-    console.log(`[removeFavorite] 成功从用户 ${userId} 的收藏中移除模块 ${moduleId}`);
+    console.log(`[removeFavorite] 成功从用户 ${userId} 的收藏中移除模块 ${moduleId}，原排序: ${removedSort}`);
+    
+    // 重新整理排序，确保排序连续
+    reorderFavoritesSort(userFavoriteData);
     
     // 更新文件数据
     updateFavoriteFile(userFavorites);

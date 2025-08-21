@@ -46,7 +46,8 @@ const findModuleById = (moduleId: string): FavoriteItem | null => {
                 description: module.description || '',
                 icon: module.icon || 'AppstoreOutlined',
                 port: module.port || 3000,
-                url: `http://localhost:${module.port || 3000}`
+                url: `http://localhost:${module.port || 3000}`,
+                sort: 1 // 新添加的模块默认排序为1，表示最前面
             };
         }
     }
@@ -75,6 +76,8 @@ export interface FavoriteItem {
   port: number;
   /** url */
   url: string;
+  /** 排序 */
+  sort?: number;
 }
 
 // 用户收藏数据类型定义
@@ -93,6 +96,22 @@ export const userFavorites: UserFavoriteData[] = ${JSON.stringify(updatedUserFav
     } catch (error) {
         console.error(`[addFavorite] 更新收藏数据文件失败:`, error);
     }
+};
+
+/**
+ * 更新用户已有收藏的排序（将所有排序+1）
+ * @param userFavoriteData 用户收藏数据
+ */
+const incrementExistingFavoritesSort = (userFavoriteData: any): void => {
+    userFavoriteData.favorites.forEach((favorite: any) => {
+        if (favorite.sort) {
+            favorite.sort += 1;
+        } else {
+            // 如果没有sort字段，设置为2（因为新添加的是1）
+            favorite.sort = 2;
+        }
+    });
+    console.log(`[addFavorite] 已将现有收藏的排序全部+1`);
 };
 
 /**
@@ -118,13 +137,20 @@ const addModuleToFavorites = (userId: number, module: FavoriteItem): boolean => 
         return false;
     }
     
-    // 添加模块到收藏列表
+    // 先将现有收藏的排序全部+1
+    incrementExistingFavoritesSort(userFavoriteData);
+    
+    // 添加新模块到收藏列表（排序为1，排在最前面）
     userFavoriteData.favorites.push(module);
-    console.log(`[addFavorite] 成功添加模块 ${module.id} 到用户 ${userId} 的收藏中`);
+    console.log(`[addFavorite] 成功添加模块 ${module.id} 到用户 ${userId} 的收藏中，排序为1（最前面）`);
+    
+    // 按排序重新排列
+    userFavoriteData.favorites.sort((a: any, b: any) => (a.sort || 0) - (b.sort || 0));
     
     // 更新文件数据
     updateFavoriteFile(userFavorites);
     console.log(`[addFavorite] 模拟数据库文件已更新，用户 ${userId} 现在有 ${userFavoriteData.favorites.length} 个收藏`);
+    console.log(`[addFavorite] 新的排序: ${userFavoriteData.favorites.map((fav: any) => `${fav.id}(${fav.sort})`).join(', ')}`);
     
     return true;
 };

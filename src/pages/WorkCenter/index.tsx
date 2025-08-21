@@ -66,19 +66,14 @@ const WorkCenter: React.FC = () => {
   const handleFavoriteChange = async (module: SubModule, isFavorite: boolean) => {
     try {
       if (isFavorite) {
-        // 添加到本地状态
         await addToFavorites(module);
       } else {
-        // 从本地状态移除
         await removeFromFavorites(module.id);
       }
     } catch (error) {
       console.error('更新本地收藏状态失败:', error);
     }
   };
-
-  // 获取当前显示的模块列表
-  const displayModules = currentModules;
 
   // 错误状态渲染
   if (error.categories) {
@@ -181,7 +176,7 @@ const WorkCenter: React.FC = () => {
                 }
               />
             </div>
-          ) : displayModules.length === 0 ? (
+          ) : currentModules.length === 0 ? (
             <div
               style={{
                 width: '100%',
@@ -205,7 +200,7 @@ const WorkCenter: React.FC = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {displayModules.map((module) => (
+              {currentModules.map((module) => (
                 <FavoriteModuleCard
                   key={module.id}
                   module={module}

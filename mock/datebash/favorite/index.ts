@@ -11,6 +11,8 @@ export interface FavoriteItem {
   port: number;
   /** url */
   url: string;
+  /** 排序 */
+  sort?: number;
 }
 
 // 用户收藏数据类型定义
@@ -25,12 +27,31 @@ export const userFavorites: UserFavoriteData[] = [
     "userId": 1,
     "favorites": [
       {
+        "id": "H14",
+        "name": "微生物检验工作站",
+        "description": "微生物检验工作站",
+        "icon": "BugOutlined",
+        "port": 3014,
+        "url": "http://localhost:3014",
+        "sort": 1
+      },
+      {
+        "id": "H12",
+        "name": "样本管理工作站",
+        "description": "样本管理工作站系统",
+        "icon": "DatabaseOutlined",
+        "port": 3012,
+        "url": "http://localhost:3012",
+        "sort": 2
+      },
+      {
         "id": "H37",
         "name": "人员管理",
         "description": "实验室人员管理系统",
         "icon": "UserOutlined",
         "port": 3401,
-        "url": "http://localhost:3401"
+        "url": "http://localhost:3401",
+        "sort": 3
       }
     ]
   },
@@ -43,7 +64,8 @@ export const userFavorites: UserFavoriteData[] = [
         "description": "医疗报告查询和管理系统",
         "icon": "FileSearchOutlined",
         "port": 3001,
-        "url": "http://localhost:3001"
+        "url": "http://localhost:3001",
+        "sort": 1
       },
       {
         "id": "H03",
@@ -51,7 +73,8 @@ export const userFavorites: UserFavoriteData[] = [
         "description": "经销商费用结算系统",
         "icon": "ShopOutlined",
         "port": 3003,
-        "url": "http://localhost:3003"
+        "url": "http://localhost:3003",
+        "sort": 2
       },
       {
         "id": "H05",
@@ -59,7 +82,8 @@ export const userFavorites: UserFavoriteData[] = [
         "description": "样本转运中心管理",
         "icon": "SendOutlined",
         "port": 3005,
-        "url": "http://localhost:3005"
+        "url": "http://localhost:3005",
+        "sort": 3
       },
       {
         "id": "H09",
@@ -67,7 +91,8 @@ export const userFavorites: UserFavoriteData[] = [
         "description": "常规检验工作站管理",
         "icon": "MedicineBoxOutlined",
         "port": 3009,
-        "url": "http://localhost:3009"
+        "url": "http://localhost:3009",
+        "sort": 4
       },
       {
         "id": "H11",
@@ -75,7 +100,8 @@ export const userFavorites: UserFavoriteData[] = [
         "description": "特殊检验工作站",
         "icon": "BugOutlined",
         "port": 3011,
-        "url": "http://localhost:3011"
+        "url": "http://localhost:3011",
+        "sort": 5
       },
       {
         "id": "H12",
@@ -83,7 +109,8 @@ export const userFavorites: UserFavoriteData[] = [
         "description": "样本管理工作站系统",
         "icon": "DatabaseOutlined",
         "port": 3012,
-        "url": "http://localhost:3012"
+        "url": "http://localhost:3012",
+        "sort": 6
       }
     ]
   }

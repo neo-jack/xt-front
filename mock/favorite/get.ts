@@ -26,7 +26,9 @@ interface MockGetFavoriteResponse {
 }
 
 /**
- * 获取用户收藏列表
+ * 获取用户收藏列表（按排序返回）
+ * @param userId 用户ID
+ * @returns 按照sort字段排序的收藏列表
  */
 const getUserFavorites = (userId: number): FavoriteItem[] => {
     // 查找用户收藏数据
@@ -37,8 +39,17 @@ const getUserFavorites = (userId: number): FavoriteItem[] => {
         return [];
     }
     
-    console.log(`[getFavorite] 用户 ${userId} 有 ${userFavoriteData.favorites.length} 个收藏`);
-    return userFavoriteData.favorites;
+    // 按照sort字段排序（升序）
+    const sortedFavorites = [...userFavoriteData.favorites].sort((a, b) => {
+        const sortA = a.sort || 0;
+        const sortB = b.sort || 0;
+        return sortA - sortB;
+    });
+    
+    console.log(`[getFavorite] 用户 ${userId} 有 ${sortedFavorites.length} 个收藏，已按排序返回`);
+    console.log(`[getFavorite] 排序顺序: ${sortedFavorites.map(item => `${item.id}(${item.sort})`).join(', ')}`);
+    
+    return sortedFavorites;
 };
 
 /**
