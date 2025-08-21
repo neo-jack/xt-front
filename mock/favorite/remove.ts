@@ -2,9 +2,9 @@
 import fs from 'fs';
 import path from 'path';
 import { parseTokenUserId } from '../utils/tokenid';
-import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
-import { userFavorites } from '../datebash/favorite/index';
-import type { FavoriteItem } from '../datebash/favorite/index';
+import { WORK_CENTER_MENUS } from '../../../Datebash/modulelist/index';
+import { userFavorites } from '../../../Datebash/favorite/index';
+import type { FavoriteItem } from '../../../Datebash/favorite/index';
 
 // MOCK_CONFIG 配置
 const REMOVE_FAVORITE_MOCK_CONFIG = {
@@ -37,7 +37,7 @@ interface MockRemoveFavoriteResponse {
  */
 const updateFavoriteFile = (updatedUserFavorites: any[]): void => {
     try {
-        const filePath = path.join(process.cwd(), 'mock/datebash/favorite/index.ts');
+        const filePath = path.join(process.cwd(), '../Datebash/favorite/index.ts');
         
         // 生成新的文件内容
         const fileContent = `// 收藏项目类型定义

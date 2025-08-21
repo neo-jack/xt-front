@@ -1,4 +1,4 @@
-import { mockUsers } from '../datebash/users';
+import { mockUsers } from '../../../Datebash/users';
 import * as crypto from 'crypto';
 
 // Mock 请求接口类型定义

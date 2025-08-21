@@ -1,5 +1,5 @@
 // 请求 post请求 /api/user/getheadshotlist
-import { HeadshotInfo, mockHeadshots } from '../datebash/acators';
+import { HeadshotInfo, mockHeadshots } from '../../../Datebash/acators';
 import { parseTokenUserId } from '../utils/tokenid';
 
 // Mock 头像列表请求接口类型定义

@@ -1,6 +1,6 @@
 //请求 post请求 /api/workcenter/getmodulelist
-import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
-import { userFavorites } from '../datebash/favorite/index';
+import { WORK_CENTER_MENUS } from '../../../Datebash/modulelist/index';
+import { userFavorites } from '../../../Datebash/favorite/index';
 import { parseTokenUserId } from '../utils/tokenid';
 
 //MOCK_CONFIG 配置

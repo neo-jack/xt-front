@@ -1,8 +1,8 @@
 // 请求 post请求 /api/user/getdemandurl
 import crypto from 'crypto';
 import { parseTokenUserId } from '../utils/tokenid';
-import { systemInfo } from '../datebash/system/index';
-import { mockUsers } from '../datebash/users/index';
+import { systemInfo } from '../../../Datebash/system/index';
+import { mockUsers } from '../../../Datebash/users/index';
 
 //MOCK_CONFIG 配置
 const MOCK_CONFIG = {

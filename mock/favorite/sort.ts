@@ -3,8 +3,8 @@
 // 功能: 更新用户收藏模块的排序
 
 import { parseTokenUserId } from '../utils/tokenid';
-import { userFavorites } from '../datebash/favorite/index';
-import type { FavoriteItem } from '../datebash/favorite/index';
+import { userFavorites } from '../../../Datebash/favorite/index';
+import type { FavoriteItem } from '../../../Datebash/favorite/index';
 
 // MOCK_CONFIG 配置
 const SORT_FAVORITE_MOCK_CONFIG = {

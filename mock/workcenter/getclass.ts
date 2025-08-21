@@ -1,5 +1,5 @@
 //请求 get请求 /api/workcenter/getclass
-import { WORK_CENTER_MENUS } from '../datebash/modulelist/index';
+import { WORK_CENTER_MENUS } from '../../../Datebash/modulelist/index';
 
 //MOCK_CONFIG 配置
 const GETCLASS_MOCK_CONFIG = {

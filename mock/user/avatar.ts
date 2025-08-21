@@ -25,7 +25,8 @@ interface MockAvatarResponse {
 }
 
 // 头像文件存储目录（相对于项目根目录）
-const AVATAR_DIR = path.join(process.cwd(), 'mock/datebash/acators');
+// 注意：如果服务在Front目录运行，需要回到上级目录
+const AVATAR_DIR = path.join(process.cwd(), '../Datebash/acators');
 
 // 确保头像目录存在
 const ensureAvatarDir = () => {
@@ -64,12 +65,15 @@ export default {
     const { filename } = req.params;
 
     console.log(`Mock: 请求头像文件 ${filename}`);
+    console.log(`Mock: 当前工作目录 ${process.cwd()}`);
+    console.log(`Mock: 头像目录路径 ${AVATAR_DIR}`);
 
     // 确保头像目录存在
     ensureAvatarDir();
 
     // 构建文件路径
     const filePath = path.join(AVATAR_DIR, filename);
+    console.log(`Mock: 完整文件路径 ${filePath}`);
 
     try {
       // 检查文件是否存在

@@ -1,6 +1,6 @@
 // 请求 /api/system/info
 
-import { systemInfo } from '../datebash/system';
+import { systemInfo } from '../../../Datebash/system';
 
 // Mock 请求接口类型定义
 interface MockInfoRequest {

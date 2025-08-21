@@ -1,4 +1,4 @@
-import { mockUsers } from '../datebash/users';
+import { mockUsers } from '../../../Datebash/users';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';

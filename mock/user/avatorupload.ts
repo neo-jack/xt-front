@@ -2,8 +2,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { mockUsers } from '../datebash/users';
-import { mockHeadshots, HeadshotInfo } from '../datebash/acators';
+import { mockUsers } from '../../../Datebash/users';
+import { mockHeadshots, HeadshotInfo } from '../../../Datebash/acators';
 import { parseTokenUserId } from '../utils/tokenid';
 
 // Mock 头像上传请求接口类型定义
@@ -33,8 +33,8 @@ interface MockAvatarUploadResponse {
     msg: string;
 }
 
-// 头像文件存储目录
-const AVATAR_DIR = path.join(process.cwd(), 'mock/datebash/acators');
+// 头像文件存储目录（如果服务在Front目录运行，需要回到上级目录）
+const AVATAR_DIR = path.join(process.cwd(), '../Datebash/acators');
 
 // 确保头像目录存在
 const ensureAvatarDir = () => {
@@ -85,7 +85,7 @@ const updateAvatarList = (fileName: string, userId: string): void => {
         console.log(`Mock: 已将新头像添加到列表 - ID: ${newId}, 文件名: ${fileName}`);
         
         // 可选：将更新的列表写入文件（如果需要持久化）
-        const indexFilePath = path.join(process.cwd(), 'mock/datebash/acators/index.ts');
+        const indexFilePath = path.join(process.cwd(), '../Datebash/acators/index.ts');
         const updatedContent = `// 头像信息接口
 export interface HeadshotInfo {
     name: string;
@@ -115,7 +115,7 @@ const updateUserList = (userId: string, avatarUrl: string): void => {
             console.log(`Mock: 已更新用户 ${userId} 的头像为 ${avatarUrl}`);
             
             // 将更新的用户数据写入文件
-            const userFilePath = path.join(process.cwd(), 'mock/datebash/users/index.ts');
+            const userFilePath = path.join(process.cwd(), '../Datebash/users/index.ts');
             const updatedUserContent = `// 用户数据定义
 export interface MockUser {
   USER_ID: number;
