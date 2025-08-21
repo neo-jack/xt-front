@@ -1,10 +1,12 @@
 import ModuleCard from '@/components/Card';
 import { getFavoriteList, type FavoriteItem } from '@/services/favorite/get';
 import { removeFavorite } from '@/services/favorite/remove';
+import { sortFavorite } from '@/services/favorite/sorts';
 import type { SubModule } from '@/constants/workboard';
-import { StarOutlined } from '@ant-design/icons';
-import { Card, Empty, message, Spin } from 'antd';
+import { StarOutlined, SortAscendingOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { Card, Empty, message, Spin, Button, Space } from 'antd';
 import { FC, useEffect, useState } from 'react';
+import './index.less';
 
 /**
  * 将FavoriteItem转换为SubModule格式
@@ -36,6 +38,11 @@ const WorkBoard: FC = () => {
   const [favoriteModules, setFavoriteModules] = useState<SubModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 排序模式状态
+  const [sortMode, setSortMode] = useState(false);
+  const [sortSaving, setSortSaving] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   /**
    * 获取收藏模块列表
@@ -90,6 +97,109 @@ const WorkBoard: FC = () => {
       console.error('[WorkBoard] 取消收藏错误:', error);
       message.error('取消收藏时发生错误，请稍后重试');
     }
+  };
+
+  /**
+   * 开启排序模式
+   */
+  const handleStartSort = () => {
+    setSortMode(true);
+    message.info('已开启排序模式，拖拽卡片进行排序');
+  };
+
+  /**
+   * 取消排序模式
+   */
+  const handleCancelSort = () => {
+    setSortMode(false);
+    // 重新获取数据，恢复原始顺序
+    fetchFavoriteModules();
+  };
+
+  /**
+   * 保存排序
+   */
+  const handleSaveSort = async () => {
+    try {
+      setSortSaving(true);
+      const moduleIds = favoriteModules.map(module => module.id);
+      console.log('[WorkBoard] 保存排序:', moduleIds);
+      
+      const result = await sortFavorite({ sortOrder: moduleIds });
+      
+      if (result.success) {
+        message.success(result.message || '排序保存成功');
+        setSortMode(false);
+      } else {
+        message.error(result.message || '保存排序失败');
+      }
+    } catch (error) {
+      console.error('[WorkBoard] 保存排序错误:', error);
+      message.error('保存排序时发生错误，请稍后重试');
+    } finally {
+      setSortSaving(false);
+    }
+  };
+
+  /**
+   * 处理拖拽开始
+   */
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', index.toString());
+  };
+
+  /**
+   * 处理拖拽结束
+   */
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  /**
+   * 处理拖拽悬停
+   */
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  /**
+   * 处理拖拽进入
+   */
+  const handleDragEnter = (index: number) => {
+    setDragOverIndex(index);
+  };
+
+  /**
+   * 处理拖拽离开
+   */
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  /**
+   * 处理拖拽放置
+   */
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      return;
+    }
+
+    const newModules = [...favoriteModules];
+    const draggedModule = newModules[draggedIndex];
+    
+    // 移除拖拽的元素
+    newModules.splice(draggedIndex, 1);
+    // 在新位置插入
+    newModules.splice(dropIndex, 0, draggedModule);
+    
+    setFavoriteModules(newModules);
+    setDraggedIndex(null);
   };
 
   // 页面加载时获取收藏列表
@@ -148,16 +258,39 @@ const WorkBoard: FC = () => {
 
     // 模块列表
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-        {favoriteModules.map((module) => (
-          <ModuleCard
-            key={module.id}
-            module={module}
-            showFavorite={false}
-            showRemove={true}
-            onRemove={() => handleRemoveFavorite(module)}
-          />
-        ))}
+      <div className={sortMode && draggedIndex !== null ? 'dragging-active' : ''}>
+        {sortMode && (
+          <div className="sort-tip">
+            <span className="tip-icon">💡</span>
+            拖拽模式已开启：按住卡片拖动到目标位置进行排序，完成后点击"保存"按钮
+          </div>
+        )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+          {favoriteModules.map((module, index) => (
+            <div
+              key={module.id}
+              className={`draggable-card ${sortMode ? 'sort-mode' : ''} ${
+                sortMode && draggedIndex === index ? 'dragging' : ''
+              } ${sortMode && dragOverIndex === index ? 'drag-over' : ''}`}
+              draggable={sortMode}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDragEnter={() => handleDragEnter(index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+            >
+              <ModuleCard
+                key={module.id}
+                module={module}
+                showFavorite={false}
+                showRemove={!sortMode}
+                onRemove={() => handleRemoveFavorite(module)}
+                className="module-card"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
@@ -174,13 +307,49 @@ const WorkBoard: FC = () => {
       <Card
         variant="borderless"
         title={
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <StarOutlined style={{ marginRight: 8, color: '#faad14' }} />
-            常用模块
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <StarOutlined style={{ marginRight: 8, color: '#faad14' }} />
+              常用模块
+              {!loading && favoriteModules.length > 0 && (
+                <span style={{ color: '#999', fontSize: '14px', marginLeft: 8 }}>
+                  ({favoriteModules.length}个模块)
+                </span>
+              )}
+            </div>
             {!loading && favoriteModules.length > 0 && (
-              <span style={{ color: '#999', fontSize: '14px', marginLeft: 8 }}>
-                ({favoriteModules.length}个模块)
-              </span>
+              <div>
+                {!sortMode ? (
+                  <Button
+                    type="text"
+                    icon={<SortAscendingOutlined />}
+                    onClick={handleStartSort}
+                    size="small"
+                  >
+                    排序
+                  </Button>
+                ) : (
+                  <Space size="small" className="sort-buttons">
+                    <Button
+                      type="primary"
+                      icon={<SaveOutlined />}
+                      onClick={handleSaveSort}
+                      loading={sortSaving}
+                      size="small"
+                      className="save-btn"
+                    >
+                      保存
+                    </Button>
+                    <Button
+                      icon={<CloseOutlined />}
+                      onClick={handleCancelSort}
+                      size="small"
+                    >
+                      取消
+                    </Button>
+                  </Space>
+                )}
+              </div>
             )}
           </div>
         }

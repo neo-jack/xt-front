@@ -9,9 +9,9 @@ import type { FavoriteItem } from '../datebash/favorite/index';
 // MOCK_CONFIG 配置
 const SORT_FAVORITE_MOCK_CONFIG = {
     net: false,              // 启用网络模拟
-    delay: 800,              // 延迟时间(ms)
-    errorRate: 0.03,         // 3%错误率
-    timeoutRate: 0.01,       // 1%超时率
+    delay: 500,              // 延迟时间(ms)
+    errorRate: 0,            // 0%错误率 - 调试期间禁用随机错误
+    timeoutRate: 0,          // 0%超时率 - 调试期间禁用随机超时
 };
 
 // Mock 收藏排序请求定义
@@ -211,7 +211,7 @@ export const handleSortFavorite = async (request: MockSortFavoriteRequest): Prom
  * @param userId 用户ID
  * @returns 当前收藏模块的排序数组
  */
-export const getCurrentFavoriteOrder = (userId: number): string[] => {
+const getCurrentFavoriteOrder = (userId: number): string[] => {
     const userFavoriteList = getUserFavorites(userId);
     return userFavoriteList
         .sort((a, b) => (a.sort || 0) - (b.sort || 0))
@@ -223,7 +223,7 @@ export const getCurrentFavoriteOrder = (userId: number): string[] => {
  * @param userId 用户ID
  * @returns 是否重置成功
  */
-export const resetFavoriteOrder = (userId: number): boolean => {
+const resetFavoriteOrder = (userId: number): boolean => {
     const userFavoriteData = userFavorites.find(user => user.userId === userId);
     
     if (!userFavoriteData) {
@@ -239,9 +239,35 @@ export const resetFavoriteOrder = (userId: number): boolean => {
     return true;
 };
 
-// 导出配置和类型
-export { SORT_FAVORITE_MOCK_CONFIG };
-export type { MockSortFavoriteRequest, MockSortFavoriteResponse };
+// UMI.js Mock API 导出
+export default {
+    'POST /api/favorite/sort': (req: any, res: any) => {
+        console.log('[sortFavorite] 收到排序请求');
+        console.log('[sortFavorite] 请求体:', req.body);
+        console.log('[sortFavorite] 请求头:', req.headers);
 
+        // 构造请求对象
+        const request: MockSortFavoriteRequest = {
+            body: req.body, // 直接使用请求体作为排序数组
+            headers: req.headers
+        };
 
+        // 调用处理函数
+        handleSortFavorite(request)
+            .then(response => {
+                console.log('[sortFavorite] 处理完成，返回响应:', response);
+                res.json(response);
+            })
+            .catch(error => {
+                console.error('[sortFavorite] 处理请求时发生错误:', error);
+                res.json({
+                    code: 500,
+                    data: null,
+                    msg: '服务器内部错误'
+                });
+            });
+    }
+};
 
+// 导出辅助函数供其他模块使用
+export { getCurrentFavoriteOrder, resetFavoriteOrder };

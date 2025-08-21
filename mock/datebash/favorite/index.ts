@@ -27,13 +27,76 @@ export const userFavorites: UserFavoriteData[] = [
     "userId": 1,
     "favorites": [
       {
+        "id": "H59",
+        "name": "会议管理1",
+        "description": "实验室会议管理系统1",
+        "icon": "TeamOutlined",
+        "port": 3423,
+        "url": "http://localhost:3423",
+        "sort": 1
+      },
+      {
+        "id": "H56",
+        "name": "检查管理",
+        "description": "实验室检查管理系统",
+        "icon": "AuditOutlined",
+        "port": 3420,
+        "url": "http://localhost:3420",
+        "sort": 2
+      },
+      {
+        "id": "H54",
+        "name": "供应商管理",
+        "description": "实验室供应商管理系统",
+        "icon": "ShopOutlined",
+        "port": 3418,
+        "url": "http://localhost:3418",
+        "sort": 3
+      },
+      {
+        "id": "H53",
+        "name": "文档管理",
+        "description": "实验室文档管理系统",
+        "icon": "FileOutlined",
+        "port": 3417,
+        "url": "http://localhost:3417",
+        "sort": 4
+      },
+      {
+        "id": "H49",
+        "name": "不良事件管理",
+        "description": "实验室不良事件管理",
+        "icon": "ExclamationCircleOutlined",
+        "port": 3413,
+        "url": "http://localhost:3413",
+        "sort": 5
+      },
+      {
+        "id": "H40",
+        "name": "考试管理1",
+        "description": "人员考试管理系统1",
+        "icon": "FileTextOutlined",
+        "port": 3404,
+        "url": "http://localhost:3404",
+        "sort": 6
+      },
+      {
+        "id": "H38",
+        "name": "设备管理",
+        "description": "实验室设备管理系统",
+        "icon": "ToolOutlined",
+        "port": 3402,
+        "url": "http://localhost:3402",
+        "sort": 7
+      },
+      {
         "id": "H14",
         "name": "微生物检验工作站",
         "description": "微生物检验工作站",
         "icon": "BugOutlined",
         "port": 3014,
         "url": "http://localhost:3014",
-        "sort": 1
+        "sort": 8
       },
       {
         "id": "H12",
@@ -42,7 +105,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "DatabaseOutlined",
         "port": 3012,
         "url": "http://localhost:3012",
-        "sort": 2
+        "sort": 9
       },
       {
         "id": "H37",
@@ -51,7 +114,7 @@ export const userFavorites: UserFavoriteData[] = [
         "icon": "UserOutlined",
         "port": 3401,
         "url": "http://localhost:3401",
-        "sort": 3
+        "sort": 10
       }
     ]
   },
