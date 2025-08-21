@@ -50,7 +50,7 @@ const getIconTheme = (iconName: string) => {
  * 3. 支持启动功能（可选）
  * 4. 支持动态图标渲染和主题色彩
  * 5. 支持自定义样式和类名
- * 6. 显示模块描述信息
+ * 6. 简洁的卡片设计，突出图标和名称
  */
 const ModuleCard: React.FC<ModuleCardProps> = ({
   module,
@@ -144,7 +144,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       onClick={handleClick}
       style={{
         width: 200,
-        height: 180,
+        height: 160,
         borderRadius: '12px',
         border: 'none',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -233,30 +233,30 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       {/* 模块图标 */}
       <div
         style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '12px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '16px',
           background: iconTheme.gradient,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '12px',
+          marginBottom: '16px',
           boxShadow: iconTheme.shadow,
           alignSelf: 'center',
         }}
       >
-        {getIcon()}
+        {getIconComponent(module.icon || 'AppstoreOutlined', { fontSize: 28, color: '#fff' })}
       </div>
 
       {/* 模块信息 */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
         <h3
           style={{
-            fontSize: '14px',
+            fontSize: '16px',
             fontWeight: '600',
-            margin: '0 0 4px 0',
+            margin: '0',
             color: '#333',
-            lineHeight: '1.4',
+            lineHeight: '1.5',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -264,23 +264,6 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         >
           {module.name}
         </h3>
-        {module.description && (
-          <p
-            style={{
-              fontSize: '12px',
-              color: '#666',
-              margin: '0',
-              lineHeight: '1.3',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-            }}
-          >
-            {module.description}
-          </p>
-        )}
       </div>
     </Card>
   );
