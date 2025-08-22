@@ -17,6 +17,7 @@ const PageTitle: FC = () => {
     'department-notice': '科室通知',
     workflow: '事务流程',
     ai: '杏和智答',
+    'quick-qc': '智能质控',
     'not-xt-page': '功能开发中',
   };
 

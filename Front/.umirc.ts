@@ -100,6 +100,13 @@ export default defineConfig({
           path: '/xt/not-xt-page',
           component: './AI',
         },
+        {
+          name: '智能质控',
+          path: '/xt/quick-qc',
+          component: './QuickQC',
+        },
+        
+        
       ],
     },
     // 帮我增加404 页面
