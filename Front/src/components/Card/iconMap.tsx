@@ -22,8 +22,10 @@ import {
   HistoryOutlined,
   InboxOutlined,
   MedicineBoxOutlined,
+  MessageOutlined,
   MobileOutlined,
   MonitorOutlined,
+  NotificationOutlined,
   RadarChartOutlined,
   RobotOutlined,
   SafetyCertificateOutlined,
@@ -34,6 +36,7 @@ import {
   TeamOutlined,
   ToolOutlined,
   UserOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons';
 import React from 'react';
 
@@ -165,6 +168,46 @@ export const ICON_COLOR_MAP: Record<string, string> = {
   TeamOutlined: 'blue', // 会议管理
   CrownOutlined: 'gold', // 专家评估
 
+  // 新增的菜单图标
+  MessageOutlined: 'blue', // 即时通讯
+  NotificationOutlined: 'orange', // 科室通知
+  ApartmentOutlined: 'purple', // 事务流程
+
+  // 自定义图标 (使用默认颜色主题)
+  'icon-zidongzhikong1': 'cyan', // 智能质控
+  'icon-tixiwendang': 'blue', // 体系文件
+  'icon-feitixiwendang': 'orange', // 非体系文件
+  'icon-ziliaoku11': 'green', // 资料库
+  'icon-fengxianshijiandengji': 'red', // 风险事件登记
+  'icon-renshi1': 'blue', // 人事档案
+  'icon-renyuanpinggu': 'purple', // 人员评估
+  'icon-paiban': 'cyan', // 智能排班
+  'icon-a-wodeziliao3': 'lightBlue', // 我的资料
+  'icon-kaoshiguanli1': 'orange', // 考试管理
+  'icon-liaotian': 'pink', // 智能工作台
+
+  // 子菜单图标
+  'icon-jilubiaoge': 'lightBlue', // 记录表格
+  'icon-zuoyezhidaoshu': 'green', // 作业指导书
+  'icon-chengxuwenjian': 'purple', // 程序文件
+  'icon-zhiliangmubiao': 'gold', // 质量目标
+  'icon-zhiliangshouce': 'blue', // 质量手册
+  'icon-shengan': 'orange', // 生安管理
+  'icon-xitongyonghushouce': 'lightBlue', // 系统用户手册
+  'icon-anquanshouce': 'red', // 安全手册
+  'icon-jianyicaozuoka': 'green', // 简易操作卡
+  'icon-wenzhangwenxian': 'purple', // 文章文献
+  'icon-peixunziliao': 'cyan', // 培训资料
+  'icon-yuangongziping': 'blue', // 员工自评
+  'icon-zhuanjiakaoping': 'gold', // 专家考评
+  'icon-wodedangwen': 'lightBlue', // 我的文档
+  'icon-zuijindangwen': 'green', // 最近文档
+  'icon-wodeshoucang': 'yellow', // 我的收藏
+  'icon-huishouzhan': 'red', // 回收站
+  'icon-kaoshiguanli': 'orange', // 考试管理
+  'icon-pingjuanguanli': 'blue', // 评卷管理
+  'icon-cuotiguanli': 'red', // 错题管理
+
   // 默认颜色
   default: 'purple',
 };
@@ -240,6 +283,46 @@ export const getIconComponent = (
     InboxOutlined: <InboxOutlined style={iconStyle} />,
     TeamOutlined: <TeamOutlined style={iconStyle} />,
     CrownOutlined: <CrownOutlined style={iconStyle} />,
+
+    // 新增的菜单图标
+    MessageOutlined: <MessageOutlined style={iconStyle} />,
+    NotificationOutlined: <NotificationOutlined style={iconStyle} />,
+    ApartmentOutlined: <ApartmentOutlined style={iconStyle} />,
+
+    // 自定义图标 (使用占位符图标，后续可替换为实际图标组件)
+    'icon-zidongzhikong1': <AppstoreOutlined style={iconStyle} />, // 智能质控
+    'icon-tixiwendang': <FileTextOutlined style={iconStyle} />, // 体系文件
+    'icon-feitixiwendang': <FileOutlined style={iconStyle} />, // 非体系文件
+    'icon-ziliaoku11': <BookOutlined style={iconStyle} />, // 资料库
+    'icon-fengxianshijiandengji': <ExclamationCircleOutlined style={iconStyle} />, // 风险事件登记
+    'icon-renshi1': <UserOutlined style={iconStyle} />, // 人事档案
+    'icon-renyuanpinggu': <TeamOutlined style={iconStyle} />, // 人员评估
+    'icon-paiban': <CalendarOutlined style={iconStyle} />, // 智能排班
+    'icon-a-wodeziliao3': <InboxOutlined style={iconStyle} />, // 我的资料
+    'icon-kaoshiguanli1': <FileTextOutlined style={iconStyle} />, // 考试管理
+    'icon-liaotian': <MessageOutlined style={iconStyle} />, // 智能工作台
+
+    // 子菜单图标
+    'icon-jilubiaoge': <FileTextOutlined style={iconStyle} />, // 记录表格
+    'icon-zuoyezhidaoshu': <BookOutlined style={iconStyle} />, // 作业指导书
+    'icon-chengxuwenjian': <FileOutlined style={iconStyle} />, // 程序文件
+    'icon-zhiliangmubiao': <CrownOutlined style={iconStyle} />, // 质量目标
+    'icon-zhiliangshouce': <FileTextOutlined style={iconStyle} />, // 质量手册
+    'icon-shengan': <SafetyOutlined style={iconStyle} />, // 生安管理
+    'icon-xitongyonghushouce': <BookOutlined style={iconStyle} />, // 系统用户手册
+    'icon-anquanshouce': <SafetyCertificateOutlined style={iconStyle} />, // 安全手册
+    'icon-jianyicaozuoka': <FileTextOutlined style={iconStyle} />, // 简易操作卡
+    'icon-wenzhangwenxian': <BookOutlined style={iconStyle} />, // 文章文献
+    'icon-peixunziliao': <BookOutlined style={iconStyle} />, // 培训资料
+    'icon-yuangongziping': <UserOutlined style={iconStyle} />, // 员工自评
+    'icon-zhuanjiakaoping': <CrownOutlined style={iconStyle} />, // 专家考评
+    'icon-wodedangwen': <FileOutlined style={iconStyle} />, // 我的文档
+    'icon-zuijindangwen': <HistoryOutlined style={iconStyle} />, // 最近文档
+    'icon-wodeshoucang': <InboxOutlined style={iconStyle} />, // 我的收藏
+    'icon-huishouzhan': <ExclamationCircleOutlined style={iconStyle} />, // 回收站
+    'icon-kaoshiguanli': <FileTextOutlined style={iconStyle} />, // 考试管理
+    'icon-pingjuanguanli': <EditOutlined style={iconStyle} />, // 评卷管理
+    'icon-cuotiguanli': <ExclamationCircleOutlined style={iconStyle} />, // 错题管理
   };
 
   return iconMap[iconName] || <AppstoreOutlined style={iconStyle} />;
@@ -307,5 +390,45 @@ export const getAvailableIconNames = (): string[] => {
     'InboxOutlined',
     'TeamOutlined',
     'CrownOutlined',
+
+    // 新增的菜单图标
+    'MessageOutlined',
+    'NotificationOutlined',
+    'ApartmentOutlined',
+
+    // 自定义图标
+    'icon-zidongzhikong1',
+    'icon-tixiwendang',
+    'icon-feitixiwendang',
+    'icon-ziliaoku11',
+    'icon-fengxianshijiandengji',
+    'icon-renshi1',
+    'icon-renyuanpinggu',
+    'icon-paiban',
+    'icon-a-wodeziliao3',
+    'icon-kaoshiguanli1',
+    'icon-liaotian',
+
+    // 子菜单图标
+    'icon-jilubiaoge',
+    'icon-zuoyezhidaoshu',
+    'icon-chengxuwenjian',
+    'icon-zhiliangmubiao',
+    'icon-zhiliangshouce',
+    'icon-shengan',
+    'icon-xitongyonghushouce',
+    'icon-anquanshouce',
+    'icon-jianyicaozuoka',
+    'icon-wenzhangwenxian',
+    'icon-peixunziliao',
+    'icon-yuangongziping',
+    'icon-zhuanjiakaoping',
+    'icon-wodedangwen',
+    'icon-zuijindangwen',
+    'icon-wodeshoucang',
+    'icon-huishouzhan',
+    'icon-kaoshiguanli',
+    'icon-pingjuanguanli',
+    'icon-cuotiguanli',
   ];
 };
