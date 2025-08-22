@@ -6,6 +6,7 @@ export * from './user/logout';
 export * from './user/refresh';
 export * from './user/getheadshotlist';
 export * from './user/avatorupload';
+export * from './user/getmues';
 
 // 密码相关服务（解决isMD5Format重复导出问题）
 export { setPassword, hashPassword } from './user/setpassword';
@@ -28,4 +29,5 @@ export { logout } from './user/logout';
 export { refreshToken } from './user/refresh';
 export { getSystemInfo } from './system/info';
 export { uploadAvatar } from './user/avatorupload';
+export { getMenus } from './user/getmues';
 
