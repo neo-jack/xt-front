@@ -13,6 +13,8 @@ interface AntdMenuItem {
   label: string;
   icon?: React.ReactNode;
   children?: AntdMenuItem[];
+  url?: string | null; // 菜单项的URL
+  menuNo?: string; // 菜单编号
 }
 
 const SideBar: FC = () => {
@@ -31,9 +33,12 @@ const SideBar: FC = () => {
   const convertApiMenuToAntdMenu = (apiMenuItems: ApiMenuItem[]): AntdMenuItem[] => {
     return apiMenuItems.map((item) => {
       const menuItem: AntdMenuItem = {
-        key: item.MENU_URL || item.MENU_NO,
+        key: item.MENU_NO, // 使用MENU_NO作为唯一标识符，避免重复
         label: item.MENU_NAME,
         icon: item.MENU_ICON ? getIconComponent(item.MENU_ICON, { fontSize: '16px', color: 'currentColor' }) : undefined,
+        // 添加原始数据用于后续查找
+        url: item.MENU_URL,
+        menuNo: item.MENU_NO,
       };
 
       // 递归处理子菜单
@@ -55,40 +60,82 @@ const SideBar: FC = () => {
     return [];
   }, [menuList, status]);
 
-  // 获取当前应该选中的菜单key
+  // 获取当前应该选中的菜单key（使用MENU_NO避免重复）
   const getSelectedKeys = (): string[] => {
     const currentPath = location.pathname;
     
-    // 首先尝试直接匹配路径
-    if (menuItems.some(item => item?.key === currentPath)) {
-      return [currentPath];
+    // 特殊处理：如果是 not-xt-page 页面，尝试从 localStorage 获取最后点击的菜单项
+    if (currentPath === '/xt/not-xt-page') {
+      const lastClickedMenuNo = localStorage.getItem('lastClickedMenuNo');
+      if (lastClickedMenuNo) {
+        return [lastClickedMenuNo];
+      }
     }
     
-    // 递归查找匹配的菜单项
-    const findMatchingKey = (items: AntdMenuItem[], path: string): string | null => {
+    // 递归查找匹配的菜单项，返回MENU_NO
+    const findMatchingMenuNo = (items: AntdMenuItem[], path: string): string | null => {
       for (const item of items) {
-        if (item?.key === path) {
-          return item.key as string;
+        // 检查菜单项的URL是否匹配当前路径
+        if (item?.url === path) {
+          return item.menuNo || null;
         }
         if (item?.children) {
-          const found = findMatchingKey(item.children, path);
+          const found = findMatchingMenuNo(item.children, path);
           if (found) return found;
         }
       }
       return null;
     };
     
-    const matchedKey = findMatchingKey(menuItems, currentPath);
-    return matchedKey ? [matchedKey] : [];
+    const matchedMenuNo = findMatchingMenuNo(menuItems, currentPath);
+    return matchedMenuNo ? [matchedMenuNo] : [];
   };
 
-  const handleMenuClick = ({ key }: { key: string }) => {
-    // 对于有效的菜单项，直接导航
-    if (key.startsWith('/')) {
-      navigate(key);
+  const handleMenuClick = (info: any) => {
+    const { key } = info;
+    
+    // 根据key查找对应的MENU_NO、菜单名称和URL
+    const findMenuInfo = (items: AntdMenuItem[], targetKey: string): { menuNo: string | null; menuName: string | null; url: string | null } => {
+      for (const item of items) {
+        if (item?.key === targetKey) {
+          return { 
+            menuNo: item.menuNo || null, 
+            menuName: item.label as string,
+            url: item.url || null
+          };
+        }
+        if (item?.children) {
+          const found = findMenuInfo(item.children, targetKey);
+          if (found.menuNo) return found;
+        }
+      }
+      return { menuNo: null, menuName: null, url: null };
+    };
+    
+    const { menuNo, menuName, url } = findMenuInfo(menuItems, key);
+    
+    // 检测是否为网页地址（包含 http:// 或 https://）
+    if (url && (url.includes('http://') || url.includes('https://'))) {
+      // 如果是网页地址，导航到 /xt/not-xt-page，并存储MENU_NO和菜单名称
+      if (menuNo) {
+        localStorage.setItem('lastClickedMenuNo', menuNo);
+      }
+      if (menuName) {
+        localStorage.setItem('lastClickedMenu', menuName);
+      }
+      navigate('/xt/not-xt-page');
+    } else if (url && url.startsWith('/')) {
+      // 对于有效的菜单项，直接导航，并存储MENU_NO和菜单名称
+      if (menuNo) {
+        localStorage.setItem('lastClickedMenuNo', menuNo);
+      }
+      if (menuName) {
+        localStorage.setItem('lastClickedMenu', menuName);
+      }
+      navigate(url);
     } else {
-      // 对于其他类型的key，可能需要特殊处理
-      console.warn('未识别的菜单项key:', key);
+      // 对于其他类型的URL，可能需要特殊处理
+      console.warn('未识别的菜单项URL:', url);
     }
   };
 
