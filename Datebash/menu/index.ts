@@ -1,5 +1,25 @@
 // 菜单数据库 - 模拟数据
-export const menuDatabase = [
+
+export interface MenuData {
+    USER_ID: number;
+    MENU_DATA: MenuItem[];
+}
+
+export interface MenuItem {
+    SYNERGY_ID: string | null;
+    MENU_NO: string;
+    SUB_MENU: MenuItem[];
+    MENU_NAME: string;
+    MENU_ICON: string | null;
+    MENU_URL: string | null;
+    SYS_MENU: string | null;
+    PARENT_CODE: string;
+    MENU_MODULE: string | null;
+    MENU_SORT: string | null;
+    BECALL_MODULE_ID: string | null;
+}
+
+export const menuDatabase: MenuData[] = [
     {
         "USER_ID": 1,
         "MENU_DATA": [
@@ -577,8 +597,13 @@ export const menuDatabase = [
      }
  ];
 
+// 用户菜单权限配置接口
+export interface UserMenuPermissions {
+    [userId: number]: string[];
+}
+
 // 用户菜单权限配置
-export const userMenuPermissions = {
+export const userMenuPermissions: UserMenuPermissions = {
     1: [ // 管理员 - 所有菜单
         "H5701", "H5705", "H5717", "H5704", "H5719", "H5720", "H5721", "H5722"
     ],
