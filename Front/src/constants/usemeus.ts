@@ -1,7 +1,7 @@
 // 菜单数据模型和操作
 import { useState, useCallback, useEffect } from 'react';
 import { getMenus } from '../services/user/getmues';
-import { MenuItem, MENU_STATUS } from '../constants/meus';
+import { MenuItem, MENU_STATUS } from './meus';
 
 /**
  * 菜单状态接口

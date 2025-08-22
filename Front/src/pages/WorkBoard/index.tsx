@@ -202,9 +202,29 @@ const WorkBoard: FC = () => {
     setDraggedIndex(null);
   };
 
-  // 页面加载时获取收藏列表
+  // 页面加载时获取收藏列表，但要确保 token 已经存在
   useEffect(() => {
-    fetchFavoriteModules();
+    let retryCount = 0;
+    const maxRetries = 10; // 最多重试10次
+    
+    const checkTokenAndFetchFavorites = () => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        console.log('[WorkBoard] Token 已存在，开始获取收藏列表');
+        fetchFavoriteModules();
+      } else if (retryCount < maxRetries) {
+        console.log(`[WorkBoard] Token 不存在，第${retryCount + 1}次重试...`);
+        retryCount++;
+        setTimeout(checkTokenAndFetchFavorites, 200); // 200ms后重试
+      } else {
+        console.log('[WorkBoard] 重试次数超限，停止获取收藏列表');
+        setError('未找到有效的访问令牌，请重新登录');
+        setLoading(false);
+      }
+    };
+
+    // 稍微延迟一下，给登录流程保存 token 的时间
+    setTimeout(checkTokenAndFetchFavorites, 100);
   }, []);
 
   /**

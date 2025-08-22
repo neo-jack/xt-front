@@ -2,6 +2,15 @@
 // tokenid解析器
 // 
 //-----------------------------------------------
+
+// Node.js 环境下的 atob/btoa polyfill
+const atob = (base64: string): string => {
+  return Buffer.from(base64, 'base64').toString('ascii');
+};
+
+const btoa = (str: string): string => {
+  return Buffer.from(str, 'ascii').toString('base64');
+};
 export const parseTokenUserId = (token: string): number | null => {
   console.log('[parseTokenUserId] 开始解析token');
   

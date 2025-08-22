@@ -1,5 +1,5 @@
 // 请求 post请求 /api/favorite/get
-import { parseTokenUserId } from '../utils/tokenid';
+import { parseTokenUserId, isValidTokenFormat, isTokenExpired } from '../utils/tokenid';
 import { userFavorites } from '../../../Datebash/favorite/index';
 import type { FavoriteItem } from '../../../Datebash/favorite/index';
 
@@ -98,9 +98,29 @@ export default {
                 if (!authorization) {
                     console.log('[getFavorite] 缺少授权token');
                     return res.json({
-                        code: -1,
+                        code: 401,
                         data: [],
-                        msg: '请提供授权token'
+                        msg: '缺少授权token'
+                    });
+                }
+                
+                // 验证token格式
+                if (!isValidTokenFormat(authorization)) {
+                    console.log('[getFavorite] token格式无效');
+                    return res.json({
+                        code: 401,
+                        data: [],
+                        msg: 'token格式无效'
+                    });
+                }
+                
+                // 检查token是否过期
+                if (isTokenExpired(authorization)) {
+                    console.log('[getFavorite] token已过期');
+                    return res.json({
+                        code: 401,
+                        data: [],
+                        msg: 'token已过期，请重新登录'
                     });
                 }
                 
@@ -109,9 +129,9 @@ export default {
                 if (!userId) {
                     console.log('[getFavorite] token解析失败，无法获取用户ID');
                     return res.json({
-                        code: -1,
+                        code: 401,
                         data: [],
-                        msg: 'token无效，请重新登录'
+                        msg: '无效的用户token'
                     });
                 }
                 

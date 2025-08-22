@@ -2,6 +2,13 @@
 import { menuDatabase, userMenuPermissions, MenuData, MenuItem } from '../../../Datebash/menu/index';
 import { parseTokenUserId, isValidTokenFormat, isTokenExpired } from '../utils/tokenid';
 
+console.log('[Mock Import] 菜单数据库导入状态:', {
+  menuDatabaseExists: !!menuDatabase,
+  menuDatabaseLength: menuDatabase?.length || 0,
+  userPermissionsExists: !!userMenuPermissions,
+  userPermissionsKeys: Object.keys(userMenuPermissions || {})
+});
+
 // MOCK_CONFIG 配置
 const GET_MENU_MOCK_CONFIG = {
     net: false,              // 启用网络模拟
@@ -123,6 +130,39 @@ export const mockGetMenu = async (request: MockGetMenuRequest): Promise<MockGetM
     }
 };
 
-
-
-
+// Umi Mock 导出
+export default {
+  'POST /api/user/getmues': async (req: any, res: any) => {
+    console.log('[Mock] 接收到获取菜单请求');
+    console.log('[Mock] 请求头:', JSON.stringify(req.headers, null, 2));
+    
+    try {
+      const mockRequest: MockGetMenuRequest = {
+        headers: {
+          authorization: req.headers.authorization
+        }
+      };
+      
+      console.log('[Mock] 准备调用 mockGetMenu，authorization:', req.headers.authorization ? 'exists' : 'missing');
+      
+      const response = await mockGetMenu(mockRequest);
+      
+      console.log('[Mock] 返回菜单响应:', {
+        code: response.code,
+        dataLength: response.data.length,
+        msg: response.msg
+      });
+      
+      res.json(response);
+    } catch (error) {
+      console.error('[Mock] 获取菜单时发生错误:', error);
+      console.error('[Mock] 错误详情:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('[Mock] 错误堆栈:', error instanceof Error ? error.stack : 'No stack');
+      res.json({
+        code: 500,
+        data: [],
+        msg: '服务器内部错误: ' + (error instanceof Error ? error.message : 'Unknown error')
+      });
+    }
+  }
+};
