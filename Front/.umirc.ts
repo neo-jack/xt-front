@@ -80,6 +80,12 @@ export default defineConfig({
           path: '/xt/quick-qc',
           component: './QuickQC',
         },
+        //风险事件登记
+        {
+          path: '/xt/risk-even-registration',
+          component: './RiskEventRegistration',
+        },
+        
       ],
     },
     // 帮我增加404 页面

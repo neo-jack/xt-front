@@ -18,6 +18,8 @@ const PageTitle: FC = () => {
     workflow: '事务流程',
     ai: '杏和智答',
     'quick-qc': '智能质控',
+    'risk-item-management': '风险项管理',
+    'risk-even-registration': '风险事件登记',
     'not-xt-page': '功能开发中',
   };
 
