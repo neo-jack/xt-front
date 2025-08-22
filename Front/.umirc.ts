@@ -50,63 +50,36 @@ export default defineConfig({
           path: '/xt',
           redirect: '/xt/workboard',
         },
+        //工作看板
         {
-          name: '工作看板',
           path: '/xt/workboard',
           component: './WorkBoard',
         },
+        // 工作中台
         {
-          name: '工作中台',
           path: '/xt/workcenter',
           component: './WorkCenter',
         },
+        //显示其他页面
         {
-          name: '快速工作入口',
-          path: '/xt/quickwork',
-          component: './QuickWork',
+          path: '/xt/not-xt-page',
+          component: './Notxtpage',
         },
+        // 即时通讯
         {
-          name: '快速工作子功能1',
-          path: '/xt/quickwork/sub1',
-          component: './QuickWork/Sub1',
-        },
-        {
-          name: '快速工作子功能2',
-          path: '/xt/quickwork/sub2',
-          component: './QuickWork/Sub2',
-        },
-        {
-          name: '聊天',
           path: '/xt/im',
           component: './Chat',
         },
+        // 科室通知
         {
-          name: '需求直报',
-          path: '/xt/not-xt-page',
-          component: './Report',
-        },
-        {
-          name: '科室通知',
           path: '/xt/department-notice',
           component: './Notice',
         },
+        // 智能质控
         {
-          name: '事务流程',
-          path: '/xt/not-xt-page',
-          component: './Workflow',
-        },
-        {
-          name: '杏和智答',
-          path: '/xt/not-xt-page',
-          component: './AI',
-        },
-        {
-          name: '智能质控',
           path: '/xt/quick-qc',
           component: './QuickQC',
         },
-        
-        
       ],
     },
     // 帮我增加404 页面
