@@ -4,7 +4,7 @@ import { WORK_CENTER_MENUS } from '../../../Datebash/modulelist/index';
 //MOCK_CONFIG 配置
 const GETCLASS_MOCK_CONFIG = {
     net: false,              // 启用网络模拟
-    delay: 1000,            // 延迟时间(ms)
+    delay: 0,                // 无延迟
     errorRate: 0.05,        // 5%错误率
     timeoutRate: 0.02,      // 2%超时率
 };

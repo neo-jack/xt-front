@@ -91,13 +91,13 @@ const updateUserFavoritesSort = (userId: number, newOrder: string[]): boolean =>
  */
 export const handleSortFavorite = async (request: MockSortFavoriteRequest): Promise<MockSortFavoriteResponse> => {
     try {
-        // 模拟网络延迟
-        if (SORT_FAVORITE_MOCK_CONFIG.delay > 0) {
+        // 模拟网络延迟（仅在启用网络模拟时）
+        if (SORT_FAVORITE_MOCK_CONFIG.net && SORT_FAVORITE_MOCK_CONFIG.delay > 0) {
             await new Promise(resolve => setTimeout(resolve, SORT_FAVORITE_MOCK_CONFIG.delay));
         }
 
-        // 模拟错误
-        if (Math.random() < SORT_FAVORITE_MOCK_CONFIG.errorRate) {
+        // 模拟错误（仅在启用网络模拟时）
+        if (SORT_FAVORITE_MOCK_CONFIG.net && Math.random() < SORT_FAVORITE_MOCK_CONFIG.errorRate) {
             return {
                 code: 500,
                 data: null,
@@ -105,8 +105,8 @@ export const handleSortFavorite = async (request: MockSortFavoriteRequest): Prom
             };
         }
 
-        // 模拟超时
-        if (Math.random() < SORT_FAVORITE_MOCK_CONFIG.timeoutRate) {
+        // 模拟超时（仅在启用网络模拟时）
+        if (SORT_FAVORITE_MOCK_CONFIG.net && Math.random() < SORT_FAVORITE_MOCK_CONFIG.timeoutRate) {
             throw new Error("请求超时");
         }
 

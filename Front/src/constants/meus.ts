@@ -17,6 +17,23 @@ export interface MenuItem {
   BECALL_MODULE_ID: string | null;
 }
 
+export const MENU: MenuItem[] = [
+  {
+    SYNERGY_ID: null,
+    MENU_NO: "example",
+    SUB_MENU: [],
+    MENU_NAME: "Example Menu",
+    MENU_ICON: null,
+    MENU_URL: null,
+    SYS_MENU: null,
+    PARENT_CODE: "0",
+    MENU_MODULE: null,
+    MENU_SORT: null,
+    BECALL_MODULE_ID: null,
+  }
+];
+
+
 /**
  * 菜单状态常量
  */
@@ -39,3 +56,4 @@ export const MENU_TYPES = {
   SUB: 'sub',        // 子菜单
   LEAF: 'leaf',      // 叶子菜单
 };
+

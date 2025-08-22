@@ -52,14 +52,14 @@ export const mockGetMenu = async (request: MockGetMenuRequest): Promise<MockGetM
         await new Promise(resolve => setTimeout(resolve, GET_MENU_MOCK_CONFIG.delay));
     }
     
-    // 模拟网络错误
-    if (Math.random() < GET_MENU_MOCK_CONFIG.errorRate) {
+    // 模拟网络错误（仅在启用网络模拟时）
+    if (GET_MENU_MOCK_CONFIG.net && Math.random() < GET_MENU_MOCK_CONFIG.errorRate) {
         console.log('[mockGetMenu] 模拟网络错误');
         throw new Error('网络连接失败');
     }
     
-    // 模拟超时
-    if (Math.random() < GET_MENU_MOCK_CONFIG.timeoutRate) {
+    // 模拟超时（仅在启用网络模拟时）
+    if (GET_MENU_MOCK_CONFIG.net && Math.random() < GET_MENU_MOCK_CONFIG.timeoutRate) {
         console.log('[mockGetMenu] 模拟网络超时');
         throw new Error('请求超时');
     }
