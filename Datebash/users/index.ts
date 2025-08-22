@@ -15,7 +15,7 @@ export const mockUsers: MockUser[] = [
   {
     USER_ID: 1,
     USER_NAME: "李银",
-    USER_AVATAR: "/datebash/acators/user_1_1755759755435_a8pxm9.png",
+    USER_AVATAR: "/datebash/acators/user_1_1755766697981_emmmw.png",
     USER_ROLE: "root",
     HOSPITAL_CNAME: "001省医院",
     HOSPITAL_ID: 1,

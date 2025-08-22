@@ -12,17 +12,40 @@ const PageTitle: FC = () => {
     workboard: '工作看板',
     workcenter: '工作中台',
     quickwork: '快速工作入口',
-    chat: '聊天',
+    im: '聊天',
     report: '需求直报',
-    notice: '科室通知',
+    'department-notice': '科室通知',
     workflow: '事务流程',
     ai: '杏和智答',
+    'not-xt-page': '功能开发中',
   };
+
+  // 根据localStorage中记录的最后点击菜单来确定not-xt-page的实际标题
+  function getNotXtPageTitle(): string {
+    const lastClickedMenu = localStorage.getItem('lastClickedMenu');
+    const menuTitleMap: Record<string, string> = {
+      'report': '需求直报',
+      'workflow': '事务流程',
+      'ai': '杏和智答',
+    };
+    
+    if (lastClickedMenu && menuTitleMap[lastClickedMenu]) {
+      return menuTitleMap[lastClickedMenu];
+    }
+    
+    return '需求直报'; // 默认标题
+  }
 
   // 获取最后一级路径对应的标题
   const getPageTitle = () => {
     if (pathSnippets.length === 0) {
       return '首页';
+    }
+
+    // 检查是否是not-xt-page路径
+    const fullPath = location.pathname;
+    if (fullPath === '/xt/not-xt-page') {
+      return getNotXtPageTitle();
     }
 
     // 获取最后一个路径片段（跳过 'xt' 前缀）

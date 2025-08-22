@@ -77,27 +77,27 @@ export default defineConfig({
         },
         {
           name: '聊天',
-          path: '/xt/chat',
+          path: '/xt/im',
           component: './Chat',
         },
         {
           name: '需求直报',
-          path: '/xt/report',
+          path: '/xt/not-xt-page',
           component: './Report',
         },
         {
           name: '科室通知',
-          path: '/xt/notice',
+          path: '/xt/department-notice',
           component: './Notice',
         },
         {
           name: '事务流程',
-          path: '/xt/workflow',
+          path: '/xt/not-xt-page',
           component: './Workflow',
         },
         {
           name: '杏和智答',
-          path: '/xt/ai',
+          path: '/xt/not-xt-page',
           component: './AI',
         },
       ],
