@@ -1,34 +1,378 @@
-.loginContainer {
+.medicalLoginContainer {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+  position: relative;
+}
+.medicalLoginContainer .leftPanel {
+  flex: 1;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.medicalLoginContainer .leftPanel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+  opacity: 0.3;
+}
+.medicalLoginContainer .leftPanel .brandSection {
+  text-align: center;
+  color: white;
+  max-width: 500px;
+  position: relative;
+  z-index: 2;
+}
+.medicalLoginContainer .leftPanel .brandSection .logoArea {
+  margin-bottom: 60px;
+}
+.medicalLoginContainer .leftPanel .brandSection .logoArea .logoIcon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.medicalLoginContainer .leftPanel .brandSection .logoArea .logoIcon .medicineIcon {
+  font-size: 40px;
+  color: white;
+}
+.medicalLoginContainer .leftPanel .brandSection .logoArea .brandTitle {
+  color: white !important;
+  margin-bottom: 16px !important;
+  font-weight: 700 !important;
+  font-size: 36px !important;
+  letter-spacing: -0.5px;
+}
+.medicalLoginContainer .leftPanel .brandSection .logoArea .brandSubtitle {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 18px !important;
+  font-weight: 400;
+  opacity: 0.9;
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 60px;
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureIcon {
+  font-size: 24px;
+  color: #fbbf24;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent {
+  text-align: left;
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureTitle {
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  display: block;
+}
+.medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureDesc {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px !important;
+  line-height: 1.5;
+  margin: 0 !important;
+}
+.medicalLoginContainer .leftPanel .brandSection .bottomText .copyright {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 12px !important;
+  font-weight: 400;
+}
+.medicalLoginContainer .rightPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  background: white;
+}
+.medicalLoginContainer .rightPanel .loginSection {
+  width: 100%;
+  max-width: 420px;
+}
+.medicalLoginContainer .rightPanel .loginSection .formHeader {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeTitle {
+  color: #1e293b !important;
+  margin-bottom: 16px !important;
+  font-weight: 700 !important;
+  font-size: 32px !important;
+  letter-spacing: -0.5px;
+}
+.medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeSubtitle {
+  color: #64748b !important;
+  font-size: 16px !important;
+  line-height: 1.5;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem {
+  margin-bottom: 24px;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem :global(.ant-form-item-label) {
+  padding-bottom: 8px;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem :global(.ant-form-item-label) label {
+  color: #374151 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput {
+  height: 52px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  background: #f8fafc;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput:hover {
+  border-color: #cbd5e1;
+  background: white;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput:focus,
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput:focus-within {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput .inputIcon {
+  color: #9ca3af;
+  font-size: 18px;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .submitItem {
+  margin-bottom: 32px;
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .submitItem .loginButton {
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(30, 64, 175, 0.2);
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .submitItem .loginButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+}
+.medicalLoginContainer .rightPanel .loginSection .loginForm .submitItem .loginButton:active {
+  transform: translateY(0);
+}
+.medicalLoginContainer .rightPanel .loginSection .divider {
+  margin: 32px 0;
+  color: #cbd5e1 !important;
+}
+.medicalLoginContainer .rightPanel .loginSection .divider :global(.ant-divider-inner-text) {
+  color: #64748b !important;
+  font-size: 14px !important;
+  font-weight: 500;
+  background: white;
+  padding: 0 16px;
+}
+.medicalLoginContainer .rightPanel .loginSection .testAccount {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.medicalLoginContainer .rightPanel .loginSection .testAccount .accountInfo .accountRow {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  gap: 8px;
+  margin-bottom: 8px;
 }
-.loginCard {
-  width: 400px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  border: none;
-  /* 去除边框 */
-  /* 确保卡片内容也没有边框 */
+.medicalLoginContainer .rightPanel .loginSection .testAccount .accountInfo .accountRow:last-child {
+  margin-bottom: 0;
 }
-.loginCard :global(.ant-card-head-title) {
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
+.medicalLoginContainer .rightPanel .loginSection .testAccount .accountInfo .accountRow :global(.ant-typography) {
+  margin: 0 !important;
 }
-.loginCard :global(.ant-card-body) {
-  border: none;
-}
-.tips {
-  margin-top: 16px;
-  padding: 12px;
-  background: #f6f8fa;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #666;
+.medicalLoginContainer .rightPanel .loginSection .helpSection {
   text-align: center;
 }
-.tips p {
-  margin: 4px 0;
+.medicalLoginContainer .rightPanel .loginSection .helpSection .helpText {
+  color: #64748b !important;
+  font-size: 14px !important;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.medicalLoginContainer .rightPanel .loginSection .helpSection .helpText:hover {
+  color: #3b82f6 !important;
+}
+@media (max-width: 1024px) {
+  .medicalLoginContainer {
+    flex-direction: column;
+  }
+  .medicalLoginContainer .leftPanel {
+    padding: 40px 20px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea {
+    margin-bottom: 40px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .brandTitle {
+    font-size: 28px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .brandSubtitle {
+    font-size: 16px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection {
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem {
+    padding: 20px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureTitle {
+    font-size: 16px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureDesc {
+    font-size: 13px !important;
+  }
+  .medicalLoginContainer .rightPanel {
+    padding: 40px 20px;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .formHeader {
+    margin-bottom: 32px;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeTitle {
+    font-size: 28px !important;
+  }
+}
+@media (max-width: 768px) {
+  .medicalLoginContainer .leftPanel {
+    padding: 30px 16px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .logoIcon {
+    width: 60px;
+    height: 60px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .logoIcon .medicineIcon {
+    font-size: 30px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .brandTitle {
+    font-size: 24px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .brandSubtitle {
+    font-size: 14px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection {
+    gap: 20px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem {
+    padding: 16px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureIcon {
+    font-size: 20px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureTitle {
+    font-size: 15px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureDesc {
+    font-size: 12px !important;
+  }
+  .medicalLoginContainer .rightPanel {
+    padding: 30px 16px;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeTitle {
+    font-size: 24px !important;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeSubtitle {
+    font-size: 14px !important;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput {
+    height: 48px;
+    font-size: 15px;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .loginForm .submitItem .loginButton {
+    height: 48px;
+    font-size: 15px;
+  }
+}
+@media (max-width: 480px) {
+  .medicalLoginContainer .leftPanel {
+    padding: 24px 12px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .logoIcon {
+    width: 50px;
+    height: 50px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .logoIcon .medicineIcon {
+    font-size: 24px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .brandTitle {
+    font-size: 20px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .logoArea .brandSubtitle {
+    font-size: 13px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection {
+    gap: 16px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem {
+    padding: 12px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureIcon {
+    font-size: 18px;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureTitle {
+    font-size: 14px !important;
+  }
+  .medicalLoginContainer .leftPanel .brandSection .featureSection .featureItem .featureContent .featureDesc {
+    font-size: 11px !important;
+  }
+  .medicalLoginContainer .rightPanel {
+    padding: 24px 12px;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeTitle {
+    font-size: 20px !important;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .formHeader .welcomeSubtitle {
+    font-size: 13px !important;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .loginForm .formItem .customInput {
+    height: 44px;
+    font-size: 14px;
+  }
+  .medicalLoginContainer .rightPanel .loginSection .loginForm .submitItem .loginButton {
+    height: 44px;
+    font-size: 14px;
+  }
 }
