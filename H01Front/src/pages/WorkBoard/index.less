@@ -1,0 +1,103 @@
+/**
+ * WorkBoard 工作看板页面样式
+ * 拖拽排序功能相关样式
+ */
+
+.sort-tip {
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: #1890ff;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  
+  .tip-icon {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+}
+
+.draggable-card {
+  transition: all 0.2s ease;
+  
+  &.dragging {
+    opacity: 0.5;
+    transform: scale(1.05);
+    z-index: 1000;
+  }
+  
+  &.sort-mode {
+    cursor: move;
+    
+    .module-card {
+      border: 2px dashed #1890ff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+      
+      &:hover {
+        box-shadow: 0 6px 16px rgba(24, 144, 255, 0.25);
+        transform: translateY(-2px);
+      }
+    }
+  }
+  
+  &.drag-over {
+    .module-card {
+      border-color: #52c41a;
+      box-shadow: 0 4px 12px rgba(82, 196, 26, 0.25);
+    }
+  }
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 8px;
+  
+  .ant-btn {
+    font-size: 12px;
+    height: 28px;
+    padding: 0 12px;
+    
+    &.save-btn {
+      background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+      border: none;
+      
+      &:hover {
+        background: linear-gradient(135deg, #389e0d 0%, #237804 100%);
+      }
+    }
+  }
+}
+
+// 拖拽时的全局样式
+.dragging-active {
+  .module-card {
+    transition: all 0.2s ease;
+  }
+  
+  .draggable-card:not(.dragging) {
+    .module-card:hover {
+      border: 2px solid #52c41a !important;
+      box-shadow: 0 4px 12px rgba(82, 196, 26, 0.25) !important;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .sort-tip {
+    font-size: 12px;
+    padding: 8px;
+  }
+  
+  .sort-buttons {
+    .ant-btn {
+      font-size: 11px;
+      height: 24px;
+      padding: 0 8px;
+    }
+  }
+}

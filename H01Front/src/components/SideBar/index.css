@@ -1,0 +1,12 @@
+.sidebar-menu .ant-menu-item {
+  height: 48px !important;
+  line-height: 48px !important;
+}
+.sidebar-menu .ant-menu-submenu-title {
+  height: 48px !important;
+  line-height: 48px !important;
+}
+.sidebar-menu .ant-menu-item:nth-child(2) {
+  height: 60px !important;
+  line-height: 60px !important;
+}
