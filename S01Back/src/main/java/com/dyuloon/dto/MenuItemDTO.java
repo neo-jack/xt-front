@@ -8,23 +8,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class MenuItemDTO {
     
+    @JsonProperty("id") // 保持 id 字段不变，或者根据前端需要修改
     private String id;
+    
+    @JsonProperty("MENU_NAME")
     private String name;
+    
+    @JsonProperty("MENU_ICON")
     private String icon;
+    
+    @JsonProperty("MENU_URL")
     private String url;
     
-    @JsonProperty("menu_no")
+    @JsonProperty("MENU_NO")
     private String menuNo;
     
-    @JsonProperty("sys_menu")
+    @JsonProperty("SYS_MENU")
     private String sysMenu;
     
-    @JsonProperty("parent_code")
+    @JsonProperty("PARENT_CODE")
     private String parentCode;
     
-    @JsonProperty("menu_sort")
+    @JsonProperty("MENU_SORT")
     private String menuSort;
     
+    @JsonProperty("level") // 保持 level 字段不变，或者根据前端需要修改
     private Integer level;
 
     // 构造函数
