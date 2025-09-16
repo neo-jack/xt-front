@@ -8,13 +8,19 @@ export default defineConfig({
   request: {
     dataField: '', // 不处理响应数据，直接返回
   },
-  // proxy: {
-  //   '/api': {
-  //     target: 'http://localhost:8080',
-  //     changeOrigin: true,
-  //     pathRewrite: { '^/api': '/api' },
-  //   },
-  // },
+  // 选择性启用mock功能：只启用缺失的getmues接口
+  mock: false,
+  
+  // 启用代理到后端服务
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8080',
+      changeOrigin: true,
+      pathRewrite: { '^/api': '/api' },
+    },
+  },
+
+  
   layout: false, // 完全禁用 UMI 的布局插件
   define: {
     UMI_APP_BASE_URL: 'http://localhost', // 定义基础 URL

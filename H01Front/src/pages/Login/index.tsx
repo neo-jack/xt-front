@@ -1,5 +1,6 @@
 // 医疗平台登录页面
 import { login, hashPasswordMD5 } from '@/services/user/login';
+import { TokenManager } from '@/models/usetoken';
 
 import { LockOutlined, UserOutlined, MedicineBoxOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Button, Form, Input, message, Typography, Divider, Space } from 'antd';
@@ -36,22 +37,47 @@ const Login: FC = () => {
       // 这里直接传入明文密码，由login函数负责加密
       console.log('[Login Page] 调用登录API');
       const response = await login(values);
+      
+      console.log('[Login Page] 原始响应对象:', response);
+      console.log('[Login Page] 响应类型:', typeof response);
+      console.log('[Login Page] 响应code:', response?.code);
+      console.log('[Login Page] 响应data:', response?.data);
+      console.log('[Login Page] 响应msg:', response?.msg);
 
-      if (response.code === 0 && response.data) {
-        // 登录成功，保存AccessToken、RefreshToken和过期时间
-        localStorage.setItem('accessToken', response.data.AccessToken);
-        localStorage.setItem('refreshToken', response.data.RefreshToken);
-
-        // 计算过期时间戳（当前时间 + ExpiresIn秒）
-        const expireTime = Date.now() + response.data.ExpiresIn * 1000;
-        localStorage.setItem('tokenExpireTime', expireTime.toString());
+      if (response && response.code === 0 && response.data) {
+        console.log('[Login Page] ✅ 登录响应成功');
+        console.log('[Login Page] 完整响应数据:', response.data);
+        console.log('[Login Page] AccessToken存在:', !!response.data.AccessToken);
+        console.log('[Login Page] AccessToken长度:', response.data.AccessToken ? response.data.AccessToken.length : 'undefined');
+        console.log('[Login Page] RefreshToken存在:', !!response.data.RefreshToken);
+        console.log('[Login Page] RefreshToken长度:', response.data.RefreshToken ? response.data.RefreshToken.length : 'undefined');
+        console.log('[Login Page] ExpiresIn:', response.data.ExpiresIn);
+        
+        // 验证必要的字段是否存在
+        if (!response.data.AccessToken || !response.data.RefreshToken) {
+          console.error('[Login Page] ❌ 缺少必要的token字段');
+          console.error('[Login Page] AccessToken:', response.data.AccessToken);
+          console.error('[Login Page] RefreshToken:', response.data.RefreshToken);
+          message.error('登录响应数据不完整');
+          return;
+        }
+        
+        // 登录成功，使用TokenManager保存令牌信息
+        TokenManager.updateTokens(
+          response.data.AccessToken,
+          response.data.ExpiresIn || 3600,
+          response.data.RefreshToken
+        );
 
         // 保存用户信息到 localStorage
         localStorage.setItem('userInfo', JSON.stringify(response.data.USER));
+        console.log('[Login Page] 用户信息已保存');
 
         message.success(response.msg || '登录成功！');
+        console.log('[Login Page] 准备跳转到工作台');
         navigate('/xt/workboard');
       } else {
+        console.log('[Login Page] ❌ 登录响应失败:', response);
         message.error(response.msg || '登录失败！');
       }
     } catch (error: any) {

@@ -37,15 +37,25 @@ let refreshPromise: Promise<string | null> | null = null;
 const ensureValidToken = async (): Promise<string | null> => {
   const accessToken = TokenManager.getAccessToken();
   
+  console.log('[Token Manager] 🔍 检查token状态');
+  console.log('[Token Manager] accessToken存在:', !!accessToken);
+  console.log('[Token Manager] accessToken长度:', accessToken ? accessToken.length : 0);
+  console.log('[Token Manager] accessToken前20字符:', accessToken ? accessToken.substring(0, 20) + '...' : 'null');
+  
   // 如果没有token，直接返回null
   if (!accessToken) {
-    console.log('[Token Manager] 没有找到访问令牌');
+    console.log('[Token Manager] ❌ 没有找到访问令牌');
     return null;
   }
   
+  // 检查token过期状态
+  const isExpired = TokenManager.isAccessTokenExpired();
+  const willExpire = TokenManager.willExpireSoon();
+  console.log('[Token Manager] token过期状态:', { isExpired, willExpire });
+  
   // 如果token没有过期，直接返回
   if (!isTokenExpiringSoon()) {
-    console.log('[Token Manager] 访问令牌仍然有效');
+    console.log('[Token Manager] ✅ 访问令牌仍然有效');
     return accessToken;
   }
   
@@ -157,9 +167,10 @@ export const request = {
           ...config.headers,
           Authorization: `Bearer ${accessToken}`,
         };
-        console.log('[Request Interceptor] 已添加Authorization头');
+        console.log('[Request Interceptor] ✅ 已添加Authorization头');
+        console.log('[Request Interceptor] Authorization头内容:', `Bearer ${accessToken.substring(0, 20)}...`);
       } else {
-        console.log('[Request Interceptor] 未找到有效token');
+        console.log('[Request Interceptor] ❌ 未找到有效token');
       }
       
       // 添加默认Content-Type

@@ -15,13 +15,24 @@ export const TokenManager = {
   // 检查访问令牌是否过期
   isAccessTokenExpired: (): boolean => {
     const expireTime = localStorage.getItem(TOKEN_KEYS.EXPIRE_TIME);
-    if (!expireTime) return true;
-    return Date.now() >= Number(expireTime);
+    const now = Date.now();
+    const expired = !expireTime || now >= Number(expireTime);
+    
+    console.log('[TokenManager] isAccessTokenExpired调用');
+    console.log('[TokenManager] 过期时间存在:', !!expireTime);
+    console.log('[TokenManager] 过期时间值:', expireTime);
+    console.log('[TokenManager] 当前时间:', now);
+    console.log('[TokenManager] 是否过期:', expired);
+    
+    return expired;
   },
 
   // 获取访问令牌
   getAccessToken: (): string | null => {
-    return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
+    const token = localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
+    console.log('[TokenManager] getAccessToken调用 - token存在:', !!token);
+    console.log('[TokenManager] getAccessToken调用 - token长度:', token ? token.length : 0);
+    return token;
   },
 
   // 获取刷新令牌
@@ -35,15 +46,22 @@ export const TokenManager = {
     expiresIn: number,
     refreshTokenValue?: string,
   ): void => {
+    const expireTime = Date.now() + expiresIn * 1000;
+    
+    console.log('[TokenManager] 🔄 更新令牌信息');
+    console.log('[TokenManager] accessToken长度:', accessToken.length);
+    console.log('[TokenManager] expiresIn秒数:', expiresIn);
+    console.log('[TokenManager] 新过期时间:', expireTime);
+    console.log('[TokenManager] refreshToken存在:', !!refreshTokenValue);
+    
     localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken);
-    localStorage.setItem(
-      TOKEN_KEYS.EXPIRE_TIME,
-      (Date.now() + expiresIn * 1000).toString(),
-    );
+    localStorage.setItem(TOKEN_KEYS.EXPIRE_TIME, expireTime.toString());
 
     if (refreshTokenValue) {
       localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshTokenValue);
     }
+    
+    console.log('[TokenManager] ✅ 令牌更新完成');
   },
 
   // 清除所有令牌

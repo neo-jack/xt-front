@@ -1,10 +1,6 @@
 import { mockUsers } from '../../../Datebash/users';
 import * as crypto from 'crypto';
-
-// Node.js 环境下的 btoa polyfill
-const btoa = (str: string): string => {
-  return Buffer.from(str, 'ascii').toString('base64');
-};
+import { generateCompatibleJWT, getUserInfo } from '../utils/jwt-compatible';
 
 // Mock 请求接口类型定义
 interface MockRequest {
@@ -42,25 +38,13 @@ const md5Hash = (password: string): string => {
   return crypto.createHash('md5').update(password).digest('hex');
 };
 
-// 生成模拟的 token
+// 生成与后端兼容的JWT token
 const generateToken = (
   userId: number,
   tokenType: 'access' | 'refresh',
 ): string => {
-  const now = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
-  const expiresIn = tokenType === 'access' ? 3600 : 86400; // access: 1小时, refresh: 24小时
-  const exp = now + expiresIn; // 过期时间戳
-  
-  const randomSuffix = Math.random().toString(36).substring(2, 8); // 6位随机字符
-  return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
-    JSON.stringify({
-      userId,
-      timestamp: now,
-      type: tokenType,
-      exp, // 添加标准的JWT过期时间字段
-      random: randomSuffix,
-    }),
-  )}.mock_signature_${tokenType}`;
+  const userInfo = getUserInfo(userId);
+  return generateCompatibleJWT(userId, userInfo.username, userInfo.role, tokenType);
 };
 
 //实现模拟

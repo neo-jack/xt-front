@@ -60,11 +60,22 @@ export async function login(params: LoginRequest): Promise<LoginResponse> {
   
   console.log('[Login Service] 发送加密后的登录请求');
   
-  return request<LoginResponse>('/api/user/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: encryptedParams,
-  });
+  try {
+    const response = await request<LoginResponse>('/api/user/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: encryptedParams,
+    });
+    
+    console.log('[Login Service] 登录响应:', response);
+    console.log('[Login Service] 响应code:', response?.code);
+    console.log('[Login Service] 响应data存在:', !!response?.data);
+    
+    return response;
+  } catch (error) {
+    console.error('[Login Service] 登录请求异常:', error);
+    throw error;
+  }
 }
