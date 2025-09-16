@@ -16,4 +16,12 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 用户信息
      */
     User selectByUsername(String username);
+    
+    /**
+     * 更新用户头像
+     * @param userId 用户ID
+     * @param avatarUrl 头像URL
+     * @return 影响行数
+     */
+    int updateUserAvatar(Long userId, String avatarUrl);
 }

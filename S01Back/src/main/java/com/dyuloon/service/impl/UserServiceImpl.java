@@ -40,4 +40,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 由于新的用户表结构没有ip和token字段，这里保留方法但不执行更新
         // 如果需要记录登录信息，可以考虑创建登录日志表
     }
+
+    @Override
+    public boolean updateUserAvatar(Long userId, String avatarUrl) {
+        return userMapper.updateUserAvatar(userId, avatarUrl) > 0;
+    }
 }

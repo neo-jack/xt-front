@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dyuloon.entity.UserAvatar;
 import com.dyuloon.mapper.UserAvatarMapper;
 import com.dyuloon.service.UserAvatarService;
+import com.dyuloon.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,9 @@ public class UserAvatarServiceImpl extends ServiceImpl<UserAvatarMapper, UserAva
     
     @Autowired
     private UserAvatarMapper userAvatarMapper;
+    
+    @Autowired
+    private UserService userService;
     
     @Override
     public List<UserAvatar> getAvatarsByUserId(Long userId) {
@@ -37,7 +41,18 @@ public class UserAvatarServiceImpl extends ServiceImpl<UserAvatarMapper, UserAva
         userAvatarMapper.updateAllToNotCurrent(userId);
         
         // 设置指定头像为当前头像
-        return userAvatarMapper.setAsCurrent(avatarId, userId) > 0;
+        boolean setCurrentSuccess = userAvatarMapper.setAsCurrent(avatarId, userId) > 0;
+        
+        if (setCurrentSuccess) {
+            // 获取新设置的当前头像信息
+            UserAvatar currentAvatar = userAvatarMapper.selectById(avatarId);
+            if (currentAvatar != null) {
+                // 同时更新users表的user_avatar字段
+                userService.updateUserAvatar(userId, currentAvatar.getFileUrl());
+            }
+        }
+        
+        return setCurrentSuccess;
     }
     
     @Override

@@ -2,6 +2,7 @@ package com.dyuloon.controller;
 
 import com.dyuloon.entity.UserAvatar;
 import com.dyuloon.service.UserAvatarService;
+import com.dyuloon.service.UserService;
 import com.dyuloon.util.JwtUtil;
 import com.dyuloon.vo.ResultVO;
 import com.dyuloon.util.ResultVOUtil;
@@ -22,6 +23,9 @@ public class UserAvatarController {
 
     @Autowired
     private UserAvatarService userAvatarService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -134,6 +138,12 @@ public class UserAvatarController {
             
             // 保存头像记录
             userAvatarService.save(avatar);
+            
+            // 同时更新users表的user_avatar字段
+            boolean updateResult = userService.updateUserAvatar(userId, fileUrl);
+            if (!updateResult) {
+                log.warn("[UserAvatarController] 用户{}更新user_avatar字段失败", userId);
+            }
             
             log.info("[UserAvatarController] 用户{}上传头像成功，文件名: {}", userId, fileName);
             

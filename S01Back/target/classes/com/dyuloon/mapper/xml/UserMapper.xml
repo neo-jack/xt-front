@@ -11,4 +11,11 @@
         WHERE username = #{username}
     </select>
 
+    <!-- 更新用户头像 -->
+    <update id="updateUserAvatar">
+        UPDATE users 
+        SET user_avatar = #{avatarUrl}, updated_at = NOW()
+        WHERE id = #{userId}
+    </update>
+
 </mapper>

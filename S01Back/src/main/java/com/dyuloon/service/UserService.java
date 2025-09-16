@@ -27,4 +27,9 @@ public interface UserService extends IService<User> {
      * 更新用户登录信息
      */
     void updateLoginInfo(Long userId, String ip, String token);
+    
+    /**
+     * 更新用户头像
+     */
+    boolean updateUserAvatar(Long userId, String avatarUrl);
 }
