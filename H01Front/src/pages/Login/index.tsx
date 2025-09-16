@@ -1,6 +1,7 @@
 // 医疗平台登录页面
 import { login, hashPasswordMD5 } from '@/services/user/login';
 import { TokenManager } from '@/models/usetoken';
+import { userInfoWatcher } from '@/models/useuser';
 
 import { LockOutlined, UserOutlined, MedicineBoxOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Button, Form, Input, message, Typography, Divider, Space } from 'antd';
@@ -69,9 +70,10 @@ const Login: FC = () => {
           response.data.RefreshToken
         );
 
-        // 保存用户信息到 localStorage
+        // 保存用户信息到 localStorage 并通知 userInfoWatcher
         localStorage.setItem('userInfo', JSON.stringify(response.data.USER));
-        console.log('[Login Page] 用户信息已保存');
+        userInfoWatcher.forceUpdate(response.data.USER);
+        console.log('[Login Page] 用户信息已保存并通知所有监听器:', response.data.USER);
 
         message.success(response.msg || '登录成功！');
         console.log('[Login Page] 准备跳转到工作台');

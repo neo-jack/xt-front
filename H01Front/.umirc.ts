@@ -13,13 +13,12 @@ export default defineConfig({
   
   // 启用代理到后端服务
   proxy: {
-    //api类型
     '/api': {
       target: 'http://localhost:8080',
       changeOrigin: true,
       pathRewrite: { '^/api': '/api' },
     },
-    //图片类型
+    
     '/datebash': {
       target: 'http://localhost:8080',
       changeOrigin: true,
