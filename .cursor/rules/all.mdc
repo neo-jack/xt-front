@@ -1,0 +1,206 @@
+---
+description: H01项目架构演进 - 从Mock到真实后端的迁移阶段
+globs:
+alwaysApply: true
+---
+
+# H01 项目架构演进状态
+
+## 项目概述
+
+H01 项目是一个企业级医院管理系统，基于 React + Umi 前端框架和 Spring Boot 后端架构。项目目前处于从 Mock 环境向真实生产环境迁移的关键阶段。
+
+## 项目命名规范
+
+### 模块与项目命名约定
+
+- **H01, H02**: 前端模块标识
+- **Front**: 前端项目后缀
+- **S01, S02**: 后端模块标识
+- **Back**: 后端项目后缀
+
+### 命名示例
+
+- `H01Front`: H01 前端模块的前端项目
+- `S01Back`: S01 后端模块的后端项目
+- `H02Front`: H02 前端模块的前端项目
+- `S02Back`: S02 后端模块的后端项目
+
+**注意**: 在当前项目中，`S01Back` 是主要的后端项目，负责为 H01 前端模块提供 API 服务。原 `H01Frontend` 项目已迁移为 `S01Back` 项目。
+
+## 架构演进阶段
+
+### 🔄 当前状态：Mock 到真实环境的迁移期
+
+项目正在进行从模拟环境到真实环境的全面迁移，涉及后端服务和数据存储两个核心层面的重构。
+
+## 后端服务架构
+
+### ❌ 已弃用：模拟后端 (H01Front/mock)
+
+```
+H01Front/mock/
+├── user/           # 用户相关Mock API
+├── system/         # 系统信息Mock API
+├── favorite/       # 收藏功能Mock API
+├── workcenter/     # 工作中心Mock API
+└── utils/          # Mock工具类 (包含JWT兼容性处理)
+```
+
+**状态**: 🚫 **已弃用，仅作参考**
+
+- 用途：早期开发阶段的 API 模拟
+- 包含完整的 JWT token 兼容性实现
+- 提供了前后端 token 格式的适配方案
+
+### ✅ 当前使用：真实后端 (S01Back)
+
+```
+S01Back/src/main/java/com/dyuloon/
+├── controller/     # REST API控制器
+├── service/        # 业务逻辑层
+├── entity/         # 数据实体类
+├── util/           # 工具类 (JwtUtil, MD5Util等)
+└── config/         # 配置类
+```
+
+**状态**: 🔧 **开发中，正在实现**
+
+- 基于 Spring Boot 框架
+- 实现标准 JWT 认证机制
+- 提供 RESTful API 接口
+- 与前端 Mock 保持 API 兼容性
+- 原 H01Frontend 项目已迁移为 S01Back
+
+## 数据存储架构
+
+### ❌ 已弃用：模拟数据库 (Datebash)
+
+```
+Datebash/
+├── users/          # 用户数据
+├── menu/           # 菜单数据
+├── system/         # 系统配置数据
+├── favorite/       # 收藏数据
+└── module/         # 模块数据
+```
+
+**状态**: 🚫 **已弃用，仅作参考**
+
+- 用途：开发阶段的静态数据模拟
+- TypeScript 文件形式的数据存储
+- 包含完整的测试数据集
+
+### ✅ 当前使用：真实数据库
+
+**主数据库**: MySQL
+
+- 用途：持久化存储用户、系统、业务数据
+- 提供事务支持和数据一致性保证
+
+**缓存层**: Redis
+
+- 用途：临时数据缓存
+- 提升系统性能和响应速度
+
+**状态**: 🔧 **配置中，逐步迁移数据**
+
+### 📊 数据参考 (Data 目录)
+
+```
+Data/H01Frontend/
+├── hospitals.json          # 医院信息数据
+├── system_info.json        # 系统信息配置
+├── system_menus.json       # 系统菜单结构
+├── system_modules.json     # 系统模块配置
+├── user_avatars.json       # 用户头像数据 (Base64)
+├── user_favorites.json     # 用户收藏数据
+├── user_login_logs.json    # 用户登录日志
+├── users.json              # 用户基础信息
+├── v_menu_hierarchy.json   # 菜单层级视图
+├── v_user_details.json     # 用户详细信息视图
+└── work_center_categories.json  # 工作中心分类
+```
+
+**状态**: ✅ **当前参考数据源**
+
+- 用途：为后端数据库设计和 API 开发提供参考
+- 包含完整的业务数据结构示例
+- 数据格式已标准化，可直接用于数据库迁移
+- **重要**: 所有 JSON 文件都遵循真实数据库的字段规范
+
+**关键数据文件说明**:
+
+- **user_avatars.json**: 包含 Base64 编码的头像数据，`data` 字段建议使用 MySQL LONGTEXT 类型
+- **system_modules.json**: 系统模块的完整配置，包含权限和路由信息
+- **user_favorites.json**: 用户收藏功能的数据结构参考
+- **v\_\*.json**: 视图数据，展示了复杂查询的结果格式
+
+## 迁移进度与注意事项
+
+### ✅ 已完成的迁移任务
+
+1. **JWT Token 格式统一**: 前后端 token 格式已实现完全兼容
+2. **基础后端框架**: Spring Boot 项目结构已建立
+3. **核心 API 接口**: 登录、用户信息等核心接口已实现
+
+### 🔧 进行中的迁移任务
+
+1. **数据库模式设计**: 将 Datebash 中的数据结构转换为 MySQL 表结构
+2. **API 接口完善**: 逐步替换前端调用的 Mock 接口为真实接口
+3. **数据迁移**: 将模拟数据导入到真实数据库中
+
+### ⏳ 待完成的迁移任务
+
+1. **Redis 缓存集成**: 实现会话管理和数据缓存
+2. **生产环境配置**: 环境变量、安全配置等
+3. **性能优化**: 数据库查询优化、接口性能调优
+
+## 开发指导原则
+
+### 代码引用规则
+
+1. **H01Front/mock**: 仅作为 API 接口规范的参考，不应继续开发
+2. **Datebash**: 仅作为数据结构和测试数据的参考
+3. **Data/H01Frontend**: 标准化数据参考，用于数据库设计和 API 开发
+4. **S01Back**: 当前主要开发目标，所有新功能在此实现
+
+### API 兼容性要求
+
+- 新的真实后端 API 必须与 Mock API 保持请求/响应格式一致
+- JWT token 格式必须保持兼容（已通过 jwt-compatible.ts 实现）
+- 错误码和消息格式需要保持一致
+- 响应体中的 `data` 字段为当前数据信息
+
+### 数据迁移要求
+
+- MySQL 表结构应能容纳 Datebash 和 Data/H01Frontend 中的所有数据字段
+- 保持数据类型和约束的合理性
+- 考虑数据关系和外键约束
+- **优先参考**: Data/H01Frontend 目录下的 JSON 文件为最新标准化数据格式
+
+## 项目结构概览
+
+```
+xt-project/
+├── H01Front/           # React前端应用
+├── S01Back/            # Spring Boot后端 (主要开发目标)
+├── Data/H01Frontend/   # ✅ 标准化数据参考
+├── H01Front/mock/      # 🚫 已弃用的Mock后端
+├── Datebash/           # 🚫 已弃用的模拟数据库
+├── H02Front/           # H02子系统前端
+└── S02Back/            # S02子系统后端
+```
+
+## 技术栈对比
+
+| 组件     | Mock 阶段       | 真实环境阶段  |
+| -------- | --------------- | ------------- |
+| 后端框架 | Node.js Mock    | Spring Boot   |
+| 数据存储 | TypeScript 文件 | MySQL + Redis |
+| 认证方式 | Mock JWT        | 标准 JWT      |
+| API 风格 | Mock 接口       | RESTful API   |
+
+---
+
+_最后更新: 2025 年 9 月_

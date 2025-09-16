@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "client_ip": "localhost",
+    "server_domain": "localhost",
+    "version": "0.2",
+    "major_version": 0,
+    "created_at": "15/9/2025 16:36:40",
+    "updated_at": "15/9/2025 16:36:40"
+  }
+]

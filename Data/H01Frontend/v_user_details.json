@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "username": "root",
+    "user_name": "李银",
+    "user_avatar": "/datebash/acators/user_1_1755766697981_emmmw.png",
+    "user_role": "root",
+    "hospital_id": 1,
+    "hospital_cname": "001省医院",
+    "hospital_name": "001 Provincial Hospital",
+    "created_at": "15/9/2025 16:36:40",
+    "updated_at": "15/9/2025 16:36:40",
+    "favorite_count": 20,
+    "avatar_count": 10
+  },
+  {
+    "id": 2,
+    "username": "doctor",
+    "user_name": "张医生",
+    "user_avatar": "/datebash/acators/user_1_1755300000001_avatar2.png",
+    "user_role": "doctor",
+    "hospital_id": 1,
+    "hospital_cname": "002省医院",
+    "hospital_name": "001 Provincial Hospital",
+    "created_at": "15/9/2025 16:36:40",
+    "updated_at": "15/9/2025 16:36:40",
+    "favorite_count": 6,
+    "avatar_count": 2
+  }
+]
