@@ -22,7 +22,12 @@ export async function addFavorite(params: AddFavoriteRequest): Promise<AddFavori
         'Content-Type': 'application/json',
       },
       data: {
-        modulesid: params.modulesid,
+        id: params.modulesid,
+        name: params.name || "未知模块",
+        description: params.description || "模块描述",
+        icon: params.icon || "AppstoreOutlined",
+        port: params.port || 3000,
+        url: params.url || `http://localhost:${params.port || 3000}`,
       },
     });
 

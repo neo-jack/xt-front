@@ -22,7 +22,7 @@ export async function removeFavorite(params: RemoveFavoriteRequest): Promise<Rem
         'Content-Type': 'application/json',
       },
       data: {
-        modulesid: params.modulesid,
+        id: params.modulesid,
       },
     });
 

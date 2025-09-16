@@ -14,9 +14,11 @@ export interface GetModuleListResponse {
 
 // 模块项目数据
 export interface ModuleItem {
-  id: string;
+  id: number;
+  /** 模块代码 */
+  moduleCode: string;
   /** 名称 */
-  name: string;
+  moduleName: string;
   /** 描述 */
   description: string;
   /** 图标 */
@@ -25,6 +27,12 @@ export interface ModuleItem {
   port: number;
   /** url */
   url: string;
-  /** 是否收藏 */
-  isFavorite: boolean;
+  /** 状态 */
+  status: number;
+  /** 创建时间 */
+  createdAt: string;
+  /** 更新时间 */
+  updatedAt: string;
+  /** 分类名称 */
+  categoryName: string;
 }

@@ -178,13 +178,13 @@ export class WorkBoardManager {
       if (response.code === 0) {
         // 将 ModuleItem 转换为 SubModule 格式
         const modules: SubModule[] = response.data.map(item => ({
-          id: item.id,
-          name: item.name,
+          id: item.moduleCode, // 使用 moduleCode 作为唯一标识
+          name: item.moduleName, // 使用 moduleName
           description: item.description,
           icon: item.icon,
           port: item.port,
           projectPath: item.url,
-          isFavorite: item.isFavorite, // 使用 API 返回的收藏状态
+          isFavorite: false, // 默认为未收藏，后续可通过收藏API获取状态
         }));
 
         this.updateState({

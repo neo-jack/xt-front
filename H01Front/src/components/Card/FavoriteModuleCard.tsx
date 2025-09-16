@@ -76,9 +76,16 @@ const FavoriteModuleCard: React.FC<FavoriteModuleCardProps> = ({
           message.error(result.message || '取消收藏失败');
         }
       } else {
-        // 添加收藏
+        // 添加收藏 - 需要传递完整的模块信息
         console.log('[FavoriteModuleCard] 开始添加收藏:', moduleToToggle.id);
-        const result = await addFavorite({ modulesid: moduleToToggle.id });
+        const result = await addFavorite({
+          modulesid: moduleToToggle.id,
+          name: moduleToToggle.name,
+          description: moduleToToggle.description,
+          icon: moduleToToggle.icon || 'AppstoreOutlined',
+          port: moduleToToggle.port || 3000,
+          url: moduleToToggle.projectPath || `http://localhost:${moduleToToggle.port || 3000}`,
+        });
         
         if (result.success) {
           const updatedModule = { ...moduleToToggle, isFavorite: true };
