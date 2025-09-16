@@ -38,4 +38,10 @@ public interface UserAvatarMapper extends BaseMapper<UserAvatar> {
      */
     @Update("UPDATE user_avatars SET is_current = 1 WHERE id = #{avatarId} AND user_id = #{userId}")
     int setAsCurrent(@Param("avatarId") Long avatarId, @Param("userId") Long userId);
+    
+    /**
+     * 根据文件URL获取头像
+     */
+    @Select("SELECT * FROM user_avatars WHERE file_url = #{fileUrl} LIMIT 1")
+    UserAvatar selectByFileUrl(@Param("fileUrl") String fileUrl);
 }

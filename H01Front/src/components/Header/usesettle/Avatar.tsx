@@ -11,7 +11,7 @@ interface AvatarProps {
 const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
   const { userInfo } = useUser();
   const [avatarError, setAvatarError] = useState(false);
-  const [avatarKey, setAvatarKey] = useState(0); // 用于强制刷新头像
+  const [avatarKey, setAvatarKey] = useState(0); // 用于强制刷新头像显示
   const previousAvatarRef = useRef<string>('');
 
   // 当头像URL改变时，重置错误状态并刷新头像
@@ -64,7 +64,9 @@ const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
       size={size}
       onError={handleAvatarError}
       className={className}
-      style={{ backgroundColor: avatarError ? '#f56a00' : undefined }}
+      style={{ 
+        backgroundColor: avatarError ? '#f56a00' : undefined,
+      }}
     />
   );
 };

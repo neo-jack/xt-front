@@ -53,6 +53,12 @@ public class UserAvatar {
     private String mimeType;
 
     /**
+     * Base64编码的图片数据
+     */
+    @TableField("data")
+    private String data;
+
+    /**
      * 是否为当前头像(1:是, 0:否)
      */
     @TableField("is_current")

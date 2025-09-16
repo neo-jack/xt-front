@@ -13,10 +13,15 @@ export interface GetHeadshotListResponse {
   msg: string;
 }
 
-// 头像信息
+// 头像信息 - 匹配后端UserAvatar实体
 export interface HeadshotInfo {
   id: number;
-  name: string;
-  url: string;
-  userId: number;  // 添加用户ID字段
+  userId: number;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  isCurrent: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

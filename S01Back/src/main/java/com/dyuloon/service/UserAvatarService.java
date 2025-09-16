@@ -29,4 +29,9 @@ public interface UserAvatarService extends IService<UserAvatar> {
      * 上传新头像
      */
     UserAvatar uploadAvatar(Long userId, String fileName, String fileUrl, String mimeType, Long fileSize);
+    
+    /**
+     * 根据文件URL获取头像
+     */
+    UserAvatar getByFileUrl(String fileUrl);
 }

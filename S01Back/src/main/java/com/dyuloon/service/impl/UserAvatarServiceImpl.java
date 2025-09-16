@@ -59,4 +59,9 @@ public class UserAvatarServiceImpl extends ServiceImpl<UserAvatarMapper, UserAva
         
         return avatar;
     }
+    
+    @Override
+    public UserAvatar getByFileUrl(String fileUrl) {
+        return userAvatarMapper.selectByFileUrl(fileUrl);
+    }
 }

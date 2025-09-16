@@ -656,7 +656,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
               {headshotList.map((headshot, index) => (
                 <Avatar
                   key={headshot.id}
-                  src={headshot.url}
+                  src={headshot.fileUrl}
                   icon={<UserOutlined />}
                   size={60}
                   style={{ 
@@ -664,7 +664,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
                     border: index === 0 ? '3px solid #52c41a' : '2px solid #1890ff', // 第一个用绿色边框
                     borderRadius: '50%'
                   }}
-                  onClick={() => handleHistoryAvatarClick(headshot.url)}
+                  onClick={() => handleHistoryAvatarClick(headshot.fileUrl)}
                 />
               ))}
             </div>
