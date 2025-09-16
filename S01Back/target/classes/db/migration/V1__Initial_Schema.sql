@@ -33,6 +33,30 @@ CREATE TABLE IF NOT EXISTS `favorites` (
   KEY `idx_sort_order` (`sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户收藏表';
 
+-- 创建系统菜单表
+CREATE TABLE IF NOT EXISTS `system_menus` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `synergy_id` varchar(100) DEFAULT NULL COMMENT '协同ID',
+  `menu_no` varchar(50) NOT NULL COMMENT '菜单编号',
+  `menu_name` varchar(200) NOT NULL COMMENT '菜单名称',
+  `menu_icon` varchar(100) DEFAULT NULL COMMENT '菜单图标',
+  `menu_url` varchar(500) DEFAULT NULL COMMENT '菜单URL',
+  `sys_menu` varchar(50) DEFAULT NULL COMMENT '系统菜单',
+  `parent_code` varchar(50) DEFAULT NULL COMMENT '父级代码',
+  `menu_module` varchar(100) DEFAULT NULL COMMENT '菜单模块',
+  `menu_sort` varchar(10) DEFAULT NULL COMMENT '菜单排序',
+  `becall_module_id` varchar(100) DEFAULT NULL COMMENT '回调模块ID',
+  `level` int DEFAULT 1 COMMENT '菜单层级',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_menu_no` (`menu_no`),
+  KEY `idx_parent_code` (`parent_code`),
+  KEY `idx_level` (`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统菜单表';
+
 -- 创建系统模块表
 CREATE TABLE IF NOT EXISTS `system_modules` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '模块ID',
@@ -113,3 +137,17 @@ INSERT INTO `favorites` (`user_id`, `module_id`, `module_name`, `description`, `
 (2, 'H09', '常规检验工作站', '常规检验工作站管理', 'MedicineBoxOutlined', 3009, 'http://localhost:3009', 4),
 (2, 'H11', '特检工作站', '特殊检验工作站', 'BugOutlined', 3011, 'http://localhost:3011', 5),
 (2, 'H12', '样本管理工作站', '样本管理工作站系统', 'DatabaseOutlined', 3012, 'http://localhost:3012', 6);
+
+-- 插入系统菜单数据（基于Data(数据库信息参考)/H01Frontend/system_menus.json）
+INSERT INTO `system_menus` (`id`, `user_id`, `synergy_id`, `menu_no`, `menu_name`, `menu_icon`, `menu_url`, `sys_menu`, `parent_code`, `menu_module`, `menu_sort`, `becall_module_id`, `level`, `created_at`, `updated_at`) VALUES
+(1, 1, NULL, 'H5701', '工作看板', 'DashboardOutlined', '/xt/workboard', 'H57', 'H57', NULL, '01', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(2, 1, NULL, 'H5705', '工作中台', 'AppstoreOutlined', '/xt/workcenter', 'H57', 'H57', NULL, '02', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(3, 1, NULL, 'H5717', '智能工作台', 'icon-liaotian', NULL, 'H57', 'H57', NULL, '04', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(4, 1, NULL, 'H5704', '即时通讯', 'MessageOutlined', '/xt/im', 'H57', 'H57', NULL, '05', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(5, 1, NULL, 'H5720', '科室通知', 'NotificationOutlined', '/xt/department-notice', 'H57', 'H57', NULL, '20', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(6, 1, NULL, 'H5721', '事务流程', 'ApartmentOutlined', 'https://localhost:18028/xt/workflow', 'H57', 'H57', NULL, '21', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(7, 1, NULL, 'H5722', 'AI智能助手', 'RobotOutlined', 'https://localhost:18029/xt/ai-assistant', 'H57', 'H57', NULL, '22', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(8, 2, NULL, 'H5701', '工作看板', 'DashboardOutlined', '/xt/workboard', 'H57', 'H57', NULL, '01', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(9, 2, NULL, 'H5705', '工作中台', 'AppstoreOutlined', '/xt/workcenter', 'H57', 'H57', NULL, '02', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(10, 2, NULL, 'H5704', '即时通讯', 'MessageOutlined', '/xt/im', 'H57', 'H57', NULL, '05', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40'),
+(11, 2, NULL, 'H5720', '科室通知', 'NotificationOutlined', '/xt/department-notice', 'H57', 'H57', NULL, '20', NULL, 1, '2025-09-15 16:36:40', '2025-09-15 16:36:40');

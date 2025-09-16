@@ -1,6 +1,7 @@
 package com.dyuloon.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
 /**
  * 系统菜单实体类
@@ -49,6 +50,9 @@ public class SystemMenu {
     
     @JsonProperty("updated_at")
     private String updatedAt;
+    
+    // 子菜单列表（用于构建菜单树结构）
+    private List<SystemMenu> subMenus;
 
     // 构造函数
     public SystemMenu() {}
@@ -172,5 +176,13 @@ public class SystemMenu {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public List<SystemMenu> getSubMenus() {
+        return subMenus;
+    }
+    
+    public void setSubMenus(List<SystemMenu> subMenus) {
+        this.subMenus = subMenus;
     }
 }
