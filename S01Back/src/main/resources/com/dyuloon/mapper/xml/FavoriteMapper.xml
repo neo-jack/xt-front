@@ -7,7 +7,7 @@
         SELECT id, user_id as userId, module_id as moduleId, module_name as moduleName, 
                description, icon, port, url, sort_order as sortOrder, 
                created_at as createdAt, updated_at as updatedAt
-        FROM favorites 
+        FROM user_favorites 
         WHERE user_id = #{userId}
         ORDER BY sort_order ASC, created_at ASC
     </select>
@@ -17,20 +17,20 @@
         SELECT id, user_id as userId, module_id as moduleId, module_name as moduleName, 
                description, icon, port, url, sort_order as sortOrder, 
                created_at as createdAt, updated_at as updatedAt
-        FROM favorites 
+        FROM user_favorites 
         WHERE user_id = #{userId} AND module_id = #{moduleId}
     </select>
 
     <!-- 获取用户收藏的最大排序号 -->
     <select id="selectMaxSortOrderByUserId" resultType="java.lang.Integer">
         SELECT COALESCE(MAX(sort_order), 0) 
-        FROM favorites 
+        FROM user_favorites 
         WHERE user_id = #{userId}
     </select>
 
     <!-- 更新收藏排序 -->
     <update id="updateSortOrder">
-        UPDATE favorites 
+        UPDATE user_favorites 
         SET sort_order = #{sortOrder}, updated_at = NOW()
         WHERE user_id = #{userId} AND module_id = #{moduleId}
     </update>

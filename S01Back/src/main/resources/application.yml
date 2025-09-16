@@ -35,3 +35,14 @@ mybatis-plus:
       id-type: auto # 数据库自增策略
 server:
   port: 8080
+
+# 日志配置
+logging:
+  level:
+    com.dyuloon: DEBUG
+    org.springframework.web: DEBUG
+    org.mybatis: DEBUG
+    org.apache.ibatis: DEBUG
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

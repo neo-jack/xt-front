@@ -1,6 +1,7 @@
 package com.dyuloon.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
  * 用户收藏实体类
  */
 @Data
-@TableName("favorites")
+@TableName("user_favorites")
 public class Favorite {
     
     /**
@@ -59,6 +60,12 @@ public class Favorite {
      * 排序序号
      */
     private Integer sortOrder;
+    
+    /**
+     * 是否收藏
+     */
+    @TableField("is_favorite")
+    private Integer isFavorite;
     
     /**
      * 创建时间
