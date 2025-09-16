@@ -3,7 +3,6 @@ package com.dyuloon.controller;
 import com.dyuloon.entity.UserAvatar;
 import com.dyuloon.service.UserAvatarService;
 import com.dyuloon.util.JwtUtil;
-import com.dyuloon.util.JsonFileUtil;
 import com.dyuloon.vo.ResultVO;
 import com.dyuloon.util.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +25,6 @@ public class UserAvatarController {
 
     @Autowired
     private JwtUtil jwtUtil;
-    
-    @Autowired
-    private JsonFileUtil jsonFileUtil;
 
     /**
      * 获取用户头像列表
@@ -140,14 +136,6 @@ public class UserAvatarController {
             userAvatarService.save(avatar);
             
             log.info("[UserAvatarController] 用户{}上传头像成功，文件名: {}", userId, fileName);
-            
-            // 更新users.json文件中的user_avatar字段
-            boolean updateSuccess = jsonFileUtil.updateUserAvatar(userId, fileUrl);
-            if (updateSuccess) {
-                log.info("[UserAvatarController] 成功更新users.json文件中的用户头像URL");
-            } else {
-                log.warn("[UserAvatarController] 更新users.json文件失败，但头像已保存到数据库");
-            }
             
             // 构造响应
             AvatarUploadResponse response = new AvatarUploadResponse();
