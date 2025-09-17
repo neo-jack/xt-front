@@ -5,4 +5,6 @@ export type {
   SortFavoriteRequest,
   SortFavoriteResponse,
   SortFavoriteResult,
+  SortItem,
+  BackendSortRequest,
 } from './typings';

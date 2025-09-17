@@ -3,6 +3,8 @@ import type {
   SortFavoriteRequest,
   SortFavoriteResponse,
   SortFavoriteResult,
+  SortItem,
+  BackendSortRequest,
 } from './typings';
 
 /**
@@ -16,12 +18,24 @@ export async function sortFavorite(params: SortFavoriteRequest): Promise<SortFav
   console.log('[Sort Favorite Service] 新排序:', params.sortOrder);
   
   try {
+    // 将排序数组转换为后端期望的格式
+    const sortItems: SortItem[] = params.sortOrder.map((moduleId, index) => ({
+      id: moduleId,
+      sort: index + 1, // 排序从1开始
+    }));
+    
+    const requestData: BackendSortRequest = {
+      sortItems: sortItems,
+    };
+    
+    console.log('[Sort Favorite Service] 转换后的请求数据:', requestData);
+    
     const response = await request<SortFavoriteResponse>('/api/favorite/sort', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      data: params.sortOrder, // 直接发送排序数组
+      data: requestData, // 发送符合后端期望格式的数据
     });
 
     console.log('[Sort Favorite Service] API响应:', response);
