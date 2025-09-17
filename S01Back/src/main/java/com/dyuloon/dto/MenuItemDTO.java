@@ -1,27 +1,32 @@
 package com.dyuloon.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * 菜单项数据传输对象
- * 参考前端 getclass 服务的数据结构
+ * 支持多层级菜单结构，与前端MenuItem接口完全对应
  */
 public class MenuItemDTO {
     
-    @JsonProperty("id") // 保持 id 字段不变，或者根据前端需要修改
-    private String id;
-    
-    @JsonProperty("MENU_NAME")
-    private String name;
-    
-    @JsonProperty("MENU_ICON")
-    private String icon;
-    
-    @JsonProperty("MENU_URL")
-    private String url;
+    @JsonProperty("SYNERGY_ID")
+    private String synergyId;
     
     @JsonProperty("MENU_NO")
     private String menuNo;
+    
+    @JsonProperty("SUB_MENU")
+    private List<MenuItemDTO> subMenu = new ArrayList<>();
+    
+    @JsonProperty("MENU_NAME")
+    private String menuName;
+    
+    @JsonProperty("MENU_ICON")
+    private String menuIcon;
+    
+    @JsonProperty("MENU_URL")
+    private String menuUrl;
     
     @JsonProperty("SYS_MENU")
     private String sysMenu;
@@ -29,65 +34,46 @@ public class MenuItemDTO {
     @JsonProperty("PARENT_CODE")
     private String parentCode;
     
+    @JsonProperty("MENU_MODULE")
+    private String menuModule;
+    
     @JsonProperty("MENU_SORT")
     private String menuSort;
     
-    @JsonProperty("level") // 保持 level 字段不变，或者根据前端需要修改
-    private Integer level;
+    @JsonProperty("BECALL_MODULE_ID")
+    private String becallModuleId;
 
     // 构造函数
     public MenuItemDTO() {}
 
-    public MenuItemDTO(String id, String name, String icon) {
-        this.id = id;
-        this.name = name;
-        this.icon = icon;
+    public MenuItemDTO(String menuNo, String menuName, String menuIcon) {
+        this.menuNo = menuNo;
+        this.menuName = menuName;
+        this.menuIcon = menuIcon;
     }
 
-    public MenuItemDTO(String id, String name, String icon, String url, String menuNo, 
-                       String sysMenu, String parentCode, String menuSort, Integer level) {
-        this.id = id;
-        this.name = name;
-        this.icon = icon;
-        this.url = url;
+    public MenuItemDTO(String synergyId, String menuNo, String menuName, String menuIcon, 
+                       String menuUrl, String sysMenu, String parentCode, String menuModule,
+                       String menuSort, String becallModuleId) {
+        this.synergyId = synergyId;
         this.menuNo = menuNo;
+        this.menuName = menuName;
+        this.menuIcon = menuIcon;
+        this.menuUrl = menuUrl;
         this.sysMenu = sysMenu;
         this.parentCode = parentCode;
+        this.menuModule = menuModule;
         this.menuSort = menuSort;
-        this.level = level;
+        this.becallModuleId = becallModuleId;
     }
 
     // Getters and Setters
-    public String getId() {
-        return id;
+    public String getSynergyId() {
+        return synergyId;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setSynergyId(String synergyId) {
+        this.synergyId = synergyId;
     }
 
     public String getMenuNo() {
@@ -96,6 +82,38 @@ public class MenuItemDTO {
 
     public void setMenuNo(String menuNo) {
         this.menuNo = menuNo;
+    }
+
+    public List<MenuItemDTO> getSubMenu() {
+        return subMenu;
+    }
+
+    public void setSubMenu(List<MenuItemDTO> subMenu) {
+        this.subMenu = subMenu;
+    }
+
+    public String getMenuName() {
+        return menuName;
+    }
+
+    public void setMenuName(String menuName) {
+        this.menuName = menuName;
+    }
+
+    public String getMenuIcon() {
+        return menuIcon;
+    }
+
+    public void setMenuIcon(String menuIcon) {
+        this.menuIcon = menuIcon;
+    }
+
+    public String getMenuUrl() {
+        return menuUrl;
+    }
+
+    public void setMenuUrl(String menuUrl) {
+        this.menuUrl = menuUrl;
     }
 
     public String getSysMenu() {
@@ -114,6 +132,14 @@ public class MenuItemDTO {
         this.parentCode = parentCode;
     }
 
+    public String getMenuModule() {
+        return menuModule;
+    }
+
+    public void setMenuModule(String menuModule) {
+        this.menuModule = menuModule;
+    }
+
     public String getMenuSort() {
         return menuSort;
     }
@@ -122,11 +148,11 @@ public class MenuItemDTO {
         this.menuSort = menuSort;
     }
 
-    public Integer getLevel() {
-        return level;
+    public String getBecallModuleId() {
+        return becallModuleId;
     }
 
-    public void setLevel(Integer level) {
-        this.level = level;
+    public void setBecallModuleId(String becallModuleId) {
+        this.becallModuleId = becallModuleId;
     }
 }
