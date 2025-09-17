@@ -2,5 +2,10 @@
 # IntelliJ IDEA files
 **/.idea/
 
+# Maven build output
+**/target/
+
+
 .vscode/
+
 .cursor/

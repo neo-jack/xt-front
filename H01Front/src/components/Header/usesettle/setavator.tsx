@@ -1,7 +1,7 @@
 import { CameraOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Image, Modal, Upload, message } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import { FC, useState, useEffect, useRef } from 'react';
+import { FC, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getHeadshotList, uploadAvatar } from '@/services';
 import type { HeadshotInfo } from '@/services';
 import useUser from '@/models/useuser';
@@ -27,6 +27,7 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
   const [imageScale, setImageScale] = useState(1);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
 
+  // 只有在 imageSrc 变化时才重新加载图片
   useEffect(() => {
     if (visible && imageSrc && canvasRef.current) {
       const canvas = canvasRef.current;
@@ -62,10 +63,10 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
       img.crossOrigin = 'anonymous';
       img.src = imageSrc;
     }
-  }, [visible, imageSrc]);
+  }, [imageSrc]); // 只依赖 imageSrc，避免 visible 变化时重新渲染
 
-  // 绘制函数
-  const draw = () => {
+  // 绘制函数 - 使用 useCallback 缓存
+  const draw = useCallback(() => {
     if (!canvasRef.current || !imageRef.current || !imageLoaded) return;
     
     const canvas = canvasRef.current;
@@ -123,14 +124,14 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
       ctx.fillRect(cropArea.x + cropArea.width - handleSize/2, cropArea.y + cropArea.height - handleSize/2, handleSize, handleSize);
       ctx.strokeRect(cropArea.x + cropArea.width - handleSize/2, cropArea.y + cropArea.height - handleSize/2, handleSize, handleSize);
     }
-  };
+  }, [imageLoaded, cropArea, imagePosition, imageScale]);
 
   useEffect(() => {
     draw();
-  }, [imageLoaded, cropArea, imagePosition, imageScale]);
+  }, [draw]);
 
-  // 检测鼠标是否在控制点上
-  const getResizeHandle = (x: number, y: number) => {
+  // 检测鼠标是否在控制点上 - 使用 useCallback 缓存
+  const getResizeHandle = useCallback((x: number, y: number) => {
     const handleSize = 10;
     const tolerance = handleSize / 2;
     
@@ -159,10 +160,10 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
     }
     
     return null;
-  };
+  }, [cropArea]);
 
-  // 鼠标事件处理
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // 鼠标事件处理 - 使用 useCallback 缓存
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -190,9 +191,9 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
       setIsDragging(true);
       setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
     }
-  };
+  }, [getResizeHandle, cropArea]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -271,16 +272,16 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
       
       setCropArea(prev => ({ ...prev, x: newX, y: newY }));
     }
-  };
+  }, [isResizing, resizeHandle, resizeStart, cropArea, isDragging, dragStart]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     setIsResizing(false);
     setResizeHandle(null);
-  };
+  }, []);
 
-  // 获取光标样式
-  const getCursorStyle = (e: React.MouseEvent) => {
+  // 获取光标样式 - 使用 useCallback 缓存
+  const getCursorStyle = useCallback((e: React.MouseEvent) => {
     if (isDragging) return 'grabbing';
     if (isResizing) return 'nw-resize';
     
@@ -301,9 +302,9 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
     }
     
     return 'default';
-  };
+  }, [isDragging, isResizing, getResizeHandle, cropArea]);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     if (!canvasRef.current || !imageRef.current) return;
     
     // 创建新的canvas进行裁剪
@@ -337,7 +338,7 @@ const CropModal: FC<CropModalProps> = ({ visible, imageSrc, onComplete, onCancel
       const croppedImageSrc = cropCanvas.toDataURL('image/png');
       onComplete(croppedImageSrc);
     }
-  };
+  }, [cropArea, imageScale, imagePosition, onComplete]);
 
   return (
     <Modal
@@ -412,6 +413,11 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
 }) => {
   const { userInfo, setUserInfo } = useUser();
   const [imageSrc, setImageSrc] = useState<string | undefined>(avatarSrc);
+  
+  // 只在 avatarSrc 变化时更新 imageSrc
+  useEffect(() => {
+    setImageSrc(avatarSrc);
+  }, [avatarSrc]);
   const [headshotList, setHeadshotList] = useState<HeadshotInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -420,8 +426,8 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
 
 
 
-  // 调用获取用户头像列表
-  const fetchHeadshotList = async () => {
+  // 调用获取用户头像列表 - 使用 useCallback 缓存
+  const fetchHeadshotList = useCallback(async () => {
     if (!userId) return;
     
     setLoading(true);
@@ -448,18 +454,18 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (open && userId) {
       fetchHeadshotList();
     }
-  }, [open, userId]);
+  }, [open, fetchHeadshotList]);
 
 
 
-  // 处理历史头像点击，打开裁剪模态框
-  const handleHistoryAvatarClick = async (imageUrl: string) => {
+  // 处理历史头像点击，打开裁剪模态框 - 使用 useCallback 缓存
+  const handleHistoryAvatarClick = useCallback(async (imageUrl: string) => {
     try {
       setCropImageSrc(imageUrl);
       setCropModalVisible(true);
@@ -468,21 +474,21 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
       console.error('选择历史头像失败:', error);
       message.error('选择头像失败');
     }
-  };
+  }, []);
 
-  // 处理裁剪完成
-  const handleCropComplete = (croppedImageSrc: string) => {
+  // 处理裁剪完成 - 使用 useCallback 缓存
+  const handleCropComplete = useCallback((croppedImageSrc: string) => {
     setImageSrc(croppedImageSrc);
     setCropModalVisible(false);
     message.success('头像裁剪成功');
-  };
+  }, []);
 
-  // 取消裁剪
-  const handleCropCancel = () => {
+  // 取消裁剪 - 使用 useCallback 缓存
+  const handleCropCancel = useCallback(() => {
     setCropModalVisible(false);
-  };
+  }, []);
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     if (!imageSrc) {
       message.warning('请先选择一张图片');
       return;
@@ -548,7 +554,7 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
     } finally {
       setUploading(false);
     }
-  };
+  }, [imageSrc, userId, userInfo, setUserInfo, fetchHeadshotList, onOk, onCancel]);
 
   return (
     <>
@@ -653,20 +659,22 @@ const ChangeAvatarModal: FC<ChangeAvatarModalProps> = ({
             <div style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>我的头像</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {/* 头像列表 - 第一个是当前使用的头像（ID最大），其余按倒序排列 */}
-              {headshotList.map((headshot, index) => (
-                <Avatar
-                  key={headshot.id}
-                  src={headshot.fileUrl}
-                  icon={<UserOutlined />}
-                  size={60}
-                  style={{ 
-                    cursor: 'pointer',
-                    border: index === 0 ? '3px solid #52c41a' : '2px solid #1890ff', // 第一个用绿色边框
-                    borderRadius: '50%'
-                  }}
-                  onClick={() => handleHistoryAvatarClick(headshot.fileUrl)}
-                />
-              ))}
+              {useMemo(() => 
+                headshotList.map((headshot, index) => (
+                  <Avatar
+                    key={headshot.id}
+                    src={headshot.fileUrl}
+                    icon={<UserOutlined />}
+                    size={60}
+                    style={{ 
+                      cursor: 'pointer',
+                      border: index === 0 ? '3px solid #52c41a' : '2px solid #1890ff', // 第一个用绿色边框
+                      borderRadius: '50%'
+                    }}
+                    onClick={() => handleHistoryAvatarClick(headshot.fileUrl)}
+                  />
+                )), [headshotList, handleHistoryAvatarClick]
+              )}
             </div>
               
             {/* 加载状态 */}

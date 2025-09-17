@@ -50,10 +50,8 @@ const Avatar: FC<AvatarProps> = ({ size = 'default', className }) => {
       return undefined;
     }
     
-    // 添加时间戳参数防止缓存
-    const avatarUrl = userInfo.USER_AVATAR;
-    const separator = avatarUrl.includes('?') ? '&' : '?';
-    return `${avatarUrl}${separator}_t=${avatarKey}_${Date.now()}`;
+    // 直接返回原始URL，不添加任何缓存破坏参数
+    return userInfo.USER_AVATAR;
   };
 
   return (
