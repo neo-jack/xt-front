@@ -79,16 +79,36 @@ public class JwtUtil {
     }
 
     /**
-     * 验证token
+     * 验证token（增强版：包含更多安全检查）
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
+            Claims claims = Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
                 .build()
-                .parseClaimsJws(token);
+                .parseClaimsJws(token)
+                .getBody();
+            
+            // 额外的安全检查
+            if (claims == null) {
+                return false;
+            }
+            
+            // 检查必需的字段
+            if (claims.get("userId") == null || claims.getSubject() == null) {
+                return false;
+            }
+            
+            // 检查签发时间是否合理（防止时间戳攻击）
+            Date issuedAt = claims.getIssuedAt();
+            if (issuedAt != null && issuedAt.after(new Date())) {
+                return false; // 未来时间签发的token无效
+            }
+            
             return true;
         } catch (Exception e) {
+            // 记录可疑的token验证失败（可选：用于安全监控）
+            // log.warn("Token validation failed: {}", e.getMessage());
             return false;
         }
     }

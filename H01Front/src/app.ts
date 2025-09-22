@@ -75,19 +75,19 @@ const ensureValidToken = async (): Promise<string | null> => {
   }
   
   // 开始刷新过程
-  console.log('[Token Manager] 🚀 开始新的刷新流程');
+  console.log('[Token Manager]  开始新的刷新流程');
   isRefreshing = true;
   refreshPromise = performTokenRefresh();
   
   try {
     const newToken = await refreshPromise;
-    console.log('[Token Manager] 🔄 刷新流程完成，结果:', !!newToken);
+    console.log('[Token Manager]  刷新流程完成，结果:', !!newToken);
     return newToken;
   } catch (error) {
-    console.error('[Token Manager] 🔄 刷新流程异常:', error);
+    console.error('[Token Manager]  刷新流程异常:', error);
     return null;
   } finally {
-    // 🛡️ 确保状态被重置
+    // 确保状态被重置
     console.log('[Token Manager] 🧹 重置刷新状态');
     isRefreshing = false;
     refreshPromise = null;

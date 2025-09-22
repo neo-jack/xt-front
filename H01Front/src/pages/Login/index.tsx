@@ -5,7 +5,7 @@ import { userInfoWatcher } from '@/models/useuser';
 
 import { LockOutlined, UserOutlined, MedicineBoxOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Button, Form, Input, message, Typography, Divider, Space } from 'antd';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import styles from './index.less';
@@ -21,11 +21,6 @@ const Login: FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // 检查是否已登录，如果已登录则重定向到首页
-  useEffect(() => {
-    // 检查是否已登录，如果已登录则重定向到首页 使用withAuthorization
-    
-  }, [navigate]);
 
   const onFinish = async (values: LoginForm) => {
     console.log('[Login Page] 开始登录流程');
@@ -56,7 +51,7 @@ const Login: FC = () => {
         
         // 验证必要的字段是否存在
         if (!response.data.AccessToken || !response.data.RefreshToken) {
-          console.error('[Login Page] ❌ 缺少必要的token字段');
+          console.error('[Login Page] 缺少必要的token字段');
           console.error('[Login Page] AccessToken:', response.data.AccessToken);
           console.error('[Login Page] RefreshToken:', response.data.RefreshToken);
           message.error('登录响应数据不完整');
@@ -79,7 +74,7 @@ const Login: FC = () => {
         console.log('[Login Page] 准备跳转到工作台');
         navigate('/xt/workboard');
       } else {
-        console.log('[Login Page] ❌ 登录响应失败:', response);
+        console.log('[Login Page] 登录响应失败:', response);
         message.error(response.msg || '登录失败！');
       }
     } catch (error: any) {
